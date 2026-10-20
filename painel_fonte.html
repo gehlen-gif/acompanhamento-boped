@@ -1,0 +1,522 @@
+<style>
+.cg { display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); font-variant-numeric: tabular-nums; }
+.cg h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+.cg h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.cg .note { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin: 0; }
+.cg .lead { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); max-width: 70ch; }
+.cg .filters { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: end; }
+.cg .filters label { display: grid; gap: 2px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); min-width: 0; }
+.cg .filters select, .cg .filters input { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); max-width: 16rem; }
+.cg button { font: inherit; color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; }
+.cg button:hover { border-color: var(--color-fg-muted); }
+.cg .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--cds-gap-md); }
+.cg .kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); }
+.cg .kpi .v { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); }
+.cg .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
+.cg .card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
+.cg .bars { display: grid; gap: var(--cds-gap-xs); min-height: 6rem; }
+.cg .bar { display: grid; grid-template-columns: minmax(0, 13rem) 1fr auto; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); cursor: pointer; border-radius: var(--cds-radius); padding: 2px 4px; }
+.cg .bar:hover, .cg .bar.on { background: var(--cds-surface-popover); }
+.cg .bar .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cg .bar .track { height: 14px; background: var(--cds-chart-grid); border-radius: 4px; overflow: hidden; }
+.cg .bar .fill { height: 100%; border-radius: 4px; }
+.cg .bar .val { text-align: right; min-width: 6.5rem; }
+.cg .scroll { max-height: 34rem; overflow: auto; }
+.cg table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); }
+.cg th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); border-bottom: 1px solid var(--color-border-line); padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; white-space: nowrap; }
+.cg td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.cg td.n, .cg th.n { text-align: right; white-space: nowrap; }
+.cg tbody tr { cursor: pointer; }
+.cg tbody tr:hover, .cg tbody tr.on { background: var(--cds-surface-popover); }
+.cg .cell-bar { height: 4px; background: var(--cds-chart-muted); border-radius: 2px; margin-top: 3px; }
+.cg .pill { display: inline-block; padding: 0 6px; border-radius: 999px; border: 1px solid var(--color-border-line); font-size: var(--cds-font-size-caption); white-space: nowrap; }
+.cg .pill.bad { color: var(--color-bad); }
+.cg .pill.warn { color: var(--color-warn); }
+.cg .pill.ok { color: var(--color-ok); }
+.cg .port { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--cds-gap-md); }
+.cg .vend { border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: grid; gap: var(--cds-gap-xs); min-width: 0; }
+.cg .vend header { display: flex; justify-content: space-between; gap: var(--cds-gap-sm); align-items: baseline; flex-wrap: wrap; }
+.cg .vend ol { margin: 0; padding-left: 1.2rem; display: grid; gap: 2px; font-size: var(--cds-font-size-caption); }
+.cg .vend li span { float: right; padding-left: var(--cds-gap-sm); }
+.cg [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.cg[data-tema] { background: var(--color-bg); color: var(--color-fg); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); }
+.cg[data-tema="claro"] { --color-fg:#1d2330; --color-fg-muted:#5d6577; --color-bg:#f6f7f9; --color-panel:#ffffff; --color-border-line:#e1e4ea; --color-ok:#1f7a4d; --color-warn:#a1620a; --color-bad:#b3261e; --cds-surface-popover:#eef1f6; --cds-chart-grid:#edf0f4; --cds-chart-muted:#9aa3b4; color-scheme: light; }
+.cg[data-tema="escuro"] { --color-fg:#e7eaf0; --color-fg-muted:#a0a8b8; --color-bg:#14171d; --color-panel:#1c2028; --color-border-line:#2e3440; --color-ok:#5cc58f; --color-warn:#e3a547; --color-bad:#f07b72; --cds-surface-popover:#262b35; --cds-chart-grid:#272c36; --cds-chart-muted:#6c7588; color-scheme: dark; }
+.cg .topbar { display: flex; justify-content: space-between; align-items: start; gap: var(--cds-gap-md); flex-wrap: wrap; }
+.cg .seg { display: inline-flex; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; }
+.cg .seg button { border: 0; border-radius: 0; background: var(--color-panel); }
+.cg .seg button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); }
+.cg .tabs { display: flex; gap: var(--cds-gap-xs); border-bottom: 1px solid var(--color-border-line); flex-wrap: wrap; }
+.cg .tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; padding: var(--cds-pad-sm) var(--cds-pad-md); color: var(--color-fg-muted); }
+.cg .tabs button[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.cg .pane { display: grid; gap: var(--cds-gap-lg); }
+.cg .kpi .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cg .cov { display: grid; grid-template-columns: 4.5rem 1fr; gap: 6px; align-items: center; }
+.cg .cov .track { height: 8px; background: var(--cds-chart-grid); border-radius: 4px; overflow: hidden; }
+.cg .cov .fill { height: 100%; background: var(--color-ok); }
+.cg .picked { display: flex; gap: var(--cds-gap-sm); flex-wrap: wrap; }
+</style>
+
+<div class="cg">
+  <header id="topo" class="topbar">
+    <div>
+      <h1>Carteiras por grupo de cliente</h1>
+      <p class="lead" id="takeaway"></p>
+    </div>
+    <div class="seg" id="tema" role="group" aria-label="Tema">
+      <button type="button" data-tema="">Automático</button>
+      <button type="button" data-tema="claro">Claro</button>
+      <button type="button" data-tema="escuro">Escuro</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Partes do painel">
+    <button type="button" role="tab" id="tab-btn-pedidos" data-aba="pedidos">Pedidos do mês</button>
+    <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Histórico de faturamento</button>
+  </nav>
+
+  <section class="filters" id="filtros" aria-label="Filtros">
+    <label>Time<select id="f-macro"></select></label>
+    <label>Subtime<select id="f-time"></select></label>
+    <label>Vendedor<select id="f-vend"></select></label>
+    <label>Situação do vendedor<select id="f-sit"></select></label>
+    <label>UF<select id="f-uf"></select></label>
+    <label>Segmento<select id="f-seg"></select></label>
+    <label>Status do cliente<select id="f-status"></select></label>
+    <label>Situação no mês<select id="f-mes"></select></label>
+    <label>Buscar grupo<input id="f-q" type="search" placeholder="Nome ou código"></label>
+    <label>Mostrar<select id="f-top"></select></label>
+    <button id="f-reset" type="button">Limpar filtros</button>
+  </section>
+
+  <div class="pane" id="historico">
+  <section class="kpis" id="indicadores" data-source="grupos">
+    <div class="kpi"><span class="note">Faturamento comercial (sem duplicidade)</span><span class="v dash-skeleton" id="k-fat">—</span></div>
+    <div class="kpi"><span class="note">Grupos de cliente</span><span class="v dash-skeleton" id="k-grp">—</span></div>
+    <div class="kpi"><span class="note">Clientes (códigos)</span><span class="v dash-skeleton" id="k-cli">—</span></div>
+    <div class="kpi"><span class="note">Vendedores com carteira</span><span class="v dash-skeleton" id="k-vend">—</span></div>
+    <div class="kpi"><span class="note">Concentração nos 10 maiores grupos</span><span class="v dash-skeleton" id="k-top">—</span></div>
+  </section>
+
+  <div class="grid">
+    <section class="card" id="por-time">
+      <h2>Faturamento por time</h2>
+      <p class="note">Clique em um time para filtrar. Subtimes de líder e inativos somados ao time macro.</p>
+      <div class="bars" id="bars-time" data-source="grupos"></div>
+    </section>
+    <section class="card" id="por-vendedor">
+      <h2>Faturamento por vendedor</h2>
+      <p class="note">Clique em um vendedor para ver só a carteira dele.</p>
+      <div class="bars scroll" id="bars-vend" data-source="grupos"></div>
+    </section>
+  </div>
+
+  <section class="card" id="maiores-clientes">
+    <h2>Maiores clientes por grupo</h2>
+    <p class="note" id="tab-note">Clique em uma linha para ver os clientes do grupo. Cabeçalhos ordenam.</p>
+    <div class="scroll">
+      <table id="tab-grupos" data-source="grupos" data-row-key="cod_grupo,vendedor">
+        <thead><tr>
+          <th data-field="grupo">Grupo de cliente</th>
+          <th data-field="cod_grupo">Cód. grupo</th>
+          <th data-field="vendedor">Vendedor</th>
+          <th data-field="time">Time</th>
+          <th data-field="uf">UF</th>
+          <th data-field="status">Status</th>
+          <th data-field="clientes" class="n">Clientes</th>
+          <th data-field="faturamento" class="n">Faturamento</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="detalhe" hidden>
+    <header class="picked"><h2 id="det-title"></h2><button id="det-close" type="button">Fechar</button></header>
+    <p class="note">Clientes do grupo nesta carteira. Linhas repetidas da planilha (mesmo cliente e mesmo valor) aparecem uma vez.</p>
+    <div class="scroll">
+      <table id="tab-clientes" data-source="clientes" data-row-key="cod_cliente,vendedor">
+        <thead><tr>
+          <th data-field="cliente">Cliente</th>
+          <th data-field="cod_cliente">Cód. cliente</th>
+          <th data-field="cidade">Cidade</th>
+          <th data-field="uf">UF</th>
+          <th data-field="status">Status</th>
+          <th data-field="ultimo_faturamento">Último faturamento</th>
+          <th data-field="faturamento" class="n">Faturamento</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="carteiras">
+    <h2>Carteira de cada vendedor</h2>
+    <p class="note">Os cinco maiores grupos de cada vendedor, agrupados por time.</p>
+    <div class="port" id="port" data-source="grupos"></div>
+  </section>
+
+  </div>
+
+  <div class="pane" id="pedidos">
+    <section class="kpis" id="ind-pedidos" data-source="pedidos">
+      <div class="kpi"><span class="note">Carteiras com pedido</span><span class="v dash-skeleton" id="p-com">—</span><span class="sub" id="p-com-s"></span></div>
+      <div class="kpi"><span class="note">Carteiras sem pedido</span><span class="v dash-skeleton" id="p-sem">—</span><span class="sub" id="p-sem-s"></span></div>
+      <div class="kpi"><span class="note">Só cancelamento no mês</span><span class="v dash-skeleton" id="p-canc">—</span><span class="sub" id="p-canc-s"></span></div>
+      <div class="kpi"><span class="note">Valor total de pedidos (- canc.)</span><span class="v dash-skeleton" id="p-val">—</span><span class="sub" id="p-val-s"></span></div>
+      <div class="kpi"><span class="note">Itens pedidos</span><span class="v dash-skeleton" id="p-itens">—</span><span class="sub" id="p-itens-s"></span></div>
+    </section>
+
+    <section class="card" id="cobertura">
+      <h2>Cobertura por vendedor</h2>
+      <p class="note">Quantas carteiras de cada vendedor já colocaram pedido no mês. Clique em um vendedor para filtrar.</p>
+      <div class="scroll">
+        <table id="tab-cob" data-source="pedidos">
+          <thead><tr><th>Vendedor</th><th>Time</th><th class="n">Carteiras</th><th class="n">Com pedido</th><th class="n">Sem pedido</th><th>Cobertura</th><th class="n">Itens</th><th class="n">Valor (- canc.)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="com-pedido">
+      <h2>Clientes com pedido no mês</h2>
+      <p class="note" id="com-note"></p>
+      <div class="scroll">
+        <table id="tab-com" data-source="pedidos" data-row-key="cod_grupo,vendedor">
+          <thead><tr>
+            <th data-field="grupo">Grupo de cliente</th><th data-field="cod_grupo">Cód. grupo</th><th data-field="vendedor">Vendedor</th>
+            <th data-field="situacao_mes">Situação</th><th data-field="qt_itens_pedido" class="n">Qt. itens pedido</th>
+            <th data-field="valor_pedidos" class="n">Valor (- canc.)</th><th data-field="pedidos_pendentes" class="n">Pendente</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="sem-pedido">
+      <h2>Clientes sem pedido no mês</h2>
+      <p class="note" id="sem-note"></p>
+      <div class="scroll">
+        <table id="tab-sem" data-source="pedidos" data-row-key="cod_grupo,vendedor">
+          <thead><tr>
+            <th data-field="grupo">Grupo de cliente</th><th data-field="cod_grupo">Cód. grupo</th><th data-field="vendedor">Vendedor</th>
+            <th data-field="status_cliente">Status</th><th data-field="ultimo_faturamento">Último faturamento</th>
+            <th data-field="faturamento_historico" class="n">Faturamento histórico</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="note" id="regra-pedidos">Pedidos cruzados com as carteiras pelo nome do Grupo de Cliente. Valor negativo indica cancelamento do grupo no mês. Grupos com o mesmo nome em mais de uma carteira aparecem em cada uma, marcados como compartilhados, e entram uma vez só nos totais.</p>
+  </div>
+
+  <p class="note" id="regra">Regra aplicada: dentro do mesmo código de grupo e vendedor, valores de faturamento iguais contam uma vez e valores diferentes se somam. Só entram vendedores da lista TIME BOPED 2026 (validada em 20/10/2026), buscados em Representante (Z1), Key Account (Z3) e Vendedor Interno (VE).</p>
+</div>
+
+<script>
+const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+const BRLc = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 1 });
+const INT = new Intl.NumberFormat('pt-BR');
+const PCT = new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 1 });
+const MACROS = ['TURBON', 'BOINAS AZUIS', 'INSTITUIÇÕES', 'BEHIKES', 'NOVOS CANAIS'];
+const $ = (s) => document.querySelector(s);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const enc = (v) => encodeURIComponent(String(v)).replace(/,/g, '%2C');
+const keyOf = (a, b) => enc(a) + ',' + enc(b);
+
+const FILTERS = [
+  ['f-macro', 'macro', 'Todos os times'],
+  ['f-time', 'time', 'Todos os subtimes'],
+  ['f-vend', 'vendedor', 'Todos os vendedores'],
+  ['f-sit', 'situacao', 'Ativos e inativos'],
+  ['f-uf', 'uf', 'Todas'],
+  ['f-seg', 'segmento', 'Todos'],
+  ['f-status', 'status', 'Todos'],
+];
+const P = () => dash.params();
+const set = (o) => dash.setParams(o);
+let sortKey = 'faturamento', sortDir = -1, openKey = null;
+
+for (const [id, name] of FILTERS) {
+  $('#' + id).addEventListener('change', (e) => {
+    const v = e.target.value || null;
+    const o = { [name]: v };
+    if (name === 'macro') { o.time = null; o.vendedor = null; }
+    if (name === 'time') o.vendedor = null;
+    set(o);
+  });
+}
+$('#f-top').addEventListener('change', (e) => set({ top: Number(e.target.value) }));
+$('#f-q').addEventListener('input', (e) => set({ q: e.target.value || null }));
+const defaults = () => set({ top: 50, aba: 'pedidos' });
+defaults();
+$('#f-reset').addEventListener('click', () => {
+  dash.resetParams();
+  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null });
+  defaults();
+});
+$('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
+document.querySelectorAll('#tema button').forEach((b) => b.addEventListener('click', () => set({ tema: b.dataset.tema || null })));
+document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { set({ aba: b.dataset.aba }); dash.setLink(b.dataset.aba); }));
+$('#tab-cob tbody').addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-v]');
+  if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
+});
+const named = location.hash.slice(1);
+if (named === 'pedidos' || named === 'historico') set({ aba: named });
+$('#det-close').addEventListener('click', () => { openKey = null; draw(); });
+document.querySelectorAll('#tab-grupos th').forEach((th) => th.addEventListener('click', () => {
+  const f = th.dataset.field;
+  if (sortKey === f) sortDir = -sortDir; else { sortKey = f; sortDir = (f === 'faturamento' || f === 'clientes') ? -1 : 1; }
+  draw();
+}));
+$('#tab-grupos tbody').addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-key]');
+  if (!tr) return;
+  openKey = openKey === tr.dataset.key ? null : tr.dataset.key;
+  draw();
+  if (openKey) $('#detalhe').scrollIntoView({ block: 'nearest' });
+});
+
+function fillSelect(sel, all, values, current) {
+  const opts = [new Option(all, '')].concat(values.map((v) => new Option(v, v)));
+  sel.replaceChildren(...opts);
+  sel.value = current && values.includes(current) ? current : '';
+}
+const uniq = (rows, f) => Array.from(new Set(rows.map((r) => r[f]))).sort((a, b) => String(a).localeCompare(String(b), 'pt-BR'));
+
+function barList(box, items, color, onPick, active) {
+  const max = Math.max(1, ...items.map((d) => Math.abs(d.v)));
+  box.replaceChildren(...items.map((d) => {
+    const row = el('div', 'bar' + (active === d.k ? ' on' : ''));
+    row.tabIndex = 0;
+    row.append(el('span', 'lbl', d.k));
+    const tr = el('div', 'track'); const f = el('div', 'fill');
+    f.style.width = (Math.max(0, d.v) / max * 100) + '%'; f.style.background = color;
+    tr.append(f); row.append(tr);
+    row.append(el('span', 'val', BRL.format(d.v)));
+    row.title = d.k + ' · ' + BRL.format(d.v) + ' · ' + INT.format(d.n) + ' grupos';
+    row.addEventListener('click', () => onPick(d.k));
+    row.addEventListener('keydown', (e) => { if (e.key === 'Enter') onPick(d.k); });
+    return row;
+  }));
+}
+
+function statusPill(s) {
+  const cls = /^Inativo/.test(s) ? 'bad' : /Inativariam/.test(s) ? 'warn' : /Ativo|Reativado|Recuperado|Novo/.test(s) ? 'ok' : '';
+  return el('span', 'pill ' + cls, s);
+}
+
+function draw() {
+  const p0 = P();
+  const cg = document.querySelector('.cg');
+  if (p0.tema) cg.dataset.tema = p0.tema; else delete cg.dataset.tema;
+  document.querySelectorAll('#tema button').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.tema || null) === (p0.tema || null))));
+  const aba = p0.aba || 'pedidos';
+  document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.aba === aba)));
+  $('#historico').hidden = aba !== 'historico';
+  $('#pedidos').hidden = aba !== 'pedidos';
+  $('#f-mes').closest('label').hidden = aba !== 'pedidos';
+  $('#f-top').closest('label').hidden = aba !== 'historico';
+  const g = dash.data('grupos');
+  const ok = g.status === 'ok';
+  document.querySelectorAll('.cg .dash-skeleton').forEach((e) => { if (ok || g.status === 'error') e.classList.remove('dash-skeleton'); });
+  const p = P();
+  const all = ok ? g.data.map((r) => ({ ...r, faturamento: Number(r.faturamento), clientes: Number(r.clientes) })) : [];
+
+  // options cascade
+  const byMacro = all.filter((r) => !p.macro || r.time_macro === p.macro);
+  const byTime = byMacro.filter((r) => !p.time || r.time === p.time);
+  fillSelect($('#f-macro'), 'Todos os times', MACROS.filter((m) => all.some((r) => r.time_macro === m)), p.macro);
+  fillSelect($('#f-time'), 'Todos os subtimes', uniq(byMacro, 'time'), p.time);
+  fillSelect($('#f-vend'), 'Todos os vendedores', uniq(byTime, 'vendedor'), p.vendedor);
+  fillSelect($('#f-sit'), 'Ativos e inativos', ['Ativo', 'Inativo'], p.situacao);
+  fillSelect($('#f-uf'), 'Todas', uniq(all, 'uf'), p.uf);
+  fillSelect($('#f-seg'), 'Todos', uniq(all, 'segmento'), p.segmento);
+  fillSelect($('#f-status'), 'Todos', uniq(all, 'status'), p.status);
+  const top = $('#f-top');
+  if (!top.options.length) top.replaceChildren(...[10, 20, 50, 100, 500].map((n) => new Option('Top ' + n, n)));
+  top.value = String(p.top || 50);
+  if (document.activeElement !== $('#f-q')) $('#f-q').value = p.q || '';
+
+  const q = (p.q || '').toLowerCase();
+  const base = all.filter((r) =>
+    (!p.situacao || r.situacao_vendedor === p.situacao) &&
+    (!p.uf || r.uf === p.uf) && (!p.segmento || r.segmento === p.segmento) &&
+    (!p.status || r.status === p.status) &&
+    (!q || r.grupo.toLowerCase().includes(q) || r.cod_grupo.includes(q)));
+  const rows = base.filter((r) => (!p.macro || r.time_macro === p.macro) && (!p.time || r.time === p.time) && (!p.vendedor || r.vendedor === p.vendedor));
+
+  // KPIs
+  const total = d3.sum(rows, (r) => r.faturamento);
+  const sorted = rows.slice().sort((a, b) => b.faturamento - a.faturamento);
+  const top10 = d3.sum(sorted.slice(0, 10), (r) => r.faturamento);
+  if (ok) {
+    $('#k-fat').textContent = BRLc.format(total);
+    $('#k-fat').title = BRL.format(total);
+    $('#k-grp').textContent = INT.format(new Set(rows.map((r) => r.cod_grupo)).size);
+    $('#k-cli').textContent = INT.format(d3.sum(rows, (r) => r.clientes));
+    $('#k-vend').textContent = INT.format(new Set(rows.map((r) => r.vendedor)).size);
+    $('#k-top').textContent = total > 0 ? PCT.format(top10 / total) : '—';
+    const lead = sorted[0];
+    const byM = d3.rollups(rows, (v) => d3.sum(v, (r) => r.faturamento), (r) => r.time_macro).sort((a, b) => b[1] - a[1]);
+    if (aba === 'historico') $('#takeaway').textContent = rows.length
+      ? `${BRL.format(total)} em ${INT.format(rows.length)} carteiras de grupo. ` +
+        (byM.length > 1 ? `${byM[0][0]} lidera com ${PCT.format(byM[0][1] / total)} do total; ` : '') +
+        `o maior grupo é ${lead.grupo} (${lead.vendedor}), com ${BRL.format(lead.faturamento)}.`
+      : 'Nenhum grupo com esses filtros.';
+  } else {
+    $('#takeaway').textContent = '';
+  }
+
+  // by team (macro, or subteam when one macro is picked)
+  const teamField = p.macro ? 'time' : 'time_macro';
+  const teamRows = base.filter((r) => !p.macro || r.time_macro === p.macro);
+  const teams = d3.rollups(teamRows, (v) => ({ v: d3.sum(v, (r) => r.faturamento), n: v.length }), (r) => r[teamField])
+    .map(([k, o]) => ({ k, ...o })).sort((a, b) => b.v - a.v);
+  barList($('#bars-time'), teams, dash.colors[0], (k) => set(p.macro ? { time: p.time === k ? null : k, vendedor: null } : { macro: k, time: null, vendedor: null }), p.macro ? p.time : p.macro);
+
+  const vendRows = base.filter((r) => (!p.macro || r.time_macro === p.macro) && (!p.time || r.time === p.time));
+  const vends = d3.rollups(vendRows, (v) => ({ v: d3.sum(v, (r) => r.faturamento), n: v.length }), (r) => r.vendedor)
+    .map(([k, o]) => ({ k, ...o })).sort((a, b) => b.v - a.v);
+  barList($('#bars-vend'), vends, dash.colors[1], (k) => set({ vendedor: p.vendedor === k ? null : k }), p.vendedor);
+
+  // main table
+  const n = Number(p.top || 50);
+  const tsorted = rows.slice().sort((a, b) => {
+    const x = a[sortKey], y = b[sortKey];
+    return (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR')) * sortDir;
+  });
+  const shown = sortKey === 'faturamento' && sortDir === -1 ? tsorted.slice(0, n) : sorted.slice(0, n).sort((a, b) => {
+    const x = a[sortKey], y = b[sortKey];
+    return (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR')) * sortDir;
+  });
+  const maxF = Math.max(1, ...shown.map((r) => r.faturamento));
+  document.querySelectorAll('#tab-grupos th').forEach((th) => {
+    th.setAttribute('aria-sort', th.dataset.field === sortKey ? (sortDir < 0 ? 'descending' : 'ascending') : 'none');
+  });
+  $('#tab-note').textContent = `Os ${INT.format(shown.length)} maiores de ${INT.format(rows.length)} carteiras de grupo. Clique em uma linha para ver os clientes do grupo; cabeçalhos ordenam.`;
+  $('#tab-grupos tbody').replaceChildren(...shown.map((r) => {
+    const tr = el('tr');
+    tr.dataset.key = keyOf(r.cod_grupo, r.vendedor);
+    if (tr.dataset.key === openKey) tr.className = 'on';
+    tr.append(el('td', null, r.grupo), el('td', null, r.cod_grupo), el('td', null, r.vendedor), el('td', null, r.time), el('td', null, r.uf));
+    const st = el('td'); st.append(statusPill(r.status)); tr.append(st);
+    tr.append(el('td', 'n', INT.format(r.clientes)));
+    const f = el('td', 'n'); f.append(el('div', null, BRL.format(r.faturamento)));
+    const b = el('div', 'cell-bar'); b.style.width = (Math.max(0, r.faturamento) / maxF * 100) + '%'; f.append(b);
+    tr.append(f);
+    return tr;
+  }));
+
+  // detail
+  const det = $('#detalhe');
+  const pick = openKey && all.find((r) => keyOf(r.cod_grupo, r.vendedor) === openKey);
+  det.hidden = !pick;
+  if (pick) {
+    $('#det-title').textContent = `${pick.grupo} · ${pick.vendedor} · ${BRL.format(pick.faturamento)}`;
+    const c = dash.data('clientes');
+    const cl = c.status === 'ok' ? c.data.filter((r) => String(r.cod_grupo) === pick.cod_grupo && r.vendedor === pick.vendedor)
+      .sort((a, b) => Number(b.faturamento) - Number(a.faturamento)) : [];
+    $('#tab-clientes tbody').replaceChildren(...cl.map((r) => {
+      const tr = el('tr');
+      tr.dataset.key = keyOf(r.cod_cliente, r.vendedor);
+      tr.append(el('td', null, r.cliente), el('td', null, r.cod_cliente), el('td', null, r.cidade), el('td', null, r.uf));
+      const st = el('td'); st.append(statusPill(r.status)); tr.append(st);
+      tr.append(el('td', null, r.ultimo_faturamento ? r.ultimo_faturamento.split('-').reverse().join('/') : '—'));
+      tr.append(el('td', 'n', BRL.format(Number(r.faturamento))));
+      return tr;
+    }));
+  }
+
+  // portfolio per vendor
+  const port = $('#port');
+  const byV = d3.groups(rows, (r) => r.vendedor).map(([v, rs]) => ({ v, rs: rs.sort((a, b) => b.faturamento - a.faturamento), t: d3.sum(rs, (r) => r.faturamento), time: rs[0].time }))
+    .sort((a, b) => b.t - a.t);
+  port.replaceChildren(...byV.map((o) => {
+    const box = el('article', 'vend');
+    const h = el('header');
+    const name = el('strong', null, o.v);
+    h.append(name, el('span', null, BRL.format(o.t)));
+    box.append(h, el('p', 'note', `${o.time} · ${INT.format(o.rs.length)} grupos`));
+    const ol = el('ol');
+    o.rs.slice(0, 5).forEach((r) => {
+      const li = el('li', null, r.grupo);
+      li.prepend(el('span', null, BRL.format(r.faturamento)));
+      ol.append(li);
+    });
+    box.append(ol);
+    return box;
+  }));
+  drawPedidos(rows);
+}
+
+function drawPedidos(scope) {
+  const p = P();
+  const d = dash.data('pedidos');
+  const ok = d.status === 'ok';
+  document.querySelectorAll('#ind-pedidos .dash-skeleton').forEach((e) => { if (ok || d.status === 'error') e.classList.remove('dash-skeleton'); });
+  fillSelect($('#f-mes'), 'Todas', ['Com pedido', 'Sem pedido', 'Cancelamento'], p.mes);
+  if (!ok) return;
+  const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));
+  const rows = d.data.map((r) => ({ ...r, valor_pedidos: Number(r.valor_pedidos), qt_itens_pedido: Number(r.qt_itens_pedido), faturamento_historico: Number(r.faturamento_historico), pedidos_pendentes: Number(r.pedidos_pendentes) }))
+    .filter((r) => inScope.has(r.cod_grupo + '|' + r.vendedor));
+  const scoped = rows;
+  const shown = scoped.filter((r) => !p.mes || r.situacao_mes === p.mes);
+  const uniqSum = (rs, f) => { const seen = new Map(); rs.forEach((r) => seen.set(r.grupo_pedido, Number(r[f]))); return d3.sum(Array.from(seen.values()), (v) => v); };
+  const n = scoped.length || 1;
+  const com = scoped.filter((r) => r.situacao_mes === 'Com pedido');
+  const sem = scoped.filter((r) => r.situacao_mes === 'Sem pedido');
+  const canc = scoped.filter((r) => r.situacao_mes === 'Cancelamento');
+  const ref = scoped[0] ? scoped[0].data_ref : (d.data[0] || {}).data_ref;
+  const refTxt = ref ? ref.split('-').reverse().join('/') : '';
+  $('#p-com').textContent = INT.format(com.length); $('#p-com-s').textContent = PCT.format(com.length / n) + ' das carteiras';
+  $('#p-sem').textContent = INT.format(sem.length); $('#p-sem-s').textContent = PCT.format(sem.length / n) + ' das carteiras';
+  $('#p-canc').textContent = INT.format(canc.length); $('#p-canc-s').textContent = BRL.format(uniqSum(canc, 'valor_pedidos'));
+  $('#p-val').textContent = BRLc.format(uniqSum(scoped, 'valor_pedidos')); $('#p-val').title = BRL.format(uniqSum(scoped, 'valor_pedidos'));
+  $('#p-val-s').textContent = 'Pedidos até ' + refTxt;
+  $('#p-itens').textContent = INT.format(uniqSum(scoped, 'qt_itens_pedido')); $('#p-itens-s').textContent = 'Líquido de cancelamentos';
+  if ((p.aba || 'pedidos') === 'pedidos') {
+    $('#takeaway').textContent = scoped.length
+      ? `Pedidos de outubro até ${refTxt}: ${INT.format(com.length)} de ${INT.format(scoped.length)} carteiras já compraram (${PCT.format(com.length / n)}), somando ${BRL.format(uniqSum(scoped, 'valor_pedidos'))}. ${INT.format(sem.length)} ainda não colocaram pedido.`
+      : 'Nenhuma carteira com esses filtros.';
+  }
+
+  const byV = d3.groups(scoped, (r) => r.vendedor).map(([v, rs]) => {
+    const c = rs.filter((r) => r.situacao_mes === 'Com pedido').length;
+    return { v, time: rs[0].time, tot: rs.length, c, s: rs.filter((r) => r.situacao_mes === 'Sem pedido').length, it: uniqSum(rs, 'qt_itens_pedido'), val: uniqSum(rs, 'valor_pedidos') };
+  }).sort((a, b) => b.val - a.val);
+  $('#tab-cob tbody').replaceChildren(...byV.map((o) => {
+    const tr = el('tr'); tr.dataset.v = o.v;
+    if (p.vendedor === o.v) tr.className = 'on';
+    tr.append(el('td', null, o.v), el('td', null, o.time), el('td', 'n', INT.format(o.tot)), el('td', 'n', INT.format(o.c)), el('td', 'n', INT.format(o.s)));
+    const cv = el('td'); const box = el('div', 'cov'); box.append(el('span', null, PCT.format(o.c / o.tot)));
+    const tk = el('div', 'track'); const fl = el('div', 'fill'); fl.style.width = (o.c / o.tot * 100) + '%'; tk.append(fl); box.append(tk); cv.append(box);
+    tr.append(cv, el('td', 'n', INT.format(o.it)), el('td', 'n', BRL.format(o.val)));
+    return tr;
+  }));
+
+  const pill = (r) => { const s = el('span', 'pill ' + (r.situacao_mes === 'Cancelamento' ? 'bad' : 'ok'), r.situacao_mes); return s; };
+  const comRows = shown.filter((r) => r.situacao_mes !== 'Sem pedido').sort((a, b) => b.valor_pedidos - a.valor_pedidos);
+  $('#com-note').textContent = `${INT.format(comRows.length)} carteiras. Valor negativo é cancelamento do grupo no mês.`;
+  $('#tab-com tbody').replaceChildren(...comRows.map((r) => {
+    const tr = el('tr'); tr.dataset.key = keyOf(r.cod_grupo, r.vendedor);
+    const nm = el('td', null, r.grupo);
+    if (r.nome_compartilhado === 'Sim') { nm.append(' '); nm.append(el('span', 'pill warn', 'compartilhado')); }
+    const st = el('td'); st.append(pill(r));
+    tr.append(nm, el('td', null, r.cod_grupo), el('td', null, r.vendedor), st, el('td', 'n', INT.format(r.qt_itens_pedido)), el('td', 'n', BRL.format(r.valor_pedidos)), el('td', 'n', BRL.format(r.pedidos_pendentes)));
+    return tr;
+  }));
+  const semRows = shown.filter((r) => r.situacao_mes === 'Sem pedido').sort((a, b) => b.faturamento_historico - a.faturamento_historico);
+  $('#sem-note').textContent = `${INT.format(semRows.length)} carteiras, das que mais faturaram no histórico para as menores.`;
+  $('#tab-sem tbody').replaceChildren(...semRows.map((r) => {
+    const tr = el('tr'); tr.dataset.key = keyOf(r.cod_grupo, r.vendedor);
+    const st = el('td'); st.append(statusPill(r.status_cliente));
+    tr.append(el('td', null, r.grupo), el('td', null, r.cod_grupo), el('td', null, r.vendedor), st,
+      el('td', null, r.ultimo_faturamento ? r.ultimo_faturamento.split('-').reverse().join('/') : '—'), el('td', 'n', BRL.format(r.faturamento_historico)));
+    return tr;
+  }));
+}
+dash.onData(draw);
+</script>

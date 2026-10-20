@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carteiras por grupo de cliente</title>
+<style>
+:root{--color-fg:#1d2330;--color-fg-muted:#5d6577;--color-bg:#f6f7f9;--color-panel:#ffffff;--color-border-line:#e1e4ea;--color-ok:#1f7a4d;--color-warn:#a1620a;--color-bad:#b3261e;
+--cds-surface-popover:#eef1f6;--cds-chart-grid:#edf0f4;--cds-chart-muted:#9aa3b4;--c1:#2f5fd0;--c2:#13856f;
+--font-anthropic-sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--font-anthropic-serif:Georgia,"Times New Roman",serif;
+--cds-font-size-caption:12px;--cds-font-size-body:14px;--cds-font-size-heading:16px;--cds-font-size-title:26px;--cds-font-weight-medium:600;
+--cds-gap-xs:4px;--cds-gap-sm:8px;--cds-gap-md:16px;--cds-gap-lg:24px;--cds-pad-xs:4px;--cds-pad-sm:8px;--cds-pad-md:12px;--cds-pad-lg:16px;--cds-radius:8px;--cds-dur-slow:.3s;color-scheme:light}
+@media (prefers-color-scheme: dark){:root{--color-fg:#e7eaf0;--color-fg-muted:#a0a8b8;--color-bg:#14171d;--color-panel:#1c2028;--color-border-line:#2e3440;--color-ok:#5cc58f;--color-warn:#e3a547;--color-bad:#f07b72;--cds-surface-popover:#262b35;--cds-chart-grid:#272c36;--cds-chart-muted:#6c7588;--c1:#7aa0f5;--c2:#4fc3a6;color-scheme:dark}}
+body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--font-anthropic-sans)}
+#dash-root{max-width:1400px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-left,0px)) 40px max(16px,env(safe-area-inset-right,0px))}
+[hidden]{display:none!important}
+</style>
+<script>
+(function(){
+  const raw={grupos:JSON.parse(document.getElementById?'[]':'[]')};
+  const sum=(a,f)=>a.reduce((s,x)=>s+(+f(x)||0),0);
+  const groups=(a,f)=>{const m=new Map();a.forEach(x=>{const k=f(x);if(!m.has(k))m.set(k,[]);m.get(k).push(x)});return Array.from(m)};
+  window.d3={sum,groups,rollups:(a,r,f)=>groups(a,f).map(([k,v])=>[k,r(v)])};
+  const DEF={top:50,aba:'pedidos'};let params={...DEF};const subs=[];const cache={};
+  const run=()=>subs.forEach(fn=>fn());
+  window.dash={
+    data:(id)=>{if(!cache[id]){const e=document.getElementById('data-'+id);cache[id]=JSON.parse(e.textContent)}return{status:'ok',data:cache[id]}},
+    params:()=>params,
+    setParams:(o)=>{params={...params,...o};Object.keys(params).forEach(k=>{if(params[k]==null)delete params[k]});run()},
+    resetParams:()=>{params={...DEF};run()},
+    onData:(fn)=>{subs.push(fn);fn()},
+    colors:['var(--c1)','var(--c2)'],
+    setLink:()=>{}
+  };
+  let t;window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(run,150)});
+})();
+</script>
+</head><body>
+<!--DATA-->
+<div id="dash-root">
+<!--PAGE-->
+</div>
+</body></html>
