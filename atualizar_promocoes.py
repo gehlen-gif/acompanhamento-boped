@@ -41,11 +41,17 @@ def main(hist_xlsx, promos_json):
             item2promo.setdefault(nome, []).append(p['id'])
     h = h[h['Item'].isin(item2promo)]
     h = h.merge(cli, on='cod_cliente', how='inner')
-    repetidos = pd.Series([p['item'] for p in promos])
-    repetidos = set(repetidos[repetidos.duplicated(keep=False)])
+    # Um item pode ter mais de uma promoção (ex.: D40 até 120dd e até 90dd): uma linha por item,
+    # comparando com o menor preço promocional, para não somar o histórico duas vezes.
+    produtos = {}
+    for p in promos:
+        produtos.setdefault(p['item'], []).append(p)
     rows = []
-    for pid in [p['id'] for p in promos]:
-        p = next(x for x in promos if x['id'] == pid)
+    for item, ps in produtos.items():
+        p = min(ps, key=lambda x: x['preco_promo'])
+        pid = '|'.join(x['id'] for x in ps)
+        cond = ' · '.join(f"R$ {x['preco_promo']:,.2f} {x['cond_pagamento']}".replace(',', 'X').replace('.', ',').replace('X', '.')
+                         for x in sorted(ps, key=lambda x: x['preco_promo'])) if len(ps) > 1 else p['cond_pagamento']
         d = h[h['Item'].isin(p['itens_historico'])]
         for (cg, vend), g in d.groupby(['cod_grupo', 'vendedor']):
             compras = g[g['Qtde'] > 0]
@@ -66,7 +72,8 @@ def main(hist_xlsx, promos_json):
                 sit = 'Potencial'
             gi = grupos.get((cg, vend), {})
             rows.append({
-                'promo_id': pid, 'subgrupo': p.get('subgrupo', ''), 'item_promo': p['item'] + (f" ({p['cond_pagamento']})" if p['item'] in repetidos else ''), 'linha': p['linha'], 'preco_promo': preco,
+                'promo_id': pid, 'subgrupo': p.get('subgrupo', ''), 'item_promo': item, 'linha': p['linha'], 'preco_promo': preco,
+                'condicao_promo': cond,
                 'cod_grupo': cg, 'vendedor': vend, 'grupo': gi.get('grupo', ''), 'time': gi.get('time', ''),
                 'qtd_historica': float(g['Qtde'].sum()), 'pedidos': int(compras['Data'].nunique()),
                 'clientes': int(compras['cod_cliente'].nunique()),
