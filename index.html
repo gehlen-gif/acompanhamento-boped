@@ -96,6 +96,9 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
 .cg .cov { display: grid; grid-template-columns: 4.5rem 1fr; gap: 6px; align-items: center; }
 .cg .cov .track { height: 8px; background: var(--cds-chart-grid); border-radius: 4px; overflow: hidden; }
 .cg .cov .fill { height: 100%; background: var(--color-ok); }
+.cg .dt { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-fg); white-space: nowrap; }
+.cg .dt::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--dot); flex: none; }
+.cg .dt.d-red { --dot: #d93025; } .cg .dt.d-yellow { --dot: #f2b705; } .cg .dt.d-green { --dot: #1e9e5a; }
 .cg td.link { cursor: pointer; text-decoration: underline; text-decoration-color: var(--color-border-line); text-underline-offset: 3px; }
 .cg td.link:hover { text-decoration-color: var(--color-fg); }
 .cg .picked { display: flex; gap: var(--cds-gap-sm); flex-wrap: wrap; }
@@ -311,7 +314,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       </div>
     </section>
 
-    <p class="note" id="regra-promo">Histórico de pedidos de 05/01 a 21/10/2026, ligado à carteira pelo código do cliente. Qtd. histórica soma as compras menos as devoluções do período. Último pedido é a data mais recente com compra do item, e o último valor pago é a média do valor unitário nessa data. Situação: "Comprou recentemente" se o último pedido tem até 30 dias; "Já paga o preço da promo" se o último valor pago está até 0,5% acima do preço da promoção ou abaixo dele; "Potencial" nos demais casos.</p>
+    <p class="note" id="regra-promo">Histórico de pedidos de 05/01 a 21/10/2026, ligado à carteira pelo código do cliente. Qtd. histórica soma as compras menos as devoluções do período. Último pedido é a data mais recente com compra do item, e o último valor pago é a média do valor unitário nessa data. Cor da data do último pedido: vermelho até 30 dias, amarelo de 31 a 45 dias, verde acima de 45 dias. Situação: "Comprou recentemente" se o último pedido tem até 30 dias; "Já paga o preço da promo" se o último valor pago está até 0,5% acima do preço da promoção ou abaixo dele; "Potencial" nos demais casos.</p>
   </div>
 
   <p class="note" id="regra">Regra aplicada: dentro do mesmo código de grupo e vendedor, valores de faturamento iguais contam uma vez e valores diferentes se somam. Só entram vendedores da lista TIME BOPED 2026 (validada em 20/10/2026), buscados em Representante (Z1), Key Account (Z3) e Vendedor Interno (VE).</p>
@@ -706,7 +709,7 @@ function drawPromo(scope) {
   $('#tab-pot tbody').replaceChildren(...shown.map((r) => {
     const tr = el('tr'); tr.dataset.key = [r.cod_grupo, r.vendedor, r.promo_id].map(enc).join(',');
     const st = el('td'); st.append(el('span', 'pill ' + cls[r.situacao_promo], r.situacao_promo));
-    const dt = el('td', null, r.ultimo_pedido.split('-').reverse().join('/'));
+    const dt = el('td'); dt.append(dateBadge(r.ultimo_pedido, r.dias_ultimo_pedido));
     dt.append(el('div', 'note', r.dias_ultimo_pedido === 0 ? 'hoje' : `há ${INT.format(r.dias_ultimo_pedido)} dias`));
     const dif = el('td', 'n', r.dif_vs_promo == null ? '—' : (r.dif_vs_promo > 0 ? '+' : '') + PCT.format(r.dif_vs_promo));
     const gtd = el('td', 'link', r.grupo); gtd.dataset.pick = 'grupo'; gtd.dataset.v = r.cod_grupo; gtd.title = 'Ver os subgrupos com potencial deste grupo';
@@ -717,6 +720,15 @@ function drawPromo(scope) {
     return tr;
   }));
 }
+function dateBadge(iso, dias) {
+  const wrap = el('div');
+  const cls = dias <= 30 ? 'd-red' : dias <= 45 ? 'd-yellow' : 'd-green';
+  const b = el('span', 'dt ' + cls, iso.split('-').reverse().join('/'));
+  b.title = dias <= 30 ? 'Comprou há até 30 dias' : dias <= 45 ? 'Comprou entre 31 e 45 dias' : 'Comprou há mais de 45 dias';
+  wrap.append(b);
+  return wrap;
+}
+
 function drawFoco(p, rows, gsel) {
   const box = $('#foco');
   const mode = p.pgrupo && !p.psub ? 'grupo' : p.psub && !p.pgrupo ? 'sub' : (p.pgrupo && p.psub ? 'ambos' : null);
@@ -752,7 +764,7 @@ function drawFoco(p, rows, gsel) {
     if (o.pot) { itd.append(el('span', 'pill ok', INT.format(o.pot))); itd.append(el('div', 'note', o.itens.join(' · '))); } else itd.textContent = '—';
     const l = o.last;
     const vd = el('td', 'n', l && l.ultimo_valor_unit != null ? `${BRL2.format(l.ultimo_valor_unit)} × ${BRL2.format(l.preco_promo)}` : '—');
-    const ld = el('td', null, l ? fmtD(l.ultimo_pedido) : '—'); if (l) ld.append(el('div', 'note', `há ${INT.format(l.dias_ultimo_pedido)} dias · ${l.item_promo}`));
+    const ld = el('td', null, l ? '' : '—'); if (l) ld.append(dateBadge(l.ultimo_pedido, l.dias_ultimo_pedido)); if (l) ld.append(el('div', 'note', `há ${INT.format(l.dias_ultimo_pedido)} dias · ${l.item_promo}`));
     tr.append(el('td', null, o.label), el('td', null, o.sub), itd,
       el('td', 'n', o.rec ? INT.format(o.rec) : '—'), el('td', 'n', o.ja ? INT.format(o.ja) : '—'), el('td', 'n', INT.format(o.q)), ld, vd);
     return tr;
