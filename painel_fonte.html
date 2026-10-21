@@ -54,6 +54,8 @@
 .cg .cov { display: grid; grid-template-columns: 4.5rem 1fr; gap: 6px; align-items: center; }
 .cg .cov .track { height: 8px; background: var(--cds-chart-grid); border-radius: 4px; overflow: hidden; }
 .cg .cov .fill { height: 100%; background: var(--color-ok); }
+.cg td.link { cursor: pointer; text-decoration: underline; text-decoration-color: var(--color-border-line); text-underline-offset: 3px; }
+.cg td.link:hover { text-decoration-color: var(--color-fg); }
 .cg .picked { display: flex; gap: var(--cds-gap-sm); flex-wrap: wrap; }
 </style>
 
@@ -89,6 +91,9 @@
     <label>Linha da promoção<select id="f-plinha"></select></label>
     <label>Item em promoção<select id="f-pitem"></select></label>
     <label>Situação na promoção<select id="f-psit"></select></label>
+    <label>Grupo de cliente<input id="f-pgrupo" list="lista-grupos" placeholder="Digite o nome do grupo" autocomplete="off"></label>
+    <label>Subgrupo de item<select id="f-psub"></select></label>
+    <datalist id="lista-grupos"></datalist>
     <label>Mostrar<select id="f-top"></select></label>
     <button id="f-reset" type="button">Limpar filtros</button>
   </section>
@@ -223,13 +228,21 @@
       <div class="kpi"><span class="note">Compraram nos últimos 30 dias</span><span class="v dash-skeleton" id="pr-rec">—</span><span class="sub">Não oferecer mais barato</span></div>
     </section>
 
+    <section class="card" id="foco" hidden>
+      <header class="picked"><h2 id="foco-title"></h2><button id="foco-close" type="button">Limpar seleção</button></header>
+      <p class="note" id="foco-note"></p>
+      <div class="scroll">
+        <table id="tab-foco" data-source="promo_potencial"><thead><tr id="foco-head"></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
     <section class="card" id="potencial">
       <h2>Potencial de compra dos itens em promoção</h2>
       <p class="note" id="pot-note"></p>
       <div class="scroll">
         <table id="tab-pot" data-source="promo_potencial" data-row-key="cod_grupo,vendedor,promo_id">
           <thead><tr>
-            <th data-field="grupo">Grupo de cliente</th><th data-field="vendedor">Vendedor</th><th data-field="item_promo">Item em promoção</th>
+            <th data-field="grupo">Grupo de cliente</th><th data-field="vendedor">Vendedor</th><th data-field="subgrupo">Subgrupo</th><th data-field="item_promo">Item em promoção</th>
             <th data-field="situacao_promo">Situação</th>
             <th data-field="qtd_historica" class="n">Qtd. histórica</th><th data-field="qtd_ultimo_pedido" class="n">Qtd. último pedido</th>
             <th data-field="ultimo_pedido">Último pedido</th>
@@ -247,7 +260,7 @@
       <div class="scroll">
         <table id="tab-promos" data-source="promocoes" data-row-key="id">
           <thead><tr>
-            <th data-field="linha">Linha</th><th data-field="item">Item</th><th data-field="codigo">Código</th><th data-field="cond_pagamento">Cond. pagamento</th>
+            <th data-field="linha">Linha</th><th data-field="subgrupo">Subgrupo</th><th data-field="item">Item</th><th data-field="codigo">Código</th><th data-field="cond_pagamento">Cond. pagamento</th>
             <th data-field="segmento">Segmento</th><th data-field="promocao">Promoção</th><th data-field="cx_master" class="n">Cx. master</th>
             <th data-field="icms" class="n">ICMS</th><th data-field="ipi" class="n">IPI</th><th data-field="preco_promo" class="n">Preço promoção</th>
           </tr></thead>
@@ -303,13 +316,32 @@ const PSITS = ['Potencial', 'Comprou recentemente', 'Já paga o preço da promo'
 defaults();
 $('#f-reset').addEventListener('click', () => {
   dash.resetParams();
-  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null });
+  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null });
   defaults();
 });
 $('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
 $('#f-plinha').addEventListener('change', (e) => set({ plinha: e.target.value || null, pitem: null }));
 $('#f-pitem').addEventListener('change', (e) => set({ pitem: e.target.value || null }));
 $('#f-psit').addEventListener('change', (e) => set({ psit: e.target.value || null }));
+$('#f-psub').addEventListener('change', (e) => set({ psub: e.target.value || null }));
+$('#f-pgrupo').addEventListener('change', (e) => {
+  const v = e.target.value.trim().toUpperCase();
+  const g = (dash.data('promo_potencial').data || []).find((r) => r.grupo.toUpperCase() === v || r.cod_grupo === v);
+  set({ pgrupo: g ? g.cod_grupo : null });
+});
+$('#foco-close').addEventListener('click', () => set({ pgrupo: null, psub: null }));
+$('#tab-pot tbody').addEventListener('click', (e) => {
+  const td = e.target.closest('td[data-pick]');
+  if (!td) return;
+  if (td.dataset.pick === 'grupo') set({ pgrupo: td.dataset.v, psub: null });
+  else set({ psub: td.dataset.v, pgrupo: null });
+  $('#foco').scrollIntoView({ block: 'nearest' });
+});
+$('#tab-foco tbody').addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-pick]');
+  if (!tr) return;
+  set(tr.dataset.pick === 'grupo' ? { pgrupo: tr.dataset.v } : { psub: tr.dataset.v });
+});
 document.querySelectorAll('#tema button').forEach((b) => b.addEventListener('click', () => set({ tema: b.dataset.tema || null })));
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { set({ aba: b.dataset.aba }); dash.setLink(b.dataset.aba); }));
 $('#tab-cob tbody').addEventListener('click', (e) => {
@@ -372,7 +404,7 @@ function draw() {
   $('#pedidos').hidden = aba !== 'pedidos';
   $('#promocoes').hidden = aba !== 'promocoes';
   $('#f-mes').closest('label').hidden = aba !== 'pedidos';
-  ['#f-plinha', '#f-pitem', '#f-psit'].forEach((s) => { $(s).closest('label').hidden = aba !== 'promocoes'; });
+  ['#f-plinha', '#f-pitem', '#f-psit', '#f-pgrupo', '#f-psub'].forEach((s) => { $(s).closest('label').hidden = aba !== 'promocoes'; });
   $('#f-top').closest('label').hidden = aba === 'pedidos';
   const g = dash.data('grupos');
   const ok = g.status === 'ok';
@@ -592,7 +624,7 @@ function drawPromo(scope) {
   const shownPromos = promos.filter((r) => (!p.plinha || r.linha === p.plinha) && (!p.pitem || r.id === p.pitem));
   $('#tab-promos tbody').replaceChildren(...shownPromos.map((r) => {
     const tr = el('tr'); tr.dataset.key = enc(r.id);
-    tr.append(el('td', null, r.linha), el('td', null, r.item), el('td', null, r.codigo), el('td', null, r.cond_pagamento), el('td', null, r.segmento),
+    tr.append(el('td', null, r.linha), el('td', null, r.subgrupo), el('td', null, r.item), el('td', null, r.codigo), el('td', null, r.cond_pagamento), el('td', null, r.segmento),
       el('td', null, r.promocao), el('td', 'n', INT.format(r.cx_master)), el('td', 'n', r.icms), el('td', 'n', r.ipi), el('td', 'n', BRL2.format(r.preco_promo)));
     return tr;
   }));
@@ -601,8 +633,16 @@ function drawPromo(scope) {
 
   const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));
   const ids = new Set(shownPromos.map((r) => r.id));
-  const base = pp.data.filter((r) => inScope.has(r.cod_grupo + '|' + r.vendedor) && ids.has(r.promo_id));
+  const scoped0 = pp.data.filter((r) => inScope.has(r.cod_grupo + '|' + r.vendedor) && ids.has(r.promo_id));
+  fillSelect($('#f-psub'), 'Todos', Array.from(new Set(promos.map((r) => r.subgrupo))).sort((a, b) => a.localeCompare(b, 'pt-BR')), p.psub);
+  const dl = $('#lista-grupos');
+  const gnames = Array.from(new Set(scoped0.map((r) => r.grupo))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  if (dl.dataset.n !== String(gnames.length)) { dl.replaceChildren(...gnames.map((g) => new Option(g))); dl.dataset.n = String(gnames.length); }
+  const gsel = p.pgrupo ? scoped0.find((r) => r.cod_grupo === p.pgrupo) : null;
+  if (document.activeElement !== $('#f-pgrupo')) $('#f-pgrupo').value = gsel ? gsel.grupo : '';
+  const base = scoped0.filter((r) => (!p.pgrupo || r.cod_grupo === p.pgrupo) && (!p.psub || r.subgrupo === p.psub));
   const rows = base.filter((r) => !p.psit || r.situacao_promo === p.psit);
+  drawFoco(p, rows, gsel);
   const grupos = new Set(base.map((r) => r.cod_grupo + '|' + r.vendedor));
   const pot = new Set(base.filter((r) => r.situacao_promo === 'Potencial').map((r) => r.cod_grupo + '|' + r.vendedor));
   const rec = new Set(base.filter((r) => r.situacao_promo === 'Comprou recentemente').map((r) => r.cod_grupo + '|' + r.vendedor));
@@ -627,9 +667,52 @@ function drawPromo(scope) {
     const dt = el('td', null, r.ultimo_pedido.split('-').reverse().join('/'));
     dt.append(el('div', 'note', r.dias_ultimo_pedido === 0 ? 'hoje' : `há ${INT.format(r.dias_ultimo_pedido)} dias`));
     const dif = el('td', 'n', r.dif_vs_promo == null ? '—' : (r.dif_vs_promo > 0 ? '+' : '') + PCT.format(r.dif_vs_promo));
-    tr.append(el('td', null, r.grupo), el('td', null, r.vendedor), el('td', null, r.item_promo), st,
+    const gtd = el('td', 'link', r.grupo); gtd.dataset.pick = 'grupo'; gtd.dataset.v = r.cod_grupo; gtd.title = 'Ver os subgrupos com potencial deste grupo';
+    const stdd = el('td', 'link', r.subgrupo); stdd.dataset.pick = 'sub'; stdd.dataset.v = r.subgrupo; stdd.title = 'Ver os grupos de clientes com potencial neste subgrupo';
+    tr.append(gtd, el('td', null, r.vendedor), stdd, el('td', null, r.item_promo), st,
       el('td', 'n', INT.format(r.qtd_historica)), el('td', 'n', INT.format(r.qtd_ultimo_pedido)), dt,
       el('td', 'n', r.ultimo_valor_unit == null ? '—' : BRL2.format(r.ultimo_valor_unit)), el('td', 'n', BRL2.format(r.preco_promo)), dif);
+    return tr;
+  }));
+}
+function drawFoco(p, rows, gsel) {
+  const box = $('#foco');
+  const mode = p.pgrupo && !p.psub ? 'grupo' : p.psub && !p.pgrupo ? 'sub' : (p.pgrupo && p.psub ? 'ambos' : null);
+  box.hidden = !mode;
+  if (!mode) return;
+  const cnt = (rs, s) => rs.filter((r) => r.situacao_promo === s).length;
+  const lastOf = (rs) => rs.reduce((a, r) => (!a || r.ultimo_pedido > a.ultimo_pedido ? r : a), null);
+  const fmtD = (d) => d.split('-').reverse().join('/');
+  let groups, head, title, note, pick;
+  if (mode === 'grupo' || mode === 'ambos') {
+    title = `Subgrupos de itens para ${gsel ? gsel.grupo : p.pgrupo}` + (mode === 'ambos' ? ` em ${p.psub}` : '');
+    note = 'Subgrupos dos itens em promoção que este grupo de clientes já comprou. Clique em um subgrupo para ver os outros grupos de clientes com potencial nele.';
+    groups = d3.groups(rows, (r) => r.subgrupo).map(([k, rs]) => ({ k, label: k, sub: Array.from(new Set(rs.map((r) => r.vendedor))).join(' / '), rs }));
+    head = ['Subgrupo', 'Vendedor'];
+    pick = 'sub';
+  } else {
+    title = `Grupos de clientes com potencial em ${p.psub}`;
+    note = 'Grupos de clientes que já compraram itens deste subgrupo, com potencial primeiro. Clique em um grupo para ver todos os subgrupos com potencial para ele.';
+    groups = d3.groups(rows, (r) => r.cod_grupo + '|' + r.vendedor).map(([k, rs]) => ({ k: rs[0].cod_grupo, label: rs[0].grupo, sub: rs[0].vendedor, rs }));
+    head = ['Grupo de cliente', 'Vendedor'];
+    pick = 'grupo';
+  }
+  const out = groups.map((g) => ({ ...g, pot: cnt(g.rs, 'Potencial'), rec: cnt(g.rs, 'Comprou recentemente'), ja: cnt(g.rs, 'Já paga o preço da promo'),
+    q: d3.sum(g.rs, (r) => r.qtd_historica), last: lastOf(g.rs),
+    itens: g.rs.filter((r) => r.situacao_promo === 'Potencial').map((r) => r.item_promo) }))
+    .sort((a, b) => (b.pot > 0) - (a.pot > 0) || b.q - a.q);
+  $('#foco-title').textContent = title;
+  $('#foco-note').textContent = `${note} ${INT.format(out.filter((o) => o.pot > 0).length)} de ${INT.format(out.length)} com potencial.`;
+  $('#foco-head').replaceChildren(...head.concat(['Itens com potencial', 'Comprou recentemente', 'Já paga a promo', 'Qtd. histórica', 'Último pedido', 'Último valor pago × promo']).map((h, i) => el('th', i >= 3 && i <= 5 ? 'n' : '', h)));
+  $('#tab-foco tbody').replaceChildren(...out.map((o) => {
+    const tr = el('tr'); tr.dataset.pick = pick; tr.dataset.v = o.k;
+    const itd = el('td');
+    if (o.pot) { itd.append(el('span', 'pill ok', INT.format(o.pot))); itd.append(el('div', 'note', o.itens.join(' · '))); } else itd.textContent = '—';
+    const l = o.last;
+    const vd = el('td', 'n', l && l.ultimo_valor_unit != null ? `${BRL2.format(l.ultimo_valor_unit)} × ${BRL2.format(l.preco_promo)}` : '—');
+    const ld = el('td', null, l ? fmtD(l.ultimo_pedido) : '—'); if (l) ld.append(el('div', 'note', `há ${INT.format(l.dias_ultimo_pedido)} dias · ${l.item_promo}`));
+    tr.append(el('td', null, o.label), el('td', null, o.sub), itd,
+      el('td', 'n', o.rec ? INT.format(o.rec) : '—'), el('td', 'n', o.ja ? INT.format(o.ja) : '—'), el('td', 'n', INT.format(o.q)), ld, vd);
     return tr;
   }));
 }
