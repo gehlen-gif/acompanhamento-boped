@@ -72,7 +72,12 @@ def build_html(data_ref):
     page = (HERE / 'painel_fonte.html').read_text(encoding='utf-8')
     shell = (HERE / 'painel_shell.html').read_text(encoding='utf-8')
     data = ''
-    for id_, f in [('grupos', 'carteiras_grupos.json'), ('clientes', 'carteiras_clientes.json'), ('pedidos', 'pedidos.json')]:
+    for id_, f in [('grupos', 'carteiras_grupos.json'), ('clientes', 'carteiras_clientes.json'), ('pedidos', 'pedidos.json'),
+                   ('promocoes', 'promocoes.json'), ('promo_potencial', 'promo_potencial.json')]:
+        if not (DADOS / f).exists():
+            txt = '[]'
+            data += f'<script type="application/json" id="data-{id_}">{txt}</script>\n'
+            continue
         txt = (DADOS / f).read_text(encoding='utf-8').replace('</', '<\\/')
         data += f'<script type="application/json" id="data-{id_}">{txt}</script>\n'
     html = shell.replace('<!--DATA-->', data).replace('<!--PAGE-->', page)

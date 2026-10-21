@@ -72,6 +72,7 @@
 
   <nav class="tabs" role="tablist" aria-label="Partes do painel">
     <button type="button" role="tab" id="tab-btn-pedidos" data-aba="pedidos">Pedidos do mês</button>
+    <button type="button" role="tab" id="tab-btn-promocoes" data-aba="promocoes">Promoções do mês</button>
     <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Histórico de faturamento</button>
   </nav>
 
@@ -85,6 +86,9 @@
     <label>Status do cliente<select id="f-status"></select></label>
     <label>Situação no mês<select id="f-mes"></select></label>
     <label>Buscar grupo<input id="f-q" type="search" placeholder="Nome ou código"></label>
+    <label>Linha da promoção<select id="f-plinha"></select></label>
+    <label>Item em promoção<select id="f-pitem"></select></label>
+    <label>Situação na promoção<select id="f-psit"></select></label>
     <label>Mostrar<select id="f-top"></select></label>
     <button id="f-reset" type="button">Limpar filtros</button>
   </section>
@@ -211,6 +215,50 @@
     <p class="note" id="regra-pedidos">Pedidos cruzados com os grupos de clientes das carteiras pelo nome do Grupo de Cliente. Valor negativo indica cancelamento do grupo no mês. Grupos com o mesmo nome em mais de uma carteira aparecem em cada uma, marcados como compartilhados, e entram uma vez só nos totais.</p>
   </div>
 
+  <div class="pane" id="promocoes">
+    <section class="kpis" id="ind-promo" data-source="promo_potencial">
+      <div class="kpi"><span class="note">Itens em promoção</span><span class="v dash-skeleton" id="pr-itens" data-source="promocoes">—</span><span class="sub">Preços válidos de 01 a 31/10/2026</span></div>
+      <div class="kpi"><span class="note">Grupos de clientes que já compraram os itens</span><span class="v dash-skeleton" id="pr-grupos">—</span><span class="sub" id="pr-grupos-s"></span></div>
+      <div class="kpi"><span class="note">Com potencial</span><span class="v dash-skeleton" id="pr-pot">—</span><span class="sub">Último preço acima da promo e sem compra há mais de 30 dias</span></div>
+      <div class="kpi"><span class="note">Compraram nos últimos 30 dias</span><span class="v dash-skeleton" id="pr-rec">—</span><span class="sub">Não oferecer mais barato</span></div>
+    </section>
+
+    <section class="card" id="potencial">
+      <h2>Potencial de compra dos itens em promoção</h2>
+      <p class="note" id="pot-note"></p>
+      <div class="scroll">
+        <table id="tab-pot" data-source="promo_potencial" data-row-key="cod_grupo,vendedor,promo_id">
+          <thead><tr>
+            <th data-field="grupo">Grupo de cliente</th><th data-field="vendedor">Vendedor</th><th data-field="item_promo">Item em promoção</th>
+            <th data-field="situacao_promo">Situação</th>
+            <th data-field="qtd_historica" class="n">Qtd. histórica</th><th data-field="qtd_ultimo_pedido" class="n">Qtd. último pedido</th>
+            <th data-field="ultimo_pedido">Último pedido</th>
+            <th data-field="ultimo_valor_unit" class="n">Último valor pago</th><th data-field="preco_promo" class="n">Preço promo</th>
+            <th data-field="dif_vs_promo" class="n">Diferença</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="itens-promo">
+      <h2>Promoções ativas em outubro</h2>
+      <p class="note">Frete CIF. Preços válidos de 01 a 31/10/2026. Linha ORTHO: todos os itens com o melhor preço de tabela, em todos os segmentos menos Farma, exceto pagamento iniciando em 90 dias.</p>
+      <div class="scroll">
+        <table id="tab-promos" data-source="promocoes" data-row-key="id">
+          <thead><tr>
+            <th data-field="linha">Linha</th><th data-field="item">Item</th><th data-field="codigo">Código</th><th data-field="cond_pagamento">Cond. pagamento</th>
+            <th data-field="segmento">Segmento</th><th data-field="promocao">Promoção</th><th data-field="cx_master" class="n">Cx. master</th>
+            <th data-field="icms" class="n">ICMS</th><th data-field="ipi" class="n">IPI</th><th data-field="preco_promo" class="n">Preço promoção</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="note" id="regra-promo">Histórico de pedidos de 05/01 a 21/10/2026, ligado à carteira pelo código do cliente. Qtd. histórica soma as compras menos as devoluções do período. Último pedido é a data mais recente com compra do item, e o último valor pago é a média do valor unitário nessa data. Situação: "Comprou recentemente" se o último pedido tem até 30 dias; "Já paga o preço da promo" se o último valor pago está até 0,5% acima do preço da promoção ou abaixo dele; "Potencial" nos demais casos.</p>
+  </div>
+
   <p class="note" id="regra">Regra aplicada: dentro do mesmo código de grupo e vendedor, valores de faturamento iguais contam uma vez e valores diferentes se somam. Só entram vendedores da lista TIME BOPED 2026 (validada em 20/10/2026), buscados em Representante (Z1), Key Account (Z3) e Vendedor Interno (VE).</p>
 </div>
 
@@ -218,6 +266,7 @@
 const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
 const BRLc = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 1 });
 const INT = new Intl.NumberFormat('pt-BR');
+const BRL2 = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const PCT = new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 1 });
 const MACROS = ['TURBON', 'BOINAS AZUIS', 'INSTITUIÇÕES', 'BEHIKES', 'NOVOS CANAIS'];
 const $ = (s) => document.querySelector(s);
@@ -250,13 +299,17 @@ for (const [id, name] of FILTERS) {
 $('#f-top').addEventListener('change', (e) => set({ top: Number(e.target.value) }));
 $('#f-q').addEventListener('input', (e) => set({ q: e.target.value || null }));
 const defaults = () => set({ top: 50, aba: 'pedidos' });
+const PSITS = ['Potencial', 'Comprou recentemente', 'Já paga o preço da promo'];
 defaults();
 $('#f-reset').addEventListener('click', () => {
   dash.resetParams();
-  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null });
+  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null });
   defaults();
 });
 $('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
+$('#f-plinha').addEventListener('change', (e) => set({ plinha: e.target.value || null, pitem: null }));
+$('#f-pitem').addEventListener('change', (e) => set({ pitem: e.target.value || null }));
+$('#f-psit').addEventListener('change', (e) => set({ psit: e.target.value || null }));
 document.querySelectorAll('#tema button').forEach((b) => b.addEventListener('click', () => set({ tema: b.dataset.tema || null })));
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { set({ aba: b.dataset.aba }); dash.setLink(b.dataset.aba); }));
 $('#tab-cob tbody').addEventListener('click', (e) => {
@@ -264,7 +317,7 @@ $('#tab-cob tbody').addEventListener('click', (e) => {
   if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
 });
 const named = location.hash.slice(1);
-if (named === 'pedidos' || named === 'historico') set({ aba: named });
+if (named === 'pedidos' || named === 'historico' || named === 'promocoes') set({ aba: named });
 $('#det-close').addEventListener('click', () => { openKey = null; draw(); });
 document.querySelectorAll('#tab-grupos th').forEach((th) => th.addEventListener('click', () => {
   const f = th.dataset.field;
@@ -317,8 +370,10 @@ function draw() {
   document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.aba === aba)));
   $('#historico').hidden = aba !== 'historico';
   $('#pedidos').hidden = aba !== 'pedidos';
+  $('#promocoes').hidden = aba !== 'promocoes';
   $('#f-mes').closest('label').hidden = aba !== 'pedidos';
-  $('#f-top').closest('label').hidden = aba !== 'historico';
+  ['#f-plinha', '#f-pitem', '#f-psit'].forEach((s) => { $(s).closest('label').hidden = aba !== 'promocoes'; });
+  $('#f-top').closest('label').hidden = aba === 'pedidos';
   const g = dash.data('grupos');
   const ok = g.status === 'ok';
   document.querySelectorAll('.cg .dash-skeleton').forEach((e) => { if (ok || g.status === 'error') e.classList.remove('dash-skeleton'); });
@@ -336,7 +391,7 @@ function draw() {
   fillSelect($('#f-seg'), 'Todos', uniq(all, 'segmento'), p.segmento);
   fillSelect($('#f-status'), 'Todos', uniq(all, 'status'), p.status);
   const top = $('#f-top');
-  if (!top.options.length) top.replaceChildren(...[10, 20, 50, 100, 500].map((n) => new Option('Top ' + n, n)));
+  if (!top.options.length) top.replaceChildren(...[10, 20, 50, 100, 500, 2000, 20000].map((n) => new Option(n >= 20000 ? 'Todos' : 'Top ' + n, n)));
   top.value = String(p.top || 50);
   if (document.activeElement !== $('#f-q')) $('#f-q').value = p.q || '';
 
@@ -450,6 +505,7 @@ function draw() {
     return box;
   }));
   drawPedidos(rows);
+  drawPromo(rows);
 }
 
 function drawPedidos(scope) {
@@ -515,6 +571,65 @@ function drawPedidos(scope) {
     const st = el('td'); st.append(statusPill(r.status_cliente));
     tr.append(el('td', null, r.grupo), el('td', null, r.cod_grupo), el('td', null, r.vendedor), st,
       el('td', null, r.ultimo_faturamento ? r.ultimo_faturamento.split('-').reverse().join('/') : '—'), el('td', 'n', BRL.format(r.faturamento_historico)));
+    return tr;
+  }));
+}
+function drawPromo(scope) {
+  const p = P();
+  const pr = dash.data('promocoes');
+  const pp = dash.data('promo_potencial');
+  const prOk = pr.status === 'ok', ok = pp.status === 'ok';
+  document.querySelectorAll('#ind-promo .dash-skeleton').forEach((e) => { if ((ok && prOk) || pp.status === 'error') e.classList.remove('dash-skeleton'); });
+  const promos = prOk ? pr.data : [];
+  const linhas = Array.from(new Set(promos.map((r) => r.linha)));
+  fillSelect($('#f-plinha'), 'Todas', linhas, p.plinha);
+  const sel = $('#f-pitem');
+  const pitems = promos.filter((r) => !p.plinha || r.linha === p.plinha);
+  sel.replaceChildren(new Option('Todos', ''), ...pitems.map((r) => new Option(r.item + (r.cond_pagamento === 'até 90dd' ? ' (até 90dd)' : ''), r.id)));
+  sel.value = p.pitem && pitems.some((r) => r.id === p.pitem) ? p.pitem : '';
+  fillSelect($('#f-psit'), 'Todas', PSITS, p.psit);
+
+  const shownPromos = promos.filter((r) => (!p.plinha || r.linha === p.plinha) && (!p.pitem || r.id === p.pitem));
+  $('#tab-promos tbody').replaceChildren(...shownPromos.map((r) => {
+    const tr = el('tr'); tr.dataset.key = enc(r.id);
+    tr.append(el('td', null, r.linha), el('td', null, r.item), el('td', null, r.codigo), el('td', null, r.cond_pagamento), el('td', null, r.segmento),
+      el('td', null, r.promocao), el('td', 'n', INT.format(r.cx_master)), el('td', 'n', r.icms), el('td', 'n', r.ipi), el('td', 'n', BRL2.format(r.preco_promo)));
+    return tr;
+  }));
+  $('#pr-itens').textContent = prOk ? INT.format(promos.length) : '—';
+  if (!ok) return;
+
+  const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));
+  const ids = new Set(shownPromos.map((r) => r.id));
+  const base = pp.data.filter((r) => inScope.has(r.cod_grupo + '|' + r.vendedor) && ids.has(r.promo_id));
+  const rows = base.filter((r) => !p.psit || r.situacao_promo === p.psit);
+  const grupos = new Set(base.map((r) => r.cod_grupo + '|' + r.vendedor));
+  const pot = new Set(base.filter((r) => r.situacao_promo === 'Potencial').map((r) => r.cod_grupo + '|' + r.vendedor));
+  const rec = new Set(base.filter((r) => r.situacao_promo === 'Comprou recentemente').map((r) => r.cod_grupo + '|' + r.vendedor));
+  $('#pr-grupos').textContent = INT.format(grupos.size);
+  $('#pr-grupos-s').textContent = INT.format(base.length) + ' combinações de grupo e item';
+  $('#pr-pot').textContent = INT.format(pot.size);
+  $('#pr-rec').textContent = INT.format(rec.size);
+  if ((p.aba || 'pedidos') === 'promocoes') {
+    $('#takeaway').textContent = grupos.size
+      ? `${INT.format(pot.size)} grupos de clientes têm potencial para os itens em promoção: compraram antes, pagaram mais que o preço da promo e não compram há mais de 30 dias. ${INT.format(rec.size)} compraram nos últimos 30 dias e não devem receber oferta mais barata.`
+      : 'Nenhum grupo de clientes com histórico desses itens nos filtros escolhidos.';
+  }
+  const order = { 'Potencial': 0, 'Comprou recentemente': 1, 'Já paga o preço da promo': 2 };
+  const sorted = rows.slice().sort((a, b) => (order[a.situacao_promo] - order[b.situacao_promo]) || (b.qtd_historica - a.qtd_historica));
+  const n = Number(p.top || 50);
+  const shown = sorted.slice(0, n);
+  $('#pot-note').textContent = `${INT.format(shown.length)} de ${INT.format(rows.length)} combinações de grupo de clientes e item, com potencial primeiro e, dentro de cada situação, quem mais comprou no histórico. Use "Mostrar" para ver mais linhas.`;
+  const cls = { 'Potencial': 'ok', 'Comprou recentemente': 'bad', 'Já paga o preço da promo': 'warn' };
+  $('#tab-pot tbody').replaceChildren(...shown.map((r) => {
+    const tr = el('tr'); tr.dataset.key = [r.cod_grupo, r.vendedor, r.promo_id].map(enc).join(',');
+    const st = el('td'); st.append(el('span', 'pill ' + cls[r.situacao_promo], r.situacao_promo));
+    const dt = el('td', null, r.ultimo_pedido.split('-').reverse().join('/'));
+    dt.append(el('div', 'note', r.dias_ultimo_pedido === 0 ? 'hoje' : `há ${INT.format(r.dias_ultimo_pedido)} dias`));
+    const dif = el('td', 'n', r.dif_vs_promo == null ? '—' : (r.dif_vs_promo > 0 ? '+' : '') + PCT.format(r.dif_vs_promo));
+    tr.append(el('td', null, r.grupo), el('td', null, r.vendedor), el('td', null, r.item_promo), st,
+      el('td', 'n', INT.format(r.qtd_historica)), el('td', 'n', INT.format(r.qtd_ultimo_pedido)), dt,
+      el('td', 'n', r.ultimo_valor_unit == null ? '—' : BRL2.format(r.ultimo_valor_unit)), el('td', 'n', BRL2.format(r.preco_promo)), dif);
     return tr;
   }));
 }

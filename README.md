@@ -13,3 +13,9 @@
 - Cruzamento pelo nome do Grupo de Cliente (o arquivo de pedidos não traz código). Valor > 0 = Com pedido; < 0 = Cancelamento; 0/sem linha = Sem pedido.
 - Nomes repetidos em mais de uma carteira: marcados "compartilhado" e somados uma vez nos totais.
 - Página: painel_fonte.html (mesma usada no online) + painel_shell.html (casca do HTML autônomo).
+
+## Promoções do mês
+- dados/promocoes_<mes>.json: itens do PDF de promoções, com o nome de cada item no histórico (`itens_historico`).
+- `python3 atualizar_promocoes.py <Histórico de Pedidos.xlsx> dados/promocoes_outubro_2026.json`
+  Gera dados/promocoes.json e dados/promo_potencial.json e refaz o index.html.
+- Situação por grupo de clientes e item: "Comprou recentemente" (último pedido até 30 dias), "Já paga o preço da promo" (último valor até 0,5% acima da promo ou abaixo), "Potencial" (demais).
