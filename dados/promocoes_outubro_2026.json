@@ -1,50 +1,50 @@
 [
  {
+  "id": "P01",
   "linha": "WELLNESS",
   "item": "MASSAGEADOR DE OMBROS ABRAÇAMED",
   "codigo": "07065",
-  "cond_pagamento": "de 60 até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Wellness",
   "cx_master": 2,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 151.09,
   "segmento": "TODOS",
-  "id": "P01",
   "itens_historico": [
    "MASSAGEADOR DE OMBROS ABRACAMED"
   ],
   "subgrupo": "MASSAGEADOR HUGMED"
  },
  {
+  "id": "P02",
   "linha": "WELLNESS",
   "item": "MASSAGEADOR ESTEIRA",
   "codigo": "12380",
-  "cond_pagamento": "de 60 até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Wellness",
   "cx_master": 2,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 240.81,
   "segmento": "TODOS",
-  "id": "P02",
   "itens_historico": [
    "ESTEIRA MASSAGEADORA"
   ],
   "subgrupo": "MASSAGEADOR ESTEIRA"
  },
  {
+  "id": "P03",
   "linha": "WELLNESS",
   "item": "MASSAGEADOR HAMMER - 127V / 220V",
   "codigo": "12378 / 79",
-  "cond_pagamento": "de 60 até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Wellness",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 83.18,
   "segmento": "TODOS",
-  "id": "P03",
   "itens_historico": [
    "MASSAGEADOR CORPORAL HAMMER 127V",
    "MASSAGEADOR CORPORAL HAMMER 220V"
@@ -52,17 +52,17 @@
   "subgrupo": "MASSAGEADOR HAMMER"
  },
  {
+  "id": "P04",
   "linha": "WELLNESS",
   "item": "MASSAGEADOR ORBITAL - 127V / 220V",
   "codigo": "12375 / 76",
-  "cond_pagamento": "de 60 até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Wellness",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 69.86,
   "segmento": "TODOS",
-  "id": "P04",
   "itens_historico": [
    "MASSAGEADOR ORBITAL 127V",
    "MASSAGEADOR ORBITAL 220V"
@@ -70,34 +70,34 @@
   "subgrupo": "MASSAGEADOR ORBITAL"
  },
  {
+  "id": "P05",
   "linha": "HEALTH",
   "item": "BALANCA DE BIOIMPEDANCIA",
   "codigo": "12383",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 2,
   "icms": "4%",
   "ipi": "13,00%",
   "preco_promo": 46.9,
   "segmento": "FARMA OFF",
-  "id": "P05",
   "itens_historico": [
    "BALANCA DE BIOIMPEDANCIA"
   ],
   "subgrupo": "BALANÇA DE BIOIMPEDANCIA"
  },
  {
+  "id": "P06",
   "linha": "HEALTH",
   "item": "BALANCA DIGITAL SMART CINZA - PRETA",
   "codigo": "06861 / 06862",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 5,
   "icms": "4%",
   "ipi": "13,00%",
   "preco_promo": 29.0,
   "segmento": "FARMA OFF",
-  "id": "P06",
   "itens_historico": [
    "BALANCA DIGITAL SMART CINZA",
    "BALANCA DIGITAL SMART PRETA"
@@ -105,153 +105,170 @@
   "subgrupo": "BALANÇA DIGITAL"
  },
  {
+  "id": "P07",
   "linha": "HEALTH",
   "item": "BOLSA DE ÁGUA QUENTE - THERMOMED",
   "codigo": "0001000670",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 5,
   "icms": "4%",
   "ipi": "13,00%",
   "preco_promo": 15.9,
   "segmento": "FARMA OFF",
-  "id": "P07",
   "itens_historico": [
    "BOLSA DE ÁGUA QUENTE - THERMOMED"
   ],
   "subgrupo": "BOLSA ÁGUA QUENTE"
  },
  {
+  "id": "P08",
+  "linha": "HEALTH",
+  "item": "BOLSA TERMICA EM GEL - TAM M - COLORGEL",
+  "codigo": "0001000707",
+  "cond_pagamento": "60dd até 180dd",
+  "promocao": "Natal Azul Health",
+  "cx_master": 10,
+  "icms": "4%",
+  "ipi": "6,50%",
+  "preco_promo": 8.7,
+  "segmento": "FARMA OFF",
+  "itens_historico": [
+   "BOLSA TERMICA EM GEL - TAM M - COLORGEL"
+  ],
+  "subgrupo": "BOLSA TERMICA GEL"
+ },
+ {
+  "id": "P09",
   "linha": "HEALTH",
   "item": "BOLSA TERMICA EM GEL - TAM P - COLORGEL",
   "codigo": "0001000706",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 10,
   "icms": "4%",
   "ipi": "6,50%",
   "preco_promo": 6.81,
   "segmento": "FARMA OFF",
-  "id": "P08",
   "itens_historico": [
    "BOLSA TERMICA EM GEL - TAM P - COLORGEL"
   ],
   "subgrupo": "BOLSA TERMICA GEL"
  },
  {
+  "id": "P10",
   "linha": "HEALTH",
   "item": "BOLSA TERMICA EM GEL - TAMANHO M.",
   "codigo": "0001000367",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 30,
   "icms": "4%",
   "ipi": "6,50%",
   "preco_promo": 8.7,
   "segmento": "FARMA OFF",
-  "id": "P09",
   "itens_historico": [
    "BOLSA TERMICA EM GEL - TAMANHO M."
   ],
   "subgrupo": "BOLSA TERMICA GEL"
  },
  {
+  "id": "P11",
   "linha": "HEALTH",
   "item": "BOLSA TERMICA EM GEL - TAMANHO P.",
   "codigo": "0001000366",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 30,
   "icms": "4%",
   "ipi": "6,50%",
   "preco_promo": 6.71,
   "segmento": "FARMA OFF",
-  "id": "P10",
   "itens_historico": [
    "BOLSA TERMICA EM GEL - TAMANHO P."
   ],
   "subgrupo": "BOLSA TERMICA GEL"
  },
  {
+  "id": "P12",
   "linha": "HEALTH",
   "item": "BOMBA TIRA LEITE ELETRICA PORTATIL",
   "codigo": "12382",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "0,00%",
   "preco_promo": 85.0,
   "segmento": "FARMA OFF",
-  "id": "P11",
   "itens_historico": [
    "BOMBA TIRA LEITE ELETRICA PORTATIL"
   ],
   "subgrupo": "BOMBA TIRA LEITE ELETRICA"
  },
  {
+  "id": "P13",
   "linha": "HEALTH",
   "item": "BOMBA TIRA LEITE MANUAL",
   "codigo": "0001000665",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 6,
   "icms": "4%",
   "ipi": "0,00%",
   "preco_promo": 36.9,
   "segmento": "FARMA OFF",
-  "id": "P12",
   "itens_historico": [
    "BOMBA TIRA LEITE MANUAL"
   ],
   "subgrupo": "BOMBA TIRA LEITE MANUAL"
  },
  {
+  "id": "P14",
   "linha": "HEALTH",
   "item": "ESTETOSCOPIO DUPLO - PRETO",
   "codigo": "0001000421",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 6,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 12.9,
   "segmento": "FARMA OFF",
-  "id": "P13",
   "itens_historico": [
    "ESTETOSCOPIO DUPLO - PRETO"
   ],
   "subgrupo": "ESTETOSCOPIO DUPLO"
  },
  {
+  "id": "P15",
   "linha": "HEALTH",
   "item": "ESTETOSCOPIO DUPLO - VINHO",
   "codigo": "0001000422",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 6,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 11.9,
   "segmento": "FARMA OFF",
-  "id": "P14",
   "itens_historico": [
    "ESTETOSCOPIO DUPLO - VINHO"
   ],
   "subgrupo": "ESTETOSCOPIO DUPLO"
  },
  {
+  "id": "P16",
   "linha": "HEALTH",
   "item": "ESTETOSCOPIO RAPPAPORT - AZUL / ROSA / ROXO / VERDE / VINHO",
   "codigo": "-",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 6,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 21.9,
   "segmento": "FARMA OFF",
-  "id": "P15",
   "itens_historico": [
    "ESTETOSCOPIO RAPPAPORT - AZUL",
    "ESTETOSCOPIO RAPPAPORT - ROSA",
@@ -262,550 +279,585 @@
   "subgrupo": "ESTETOSCOPIO RAPPAPORT"
  },
  {
+  "id": "P17",
   "linha": "HEALTH",
   "item": "ESTETOSCOPIO RAPPAPORT - PRETO",
   "codigo": "0001000423",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 6,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 24.9,
   "segmento": "FARMA OFF",
-  "id": "P16",
   "itens_historico": [
    "ESTETOSCOPIO RAPPAPORT - PRETO"
   ],
   "subgrupo": "ESTETOSCOPIO RAPPAPORT"
  },
  {
+  "id": "P18",
   "linha": "HEALTH",
   "item": "ESTETOSCOPIO SIMPLES - PRETO",
   "codigo": "0001000420",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 6,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 10.9,
   "segmento": "FARMA OFF",
-  "id": "P17",
   "itens_historico": [
    "ESTETOSCOPIO SIMPLES - PRETO"
   ],
   "subgrupo": "ESTETOSCOPIO SIMPLES"
  },
  {
+  "id": "P19",
   "linha": "HEALTH",
   "item": "FITA KINESIOLÓGICA KO VERMELHA",
   "codigo": "07119",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "0,00%",
   "preco_promo": 12.0,
   "segmento": "FARMA OFF",
-  "id": "P18",
   "itens_historico": [
    "FITA KINESIOLÓGICA KO FIRE RED VERMELHA"
   ],
   "subgrupo": "FITA KO"
  },
  {
+  "id": "P20",
   "linha": "HEALTH",
   "item": "MONITOR PRESSÃO BRAÇO SUPER KF-65B",
   "codigo": "06733",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 79.0,
   "segmento": "FARMA OFF",
-  "id": "P19",
   "itens_historico": [
    "MONITOR PRESSÃO BRAÇO SUPER KF-65B"
   ],
   "subgrupo": "MONITOR DE BRAÇO COM VOZ"
  },
  {
+  "id": "P21",
   "linha": "HEALTH",
   "item": "MONITOR PRESSÃO BRAÇO ULTRA MAX DBP-6177",
   "codigo": "07035",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 89.0,
   "segmento": "FARMA OFF",
-  "id": "P20",
   "itens_historico": [
    "MONITOR PRESSÃO BRAÇO ULTRA MAX DBP-6177"
   ],
   "subgrupo": "MONITOR DE BRAÇO COM VOZ"
  },
  {
+  "id": "P22",
   "linha": "HEALTH",
   "item": "MONITOR PRESSÃO PULSO SUPER KF-75C",
   "codigo": "06734",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 50.0,
   "segmento": "FARMA OFF",
-  "id": "P21",
   "itens_historico": [
    "MONITOR PRESSÃO PULSO SUPER KF-75C"
   ],
   "subgrupo": "MONITOR DE PULSO"
  },
  {
+  "id": "P23",
   "linha": "HEALTH",
   "item": "MONITOR PRESSÃO PULSO ULTRA MAX DBP-8178",
   "codigo": "07036",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "5,20%",
   "preco_promo": 55.0,
   "segmento": "FARMA OFF",
-  "id": "P22",
   "itens_historico": [
    "MONITOR PRESSÃO PULSO ULTRA MAX DBP-8178"
   ],
   "subgrupo": "MONITOR DE PULSO"
  },
  {
+  "id": "P24",
   "linha": "HEALTH",
   "item": "NEBULIZADOR COMPRESSOR COMPACTO",
   "codigo": "12374",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "1,30%",
   "preco_promo": 65.0,
   "segmento": "FARMA OFF",
-  "id": "P23",
   "itens_historico": [
    "NEBULIZADOR COMPRESSOR COMPACTO"
   ],
   "subgrupo": "NEBULIZADOR COMPRESSOR"
  },
  {
+  "id": "P25",
   "linha": "HEALTH",
   "item": "NEBULIZADOR MESH",
   "codigo": "07002",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "1,30%",
   "preco_promo": 92.99,
   "segmento": "FARMA OFF",
-  "id": "P24",
   "itens_historico": [
    "NEBULIZADOR MESH"
   ],
   "subgrupo": "NEBULIZADOR MESH"
  },
  {
+  "id": "P26",
   "linha": "HEALTH",
   "item": "OXIMETRO SEM ALARME",
   "codigo": "05593",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "12%",
   "ipi": "0,00%",
   "preco_promo": 45.0,
   "segmento": "FARMA OFF",
-  "id": "P25",
   "itens_historico": [
    "OXIMETRO SEM ALARME"
   ],
   "subgrupo": "OXIMETRO SEM ALARME"
  },
  {
+  "id": "P27",
   "linha": "HEALTH",
   "item": "TERMOMETRO KF-HW-005 INFRA",
   "codigo": "0001000454",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "9,75%",
   "preco_promo": 47.0,
   "segmento": "FARMA OFF",
-  "id": "P26",
   "itens_historico": [
    "TERMOMETRO KF-HW-005 INFRA"
   ],
   "subgrupo": "TERMOMETRO INFRAVERMELHO"
  },
  {
+  "id": "P28",
   "linha": "HEALTH",
   "item": "TERMOMETRO CLINICO HASTE FLEXIVEL ROSA",
   "codigo": "12391",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 10,
   "icms": "4%",
   "ipi": "9,75%",
   "preco_promo": 7.99,
   "segmento": "FARMA OFF",
-  "id": "P27",
   "itens_historico": [
    "TERMOMETRO CLINICO HASTE FLEXIVEL ROSA"
   ],
   "subgrupo": "TERMOMETRO CLINICO"
  },
  {
+  "id": "P29",
   "linha": "HEALTH",
   "item": "UMIDIFICADOR ULTRASSÔNICO UMI LIGHT 2,3L",
   "codigo": "1000583",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "6,50%",
   "preco_promo": 55.0,
   "segmento": "FARMA OFF",
-  "id": "P28",
   "itens_historico": [
    "UMIDIFICADOR ULTRASSÔNICO UMI LIGHT 2,3L"
   ],
   "subgrupo": "UMIDIFICADOR UMI LIGHT"
  },
  {
+  "id": "P30",
   "linha": "HEALTH",
   "item": "UMIDIFICADOR UMI POP 2,3L",
   "codigo": "06889",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "6,50%",
   "preco_promo": 59.0,
   "segmento": "FARMA OFF",
-  "id": "P29",
   "itens_historico": [
    "UMIDIFICADOR UMI POP 2,3L"
   ],
   "subgrupo": "UMIDIFICADOR POP"
  },
  {
+  "id": "P31",
   "linha": "HEALTH",
   "item": "UMIDIFICADOR UMI ULTRA 4,3L",
   "codigo": "06906",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "6,50%",
   "preco_promo": 89.0,
   "segmento": "FARMA OFF",
-  "id": "P30",
   "itens_historico": [
    "UMIDIFICADOR UMI ULTRA 4,3L"
   ],
   "subgrupo": "UMIDIFICADOR ULTRA"
  },
  {
+  "id": "P32",
   "linha": "HEALTH",
   "item": "UMIDIFICADOR UMI STAR 3,4L",
   "codigo": "06905",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Health",
   "cx_master": 4,
   "icms": "4%",
   "ipi": "6,50%",
   "preco_promo": 79.0,
   "segmento": "FARMA OFF",
-  "id": "P31",
   "itens_historico": [
    "UMIDIFICADOR UMI STAR 3,4L"
   ],
   "subgrupo": "UMIDIFICADOR STAR"
  },
  {
+  "id": "P33",
   "linha": "HOME",
   "item": "CADEIRA MOTORIZADA D3000 SUPER LIGHT",
   "codigo": "0001000550",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
   "preco_promo": 3299.0,
   "segmento": "FARMA OFF",
-  "id": "P32",
   "itens_historico": [
    "CADEIRA MOTORIZADA D3000 SUPER LIGHT"
   ],
   "subgrupo": "CADEIRA MOTORIZADA D3000 SUPER LIGHT"
  },
  {
+  "id": "P34",
   "linha": "HOME",
   "item": "CADEIRA MOTORIZADA D900",
   "codigo": "06635",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
   "preco_promo": 3699.0,
   "segmento": "FARMA OFF",
-  "id": "P33",
   "itens_historico": [
    "CADEIRA MOTORIZADA D900"
   ],
   "subgrupo": "CADEIRA MOTORIZADA D900"
  },
  {
+  "id": "P35",
   "linha": "HOME",
   "item": "CADEIRA MOTORIZADA D750 LIGHT",
   "codigo": "0001000596",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
   "preco_promo": 2199.0,
   "segmento": "FARMA OFF",
-  "id": "P34",
   "itens_historico": [
    "CADEIRA MOTORIZADA D750 LIGHT"
   ],
   "subgrupo": "CADEIRA MOTORIZADA D750"
  },
  {
+  "id": "P36",
   "linha": "HOME",
   "item": "CADEIRA DE RODAS D400 T40",
   "codigo": "05589",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
-  "preco_promo": 609.0,
+  "preco_promo": 595.0,
   "segmento": "FARMA OFF",
-  "id": "P35",
   "itens_historico": [
    "CADEIRA DE RODAS D400 T40"
   ],
   "subgrupo": "CADEIRA DE RODAS D400"
  },
  {
+  "id": "P37",
   "linha": "HOME",
   "item": "CADEIRA DE RODAS D400 T44",
   "codigo": "05590",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
-  "preco_promo": 609.0,
+  "preco_promo": 595.0,
   "segmento": "FARMA OFF",
-  "id": "P36",
   "itens_historico": [
    "CADEIRA DE RODAS D400 T44"
   ],
   "subgrupo": "CADEIRA DE RODAS D400"
  },
  {
+  "id": "P38",
   "linha": "HOME",
   "item": "CADEIRA DE RODAS D400 T46",
   "codigo": "05591",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
-  "preco_promo": 609.0,
+  "preco_promo": 595.0,
   "segmento": "FARMA OFF",
-  "id": "P37",
   "itens_historico": [
    "CADEIRA DE RODAS D400 T46"
   ],
   "subgrupo": "CADEIRA DE RODAS D400"
  },
  {
+  "id": "P39",
   "linha": "HOME",
-  "item": "CADEIRA DE RODAS D600 T44",
-  "codigo": "06471",
-  "cond_pagamento": "até 120dd",
+  "item": "CADEIRA DE RODAS D400 T48",
+  "codigo": "6608",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
-  "preco_promo": 850.0,
+  "preco_promo": 595.0,
   "segmento": "FARMA OFF",
-  "id": "P38",
+  "itens_historico": [
+   "CADEIRA DE RODAS D400 T48"
+  ],
+  "subgrupo": "CADEIRA DE RODAS D400"
+ },
+ {
+  "id": "P40",
+  "linha": "HOME",
+  "item": "CADEIRA DE RODAS D600 T40",
+  "codigo": "6470",
+  "cond_pagamento": "60dd até 180dd",
+  "promocao": "Natal Azul Home",
+  "cx_master": 1,
+  "icms": "0%",
+  "ipi": "0,00%",
+  "preco_promo": 795.0,
+  "segmento": "FARMA OFF",
+  "itens_historico": [
+   "CADEIRA DE RODAS D600 T40"
+  ],
+  "subgrupo": "CADEIRA DE RODAS D600"
+ },
+ {
+  "id": "P41",
+  "linha": "HOME",
+  "item": "CADEIRA DE RODAS D600 T44",
+  "codigo": "06471",
+  "cond_pagamento": "60dd até 180dd",
+  "promocao": "Natal Azul Home",
+  "cx_master": 1,
+  "icms": "0%",
+  "ipi": "0,00%",
+  "preco_promo": 795.0,
+  "segmento": "FARMA OFF",
   "itens_historico": [
    "CADEIRA DE RODAS D600 T44"
   ],
   "subgrupo": "CADEIRA DE RODAS D600"
  },
  {
+  "id": "P42",
   "linha": "HOME",
   "item": "CADEIRA DE RODAS D600 T46",
   "codigo": "06472",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
-  "preco_promo": 850.0,
+  "preco_promo": 795.0,
   "segmento": "FARMA OFF",
-  "id": "P39",
   "itens_historico": [
    "CADEIRA DE RODAS D600 T46"
   ],
   "subgrupo": "CADEIRA DE RODAS D600"
  },
  {
+  "id": "P43",
   "linha": "HOME",
   "item": "CADEIRA DE RODAS D600 T48",
   "codigo": "06473",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
-  "preco_promo": 850.0,
+  "preco_promo": 795.0,
   "segmento": "FARMA OFF",
-  "id": "P40",
   "itens_historico": [
    "CADEIRA DE RODAS D600 T48"
   ],
   "subgrupo": "CADEIRA DE RODAS D600"
  },
  {
+  "id": "P44",
   "linha": "HOME",
   "item": "CADEIRA DE RODAS D600 POP T44",
   "codigo": "0001000684",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
   "preco_promo": 689.0,
   "segmento": "FARMA OFF",
-  "id": "P41",
   "itens_historico": [
    "CADEIRA DE RODAS D600 POP T44"
   ],
   "subgrupo": "CADEIRA DE RODAS D600 POP T44"
  },
  {
+  "id": "P45",
   "linha": "HOME",
   "item": "CADEIRA DE RODAS D500",
   "codigo": "06888",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
-  "preco_promo": 899.0,
+  "preco_promo": 875.0,
   "segmento": "FARMA OFF",
-  "id": "P42",
   "itens_historico": [
    "CADEIRA DE RODAS D500"
   ],
   "subgrupo": "CADEIRA DE RODAS D500"
  },
  {
+  "id": "P46",
   "linha": "HOME",
   "item": "GUINCHO PARA ELEVACAO MANUAL D5000",
   "codigo": "05718",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
   "preco_promo": 2099.0,
   "segmento": "FARMA OFF",
-  "id": "P43",
   "itens_historico": [
    "GUINCHO PARA ELEVACAO MANUAL D5000"
   ],
   "subgrupo": "GUINCHO D5000"
  },
  {
+  "id": "P47",
   "linha": "HOME",
   "item": "BANQUETA DE HIGIENIZACAO D1",
   "codigo": "05255",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "4%",
   "ipi": "0,00%",
   "preco_promo": 99.0,
   "segmento": "FARMA OFF",
-  "id": "P44",
   "itens_historico": [
    "BANQUETA DE HIGIENIZACAO D1"
   ],
   "subgrupo": "BANQUETA D1"
  },
  {
+  "id": "P48",
   "linha": "HOME",
   "item": "ANDADOR D12",
   "codigo": "06248",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
   "preco_promo": 299.0,
   "segmento": "FARMA OFF",
-  "id": "P45",
   "itens_historico": [
    "ANDADOR D12"
   ],
   "subgrupo": "ANDADOR D12"
  },
  {
+  "id": "P49",
   "linha": "HOME",
   "item": "CADEIRA DE TRANSFERENCIA MANUAL D80",
   "codigo": "0001001113",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
   "preco_promo": 1249.0,
   "segmento": "FARMA OFF",
-  "id": "P46",
   "itens_historico": [
    "CADEIRA DE TRANSFERENCIA MANUAL D80"
   ],
   "subgrupo": "CADEIRA DE TRANSFERENCIA D80 MANUAL"
  },
  {
+  "id": "P50",
   "linha": "HOME",
   "item": "CADEIRA DE HIGIENIZACAO D40",
   "codigo": "05435",
-  "cond_pagamento": "até 120dd",
+  "cond_pagamento": "60dd até 180dd",
   "promocao": "Natal Azul Home",
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
   "preco_promo": 179.0,
   "segmento": "FARMA OFF",
-  "id": "P47",
   "itens_historico": [
    "CADEIRA DE HIGIENIZACAO D40"
   ],
   "subgrupo": "CADEIRA HIG D40"
  },
  {
+  "id": "P51",
   "linha": "HOME",
   "item": "CADEIRA DE HIGIENIZACAO D40",
   "codigo": "05435",
@@ -816,10 +868,26 @@
   "ipi": "0,00%",
   "preco_promo": 169.0,
   "segmento": "FARMA OFF",
-  "id": "P48",
   "itens_historico": [
    "CADEIRA DE HIGIENIZACAO D40"
   ],
   "subgrupo": "CADEIRA HIG D40"
+ },
+ {
+  "id": "P52",
+  "linha": "HOME",
+  "item": "ANDADOR D10",
+  "codigo": "05203",
+  "cond_pagamento": "60dd até 180dd",
+  "promocao": "Natal Azul Home",
+  "cx_master": 4,
+  "icms": "0%",
+  "ipi": "0,00%",
+  "preco_promo": 89.0,
+  "segmento": "FARMA OFF",
+  "itens_historico": [
+   "ANDADOR D10"
+  ],
+  "subgrupo": "ANDADOR D10"
  }
 ]

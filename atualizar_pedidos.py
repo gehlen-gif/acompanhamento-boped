@@ -2,6 +2,11 @@
 
 Uso: python3 atualizar_pedidos.py <arquivo_pedidos.xlsx> <AAAA-MM-DD>
 
+Aceita dois formatos:
+- relatório "com pedido" (uma linha por Grupo de Cliente): cruza pelo nome do grupo;
+- Histórico de Pedidos (Item, Cliente com Código, Data, Qtde, Valor Total): usa os
+  pedidos do mês da data de referência e liga cada cliente à carteira pelo código.
+
 Lê o relatório de pedidos (uma linha por Grupo de Cliente) e cruza pelo nome do
 grupo com as carteiras do TIME BOPED em dados/carteiras_grupos.json. Gera
 dados/pedidos.json e o painel HTML autônomo painel_carteiras_<data>.html
@@ -29,6 +34,8 @@ def num(v):
 def main(xlsx, data_ref):
     grupos = json.loads((DADOS / 'carteiras_grupos.json').read_text(encoding='utf-8'))
     p = pd.read_excel(xlsx)
+    if 'Cliente com Código' in p.columns:
+        return main_historico(p, grupos, data_ref)
     p.columns = [re.sub(r'\s+', ' ', str(c)).strip() for c in p.columns]
     col = {re.sub(r'\s+', ' ', k): k for k in p.columns}
     p['k'] = p['Grupo de Cliente'].map(norm)
@@ -62,6 +69,40 @@ def main(xlsx, data_ref):
     resumo = {'data_ref': data_ref, 'grupos_no_arquivo': int(len(p)),
               'grupos_fora_das_carteiras': int(len(fora)),
               'valor_fora_das_carteiras': round(float(fora['valor'].sum()), 2)}
+    (DADOS / 'pedidos.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':'), allow_nan=False), encoding='utf-8')
+    (DADOS / 'pedidos_resumo.json').write_text(json.dumps(resumo, ensure_ascii=False, indent=1), encoding='utf-8')
+    print(json.dumps(resumo, ensure_ascii=False))
+    build_html(data_ref)
+
+
+def main_historico(h, grupos, data_ref):
+    ref = pd.Timestamp(data_ref)
+    h['Data'] = pd.to_datetime(h['Data'], errors='coerce')
+    h = h[(h['Data'].dt.year == ref.year) & (h['Data'].dt.month == ref.month) & (h['Data'] <= ref)].copy()
+    h['cod_cliente'] = h['Cliente com Código'].astype(str).str.extract(r'^\s*(\d+)')[0].str.lstrip('0')
+    h['qt'] = pd.to_numeric(h['Qtde'], errors='coerce').fillna(0)
+    h['vt'] = pd.to_numeric(h['Valor Total'], errors='coerce').fillna(0)
+    cli = pd.DataFrame(json.loads((DADOS / 'carteiras_clientes.json').read_text(encoding='utf-8')))[['cod_cliente', 'cod_grupo', 'vendedor']].drop_duplicates()
+    m = h.merge(cli, on='cod_cliente', how='inner')
+    agg = {k: r for k, r in m.groupby(['cod_grupo', 'vendedor']).agg(
+        valor=('vt', 'sum'), itens=('qt', 'sum'),
+        cancelados=('qt', lambda s: -s[s < 0].sum())).iterrows()}
+    out = []
+    for g in grupos:
+        r = agg.get((g['cod_grupo'], g['vendedor']))
+        valor = round(float(r['valor']), 2) if r is not None else 0.0
+        out.append({
+            'cod_grupo': g['cod_grupo'], 'vendedor': g['vendedor'], 'grupo': g['grupo'], 'grupo_pedido': g['cod_grupo'] + '|' + g['vendedor'],
+            'time': g['time'], 'faturamento_historico': g['faturamento'], 'ultimo_faturamento': g['ultimo_faturamento'],
+            'status_cliente': g['status'],
+            'situacao_mes': 'Com pedido' if valor > 0 else 'Cancelamento' if valor < 0 else 'Sem pedido',
+            'qt_itens_pedido': int(r['itens']) if r is not None else 0, 'valor_pedidos': valor,
+            'qt_itens_cancelados': int(r['cancelados']) if r is not None else 0, 'valor_bonificacao': None,
+            'pedidos_pendentes': None, 'nome_compartilhado': 'Não', 'data_ref': data_ref,
+        })
+    fora = h[~h['cod_cliente'].isin(set(cli['cod_cliente']))]
+    resumo = {'data_ref': data_ref, 'fonte': 'Histórico de Pedidos', 'linhas_no_mes': int(len(h)),
+              'valor_fora_das_carteiras': round(float(fora['vt'].sum()), 2)}
     (DADOS / 'pedidos.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':'), allow_nan=False), encoding='utf-8')
     (DADOS / 'pedidos_resumo.json').write_text(json.dumps(resumo, ensure_ascii=False, indent=1), encoding='utf-8')
     print(json.dumps(resumo, ensure_ascii=False))

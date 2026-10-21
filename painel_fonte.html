@@ -229,7 +229,7 @@
       </div>
     </section>
 
-    <p class="note" id="regra-pedidos">Pedidos cruzados com os grupos de clientes das carteiras pelo nome do Grupo de Cliente. Valor negativo indica cancelamento do grupo no mês. Grupos com o mesmo nome em mais de uma carteira aparecem em cada uma, marcados como compartilhados, e entram uma vez só nos totais.</p>
+    <p class="note" id="regra-pedidos">Pedidos do mês tirados do Histórico de Pedidos e ligados ao grupo de clientes de cada carteira pelo código do cliente. Valor total de pedidos líquido de cancelamentos e devoluções; valor negativo indica cancelamento no mês. A coluna Pendente só é preenchida quando o arquivo é o relatório "com pedido".</p>
   </div>
 
   <div class="pane" id="promocoes">
@@ -607,7 +607,7 @@ function drawPedidos(scope) {
     const nm = el('td', null, r.grupo);
     if (r.nome_compartilhado === 'Sim') { nm.append(' '); nm.append(el('span', 'pill warn', 'compartilhado')); }
     const st = el('td'); st.append(pill(r));
-    tr.append(nm, el('td', null, r.cod_grupo), el('td', null, r.vendedor), st, el('td', 'n', INT.format(r.qt_itens_pedido)), el('td', 'n', BRL.format(r.valor_pedidos)), el('td', 'n', BRL.format(r.pedidos_pendentes)));
+    tr.append(nm, el('td', null, r.cod_grupo), el('td', null, r.vendedor), st, el('td', 'n', INT.format(r.qt_itens_pedido)), el('td', 'n', BRL.format(r.valor_pedidos)), el('td', 'n', r.pedidos_pendentes == null ? '—' : BRL.format(r.pedidos_pendentes)));
     return tr;
   }));
   const semRows = shown.filter((r) => r.situacao_mes === 'Sem pedido').sort((a, b) => b.faturamento_historico - a.faturamento_historico);
@@ -643,7 +643,7 @@ function drawPromo(scope) {
       el('td', null, r.promocao), el('td', 'n', INT.format(r.cx_master)), el('td', 'n', r.icms), el('td', 'n', r.ipi), el('td', 'n', BRL2.format(r.preco_promo)));
     return tr;
   }));
-  $('#pr-itens').textContent = prOk ? INT.format(promos.length) : '—';
+  $('#pr-itens').textContent = prOk ? INT.format(new Set(promos.map((r) => r.item)).size) : '—';
   if (!ok) return;
 
   const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));

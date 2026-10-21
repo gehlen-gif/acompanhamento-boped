@@ -1,6 +1,6 @@
 {
  "data_ref": "2026-10-21",
- "grupos_no_arquivo": 2068,
- "grupos_fora_das_carteiras": 1578,
- "valor_fora_das_carteiras": 3995817.14
+ "fonte": "Histórico de Pedidos",
+ "linhas_no_mes": 9515,
+ "valor_fora_das_carteiras": 3264473.76
 }
