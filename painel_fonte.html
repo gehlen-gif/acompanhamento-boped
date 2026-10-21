@@ -160,8 +160,8 @@
 
   <div class="pane" id="pedidos">
     <section class="kpis" id="ind-pedidos" data-source="pedidos">
-      <div class="kpi"><span class="note">Carteiras com pedido</span><span class="v dash-skeleton" id="p-com">—</span><span class="sub" id="p-com-s"></span></div>
-      <div class="kpi"><span class="note">Carteiras sem pedido</span><span class="v dash-skeleton" id="p-sem">—</span><span class="sub" id="p-sem-s"></span></div>
+      <div class="kpi"><span class="note">Grupos de clientes com pedido</span><span class="v dash-skeleton" id="p-com">—</span><span class="sub" id="p-com-s"></span></div>
+      <div class="kpi"><span class="note">Grupos de clientes sem pedido</span><span class="v dash-skeleton" id="p-sem">—</span><span class="sub" id="p-sem-s"></span></div>
       <div class="kpi"><span class="note">Só cancelamento no mês</span><span class="v dash-skeleton" id="p-canc">—</span><span class="sub" id="p-canc-s"></span></div>
       <div class="kpi"><span class="note">Valor total de pedidos (- canc.)</span><span class="v dash-skeleton" id="p-val">—</span><span class="sub" id="p-val-s"></span></div>
       <div class="kpi"><span class="note">Itens pedidos</span><span class="v dash-skeleton" id="p-itens">—</span><span class="sub" id="p-itens-s"></span></div>
@@ -169,10 +169,10 @@
 
     <section class="card" id="cobertura">
       <h2>Cobertura por vendedor</h2>
-      <p class="note">Quantas carteiras de cada vendedor já colocaram pedido no mês. Clique em um vendedor para filtrar.</p>
+      <p class="note">Quantos grupos de clientes da carteira de cada vendedor já colocaram pedido no mês. Clique em um vendedor para filtrar.</p>
       <div class="scroll">
         <table id="tab-cob" data-source="pedidos">
-          <thead><tr><th>Vendedor</th><th>Time</th><th class="n">Carteiras</th><th class="n">Com pedido</th><th class="n">Sem pedido</th><th>Cobertura</th><th class="n">Itens</th><th class="n">Valor (- canc.)</th></tr></thead>
+          <thead><tr><th>Vendedor</th><th>Time</th><th class="n">Grupos de clientes</th><th class="n">Com pedido</th><th class="n">Sem pedido</th><th>Cobertura</th><th class="n">Itens</th><th class="n">Valor (- canc.)</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -208,7 +208,7 @@
       </div>
     </section>
 
-    <p class="note" id="regra-pedidos">Pedidos cruzados com as carteiras pelo nome do Grupo de Cliente. Valor negativo indica cancelamento do grupo no mês. Grupos com o mesmo nome em mais de uma carteira aparecem em cada uma, marcados como compartilhados, e entram uma vez só nos totais.</p>
+    <p class="note" id="regra-pedidos">Pedidos cruzados com os grupos de clientes das carteiras pelo nome do Grupo de Cliente. Valor negativo indica cancelamento do grupo no mês. Grupos com o mesmo nome em mais de uma carteira aparecem em cada uma, marcados como compartilhados, e entram uma vez só nos totais.</p>
   </div>
 
   <p class="note" id="regra">Regra aplicada: dentro do mesmo código de grupo e vendedor, valores de faturamento iguais contam uma vez e valores diferentes se somam. Só entram vendedores da lista TIME BOPED 2026 (validada em 20/10/2026), buscados em Representante (Z1), Key Account (Z3) e Vendedor Interno (VE).</p>
@@ -362,7 +362,7 @@ function draw() {
     const lead = sorted[0];
     const byM = d3.rollups(rows, (v) => d3.sum(v, (r) => r.faturamento), (r) => r.time_macro).sort((a, b) => b[1] - a[1]);
     if (aba === 'historico') $('#takeaway').textContent = rows.length
-      ? `${BRL.format(total)} em ${INT.format(rows.length)} carteiras de grupo. ` +
+      ? `${BRL.format(total)} em ${INT.format(rows.length)} grupos de clientes nas carteiras. ` +
         (byM.length > 1 ? `${byM[0][0]} lidera com ${PCT.format(byM[0][1] / total)} do total; ` : '') +
         `o maior grupo é ${lead.grupo} (${lead.vendedor}), com ${BRL.format(lead.faturamento)}.`
       : 'Nenhum grupo com esses filtros.';
@@ -396,7 +396,7 @@ function draw() {
   document.querySelectorAll('#tab-grupos th').forEach((th) => {
     th.setAttribute('aria-sort', th.dataset.field === sortKey ? (sortDir < 0 ? 'descending' : 'ascending') : 'none');
   });
-  $('#tab-note').textContent = `Os ${INT.format(shown.length)} maiores de ${INT.format(rows.length)} carteiras de grupo. Clique em uma linha para ver os clientes do grupo; cabeçalhos ordenam.`;
+  $('#tab-note').textContent = `Os ${INT.format(shown.length)} maiores de ${INT.format(rows.length)} grupos de clientes. Clique em uma linha para ver os clientes do grupo; cabeçalhos ordenam.`;
   $('#tab-grupos tbody').replaceChildren(...shown.map((r) => {
     const tr = el('tr');
     tr.dataset.key = keyOf(r.cod_grupo, r.vendedor);
@@ -471,16 +471,16 @@ function drawPedidos(scope) {
   const canc = scoped.filter((r) => r.situacao_mes === 'Cancelamento');
   const ref = scoped[0] ? scoped[0].data_ref : (d.data[0] || {}).data_ref;
   const refTxt = ref ? ref.split('-').reverse().join('/') : '';
-  $('#p-com').textContent = INT.format(com.length); $('#p-com-s').textContent = PCT.format(com.length / n) + ' das carteiras';
-  $('#p-sem').textContent = INT.format(sem.length); $('#p-sem-s').textContent = PCT.format(sem.length / n) + ' das carteiras';
+  $('#p-com').textContent = INT.format(com.length); $('#p-com-s').textContent = PCT.format(com.length / n) + ' dos grupos de clientes';
+  $('#p-sem').textContent = INT.format(sem.length); $('#p-sem-s').textContent = PCT.format(sem.length / n) + ' dos grupos de clientes';
   $('#p-canc').textContent = INT.format(canc.length); $('#p-canc-s').textContent = BRL.format(uniqSum(canc, 'valor_pedidos'));
   $('#p-val').textContent = BRLc.format(uniqSum(scoped, 'valor_pedidos')); $('#p-val').title = BRL.format(uniqSum(scoped, 'valor_pedidos'));
   $('#p-val-s').textContent = 'Pedidos até ' + refTxt;
   $('#p-itens').textContent = INT.format(uniqSum(scoped, 'qt_itens_pedido')); $('#p-itens-s').textContent = 'Líquido de cancelamentos';
   if ((p.aba || 'pedidos') === 'pedidos') {
     $('#takeaway').textContent = scoped.length
-      ? `Pedidos de outubro até ${refTxt}: ${INT.format(com.length)} de ${INT.format(scoped.length)} carteiras já compraram (${PCT.format(com.length / n)}), somando ${BRL.format(uniqSum(scoped, 'valor_pedidos'))}. ${INT.format(sem.length)} ainda não colocaram pedido.`
-      : 'Nenhuma carteira com esses filtros.';
+      ? `Pedidos de outubro até ${refTxt}: ${INT.format(com.length)} de ${INT.format(scoped.length)} grupos de clientes já compraram (${PCT.format(com.length / n)}), somando ${BRL.format(uniqSum(scoped, 'valor_pedidos'))}. ${INT.format(sem.length)} ainda não colocaram pedido.`
+      : 'Nenhum grupo de clientes com esses filtros.';
   }
 
   const byV = d3.groups(scoped, (r) => r.vendedor).map(([v, rs]) => {
@@ -499,7 +499,7 @@ function drawPedidos(scope) {
 
   const pill = (r) => { const s = el('span', 'pill ' + (r.situacao_mes === 'Cancelamento' ? 'bad' : 'ok'), r.situacao_mes); return s; };
   const comRows = shown.filter((r) => r.situacao_mes !== 'Sem pedido').sort((a, b) => b.valor_pedidos - a.valor_pedidos);
-  $('#com-note').textContent = `${INT.format(comRows.length)} carteiras. Valor negativo é cancelamento do grupo no mês.`;
+  $('#com-note').textContent = `${INT.format(comRows.length)} grupos de clientes. Valor negativo é cancelamento do grupo no mês.`;
   $('#tab-com tbody').replaceChildren(...comRows.map((r) => {
     const tr = el('tr'); tr.dataset.key = keyOf(r.cod_grupo, r.vendedor);
     const nm = el('td', null, r.grupo);
@@ -509,7 +509,7 @@ function drawPedidos(scope) {
     return tr;
   }));
   const semRows = shown.filter((r) => r.situacao_mes === 'Sem pedido').sort((a, b) => b.faturamento_historico - a.faturamento_historico);
-  $('#sem-note').textContent = `${INT.format(semRows.length)} carteiras, das que mais faturaram no histórico para as menores.`;
+  $('#sem-note').textContent = `${INT.format(semRows.length)} grupos de clientes, dos que mais faturaram no histórico para as menores.`;
   $('#tab-sem tbody').replaceChildren(...semRows.map((r) => {
     const tr = el('tr'); tr.dataset.key = keyOf(r.cod_grupo, r.vendedor);
     const st = el('td'); st.append(statusPill(r.status_cliente));
