@@ -25,3 +25,7 @@
 ## Meta do mês
 
 `python atualizar_meta.py meta_out-26.xlsx 2026-10` gera `dados/meta.json` a partir da planilha de metas (colunas Representante e Meta Comercial). Só entram os vendedores mapeados em `dados/base/vendedores_time.csv`; nomes repetidos têm as metas somadas. Depois rode `atualizar_tudo.py` (ou `build_html`) para refazer o painel. A aba Pedidos do mês mostra a meta por vendedor, por time e por líder, com % atingido, falta, ritmo esperado por dias úteis e projeção do mês.
+
+## Comparativo YoY
+
+Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` gera `dados/yoy.json` (via `atualizar_yoy.py`): vendas por grupo de clientes, vendedor e subgrupo de itens no acumulado do ano e no mês até o dia, contra o mesmo período do ano anterior, cortados no mesmo dia do calendário. As vendas do ano anterior são atribuídas pela carteira atual. As abas Histórico, Pedidos e Promoções continuam usando só o ano corrente.

@@ -33,7 +33,7 @@ def num(v):
 
 def main(xlsx, data_ref):
     grupos = json.loads((DADOS / 'carteiras_grupos.json').read_text(encoding='utf-8'))
-    p = pd.read_excel(xlsx)
+    p = xlsx.copy() if isinstance(xlsx, pd.DataFrame) else pd.read_excel(xlsx)
     if 'Cliente com Código' in p.columns:
         return main_historico(p, grupos, data_ref)
     p.columns = [re.sub(r'\s+', ' ', str(c)).strip() for c in p.columns]
@@ -114,7 +114,7 @@ def build_html(data_ref):
     shell = (HERE / 'painel_shell.html').read_text(encoding='utf-8')
     data = ''
     for id_, f in [('grupos', 'carteiras_grupos.json'), ('clientes', 'carteiras_clientes.json'), ('pedidos', 'pedidos.json'),
-                   ('promocoes', 'promocoes.json'), ('promo_potencial', 'promo_potencial.json'), ('meta', 'meta.json')]:
+                   ('promocoes', 'promocoes.json'), ('promo_potencial', 'promo_potencial.json'), ('meta', 'meta.json'), ('yoy', 'yoy.json')]:
         if not (DADOS / f).exists():
             txt = '[]'
             data += f'<script type="application/json" id="data-{id_}">{txt}</script>\n'

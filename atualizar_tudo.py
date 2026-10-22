@@ -1,5 +1,7 @@
 """Atualiza as três abas do painel a partir de um único Histórico de Pedidos.
 
+Se o arquivo tiver anos anteriores, gera também o comparativo YoY (atualizar_yoy.py).
+
 Uso: python3 atualizar_tudo.py <Histórico de Pedidos.xlsx> [promocoes.json]
 
 As carteiras (que grupo de clientes e que cliente pertence a cada vendedor, nome,
@@ -23,10 +25,12 @@ def main(hist_xlsx, promos_json=None):
     import atualizar_pedidos, atualizar_promocoes
     grupos = json.loads((DADOS / 'base' / 'carteiras_grupos_base.json').read_text(encoding='utf-8'))
     clientes = json.loads((DADOS / 'base' / 'carteiras_clientes_base.json').read_text(encoding='utf-8'))
-    h = pd.read_excel(hist_xlsx)
-    h['Data'] = pd.to_datetime(h['Data'], errors='coerce')
-    h['cod_cliente'] = h['Cliente com Código'].astype(str).str.extract(r'^\s*(\d+)')[0].str.lstrip('0')
-    h['vt'] = pd.to_numeric(h['Valor Total'], errors='coerce').fillna(0)
+    hist = pd.read_excel(hist_xlsx)
+    hist['Data'] = pd.to_datetime(hist['Data'], errors='coerce')
+    hist['cod_cliente'] = hist['Cliente com Código'].astype(str).str.extract(r'^\s*(\d+)')[0].str.lstrip('0')
+    hist['vt'] = pd.to_numeric(hist['Valor Total'], errors='coerce').fillna(0)
+    # Histórico, pedidos e promoções usam só o ano da última data; anos anteriores vão para o comparativo YoY.
+    h = hist[hist['Data'].dt.year == hist['Data'].max().year].copy()
     ini, fim = h['Data'].min(), h['Data'].max()
     data_ref = fim.strftime('%Y-%m-%d')
 
@@ -49,9 +53,13 @@ def main(hist_xlsx, promos_json=None):
     dump('carteiras_clientes.json', clientes)
     print('histórico:', g['periodo'], '| vendas nas carteiras: R$', round(sum(x['faturamento'] for x in grupos), 2))
 
-    atualizar_pedidos.main(hist_xlsx, data_ref)
+    atualizar_pedidos.main(h, data_ref)
+    if hist['Data'].min().year < h['Data'].min().year:
+        import atualizar_yoy
+        atualizar_yoy.main(hist, data_ref)
     if promos_json:
-        atualizar_promocoes.main(hist_xlsx, promos_json)
+        atualizar_promocoes.main(h, promos_json)
+    atualizar_pedidos.build_html(data_ref)
 
 
 if __name__ == '__main__':

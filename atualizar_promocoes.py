@@ -27,7 +27,7 @@ def main(hist_xlsx, promos_json):
     grupos = {(g['cod_grupo'], g['vendedor']): g for g in json.loads((DADOS / 'carteiras_grupos.json').read_text(encoding='utf-8'))}
     cli = pd.DataFrame(clientes)[['cod_cliente', 'cod_grupo', 'vendedor']].drop_duplicates()
 
-    h = pd.read_excel(hist_xlsx)
+    h = hist_xlsx.copy() if isinstance(hist_xlsx, pd.DataFrame) else pd.read_excel(hist_xlsx)
     h['cod_cliente'] = h['Cliente com Código'].astype(str).str.extract(r'^\s*(\d+)')[0].str.lstrip('0')
     h['Data'] = pd.to_datetime(h['Data'], errors='coerce')
     h['Qtde'] = pd.to_numeric(h['Qtde'], errors='coerce').fillna(0)

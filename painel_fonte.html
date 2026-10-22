@@ -62,6 +62,15 @@
 .cg .meta-bar .pace { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--cds-text-primary, currentColor); opacity: .7; }
 .cg tr.macro td { font-weight: 600; border-top: 2px solid var(--color-border-line); }
 .cg tr.lider td:first-child { padding-left: 1.5rem; }
+.cg .ybar { display: grid; grid-template-columns: 1fr 1fr; align-items: center; min-width: 8rem; height: 10px; }
+.cg .ybar > div { display: flex; height: 10px; }
+.cg .ybar > div:first-child { justify-content: flex-end; border-right: 1px solid var(--color-border-line); }
+.cg .ybar .neg { height: 10px; background: var(--color-bad); border-radius: 4px 0 0 4px; }
+.cg .ybar .pos { height: 10px; background: var(--color-ok); border-radius: 0 4px 4px 0; }
+.cg .up { color: var(--color-ok); }
+.cg .down { color: var(--color-bad); }
+.cg .yfoco { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; justify-content: space-between; }
+.cg .grid.y2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); }
 .cg tr.total td { font-weight: 700; border-top: 2px solid var(--color-border-line); }
 .cg .legend-pace { display: inline-block; width: 2px; height: 12px; background: var(--cds-text-primary, currentColor); opacity: .7; vertical-align: middle; margin: 0 4px; }
 .cg .dt { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-fg); white-space: nowrap; }
@@ -98,6 +107,7 @@
     <button type="button" role="tab" id="tab-btn-pedidos" data-aba="pedidos">Pedidos do mês</button>
     <button type="button" role="tab" id="tab-btn-promocoes" data-aba="promocoes">Promoções do mês</button>
     <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Histórico de vendas</button>
+    <button type="button" role="tab" id="tab-btn-yoy" data-aba="yoy">Comparativo YoY</button>
   </nav>
 
   <section class="filters" id="filtros" aria-label="Filtros">
@@ -115,7 +125,10 @@
     <label>Situação na promoção<select id="f-psit"></select></label>
     <label>Grupo de cliente<input id="f-pgrupo" list="lista-grupos" placeholder="Digite o nome do grupo" autocomplete="off"></label>
     <label>Subgrupo de item<select id="f-psub"></select></label>
+    <label>Grupo de cliente<input id="f-ygrupo" list="lista-ygrupos" placeholder="Digite o nome do grupo" autocomplete="off"></label>
+    <label>Subgrupo de item<select id="f-ysub"></select></label>
     <datalist id="lista-grupos"></datalist>
+    <datalist id="lista-ygrupos"></datalist>
     <label>Mostrar<select id="f-top"></select></label>
     <button id="f-reset" type="button">Limpar filtros</button>
   </section>
@@ -302,7 +315,88 @@
       </div>
     </section>
 
-    <p class="note" id="regra-promo">Histórico de pedidos de 05/01 a 21/10/2026, ligado à carteira pelo código do cliente. Qtd. histórica soma as compras menos as devoluções do período. Último pedido é a data mais recente com compra do item, e o último valor pago é a média do valor unitário nessa data. Cor da data do último pedido: vermelho até 30 dias, amarelo de 31 a 45 dias, verde acima de 45 dias. Situação: "Comprou recentemente" se o último pedido tem até 30 dias; "Já paga o preço da promo" se o último valor pago está até 0,5% acima do preço da promoção ou abaixo dele; "Potencial" nos demais casos.</p>
+    <p class="note" id="regra-promo">Histórico de pedidos de 05/01 a 22/10/2026, ligado à carteira pelo código do cliente. Qtd. histórica soma as compras menos as devoluções do período. Último pedido é a data mais recente com compra do item, e o último valor pago é a média do valor unitário nessa data. Cor da data do último pedido: vermelho até 30 dias, amarelo de 31 a 45 dias, verde acima de 45 dias. Situação: "Comprou recentemente" se o último pedido tem até 30 dias; "Já paga o preço da promo" se o último valor pago está até 0,5% acima do preço da promoção ou abaixo dele; "Potencial" nos demais casos.</p>
+  </div>
+
+  <div class="pane" id="yoy">
+    <section class="card">
+      <div class="yfoco">
+        <div>
+          <h2 id="y-title">Mesmo período do ano anterior</h2>
+          <p class="note" id="y-per"></p>
+        </div>
+        <div class="seg" id="y-per-btn" role="group" aria-label="Período comparado">
+          <button type="button" data-per="ytd">Acumulado do ano</button>
+          <button type="button" data-per="mtd">Mês até o dia</button>
+        </div>
+      </div>
+      <p class="note" id="y-sel" hidden><span id="y-sel-txt"></span> <button type="button" id="y-sel-close">Limpar seleção</button></p>
+    </section>
+
+    <section class="kpis" id="ind-yoy" data-source="yoy">
+      <div class="kpi"><span class="note" id="y-l0">Ano anterior</span><span class="v dash-skeleton" id="y-a0">—</span><span class="sub" id="y-a0-s"></span></div>
+      <div class="kpi"><span class="note" id="y-l1">Ano atual</span><span class="v dash-skeleton" id="y-a1">—</span><span class="sub" id="y-a1-s"></span></div>
+      <div class="kpi"><span class="note">Variação</span><span class="v dash-skeleton" id="y-d">—</span><span class="sub" id="y-d-s"></span></div>
+      <div class="kpi"><span class="note">Grupos de clientes crescendo</span><span class="v dash-skeleton" id="y-up">—</span><span class="sub" id="y-up-s"></span></div>
+      <div class="kpi"><span class="note">Grupos de clientes caindo</span><span class="v dash-skeleton" id="y-dn">—</span><span class="sub" id="y-dn-s"></span></div>
+    </section>
+
+    <section class="card">
+      <h2>Por vendedor</h2>
+      <p class="note">Vendas de cada carteira no período contra o mesmo período do ano anterior, da maior alta para a maior queda. Clique em um vendedor para filtrar.</p>
+      <div class="scroll">
+        <table id="tab-yvend" data-source="yoy">
+          <thead><tr><th>Vendedor</th><th>Time</th><th class="n y0">Ano anterior</th><th class="n y1">Ano atual</th><th class="n">Variação</th><th class="n">%</th><th>Queda ◂ ▸ alta</th><th class="n">Grupos crescendo</th><th class="n">Grupos caindo</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="grid y2">
+      <section class="card">
+        <h2>Grupos de clientes puxando para cima</h2>
+        <p class="note" id="y-gup-note"></p>
+        <div class="bars" id="y-gup"></div>
+      </section>
+      <section class="card">
+        <h2>Grupos de clientes puxando para baixo</h2>
+        <p class="note" id="y-gdn-note"></p>
+        <div class="bars" id="y-gdn"></div>
+      </section>
+      <section class="card">
+        <h2>Subgrupos de itens puxando para cima</h2>
+        <p class="note" id="y-sup-note"></p>
+        <div class="bars" id="y-sup"></div>
+      </section>
+      <section class="card">
+        <h2>Subgrupos de itens puxando para baixo</h2>
+        <p class="note" id="y-sdn-note"></p>
+        <div class="bars" id="y-sdn"></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>Todos os grupos de clientes</h2>
+      <p class="note" id="y-tg-note"></p>
+      <div class="scroll">
+        <table id="tab-ygrupos" data-source="yoy" data-row-key="g,v">
+          <thead><tr><th>Grupo de cliente</th><th>Vendedor</th><th class="n y0">Ano anterior</th><th class="n y1">Ano atual</th><th class="n">Variação</th><th class="n">%</th><th>Situação</th><th>Subgrupo que mais pesou</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Todos os subgrupos de itens</h2>
+      <p class="note" id="y-ts-note"></p>
+      <div class="scroll">
+        <table id="tab-ysubs" data-source="yoy">
+          <thead><tr><th>Subgrupo</th><th class="n y0">Ano anterior</th><th class="n y1">Ano atual</th><th class="n">Variação</th><th class="n">%</th><th class="n">Qtd. ano anterior</th><th class="n">Qtd. ano atual</th><th class="n">Grupos que compraram</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <p class="note" id="regra-yoy"></p>
   </div>
 
   <p class="note" id="regra">Vendas: soma do Valor Total do Histórico de Pedidos no período (pedidos líquidos de cancelamentos e devoluções), ligada a cada grupo de clientes pelo código do cliente. Carteiras, vendedores e status dos clientes vêm da base TIME BOPED 2026 validada em 20/10/2026.</p>
@@ -349,7 +443,7 @@ const PSITS = ['Potencial', 'Comprou recentemente', 'Já paga o preço da promo'
 defaults();
 $('#f-reset').addEventListener('click', () => {
   dash.resetParams();
-  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null });
+  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null });
   defaults();
 });
 $('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
@@ -378,6 +472,26 @@ $('#foco-chips').addEventListener('click', (e) => {
   const b = e.target.closest('[data-v]');
   if (b) set(b.dataset.pick === 'grupo' ? { pgrupo: b.dataset.v, psub: null, psit: null } : { psub: b.dataset.v, pgrupo: null, psit: null });
 });
+document.querySelectorAll('#y-per-btn button').forEach((b) => b.addEventListener('click', () => set({ yper: b.dataset.per === 'ytd' ? null : b.dataset.per })));
+$('#f-ysub').addEventListener('change', (e) => set({ ysub: e.target.value || null }));
+$('#f-ygrupo').addEventListener('change', (e) => {
+  const v = e.target.value.trim().toUpperCase();
+  const g = (dash.data('grupos').data || []).find((r) => String(r.grupo).toUpperCase() === v || String(r.cod_grupo) === v);
+  set({ ygrupo: g ? String(g.cod_grupo) : null });
+});
+$('#y-sel-close').addEventListener('click', () => set({ ygrupo: null, ysub: null }));
+$('#tab-yvend tbody').addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-v]');
+  if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
+});
+$('#tab-ygrupos tbody').addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-g]');
+  if (tr) { set({ ygrupo: P().ygrupo === tr.dataset.g ? null : tr.dataset.g }); $('#y-title').scrollIntoView({ block: 'nearest' }); }
+});
+$('#tab-ysubs tbody').addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-s]');
+  if (tr) { set({ ysub: P().ysub === tr.dataset.s ? null : tr.dataset.s }); $('#y-title').scrollIntoView({ block: 'nearest' }); }
+});
 document.querySelectorAll('#tema button').forEach((b) => b.addEventListener('click', () => set({ tema: b.dataset.tema || null })));
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { set({ aba: b.dataset.aba }); dash.setLink(b.dataset.aba); }));
 $('#tab-cob tbody').addEventListener('click', (e) => {
@@ -385,7 +499,7 @@ $('#tab-cob tbody').addEventListener('click', (e) => {
   if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
 });
 const named = location.hash.slice(1);
-if (named === 'pedidos' || named === 'historico' || named === 'promocoes') set({ aba: named });
+if (['pedidos', 'historico', 'promocoes', 'yoy'].includes(named)) set({ aba: named });
 $('#det-close').addEventListener('click', () => { openKey = null; draw(); });
 document.querySelectorAll('#tab-grupos th').forEach((th) => th.addEventListener('click', () => {
   const f = th.dataset.field;
@@ -439,6 +553,8 @@ function draw() {
   $('#historico').hidden = aba !== 'historico';
   $('#pedidos').hidden = aba !== 'pedidos';
   $('#promocoes').hidden = aba !== 'promocoes';
+  $('#yoy').hidden = aba !== 'yoy';
+  ['#f-ygrupo', '#f-ysub'].forEach((x) => { $(x).closest('label').hidden = aba !== 'yoy'; });
   $('#f-mes').closest('label').hidden = aba !== 'pedidos';
   ['#f-plinha', '#f-pitem', '#f-psit', '#f-pgrupo', '#f-psub'].forEach((s) => { $(s).closest('label').hidden = aba !== 'promocoes'; });
   $('#f-top').closest('label').hidden = aba === 'pedidos';
@@ -575,6 +691,7 @@ function draw() {
   }));
   drawPedidos(rows);
   drawPromo(rows);
+  drawYoy(rows, all);
 }
 
 const FERIADOS = new Set(['2026-01-01', '2026-02-16', '2026-02-17', '2026-04-03', '2026-04-21', '2026-05-01', '2026-06-04', '2026-09-07', '2026-10-12', '2026-11-02', '2026-11-15', '2026-11-20', '2026-12-25']);
@@ -713,6 +830,152 @@ function drawPedidos(scope) {
       el('td', null, r.ultimo_faturamento ? r.ultimo_faturamento.split('-').reverse().join('/') : '—'), el('td', 'n', BRL.format(r.faturamento_historico)));
     return tr;
   }));
+}
+const SBRL = (v) => (v > 0.5 ? '+' : '') + BRL.format(v);
+const varPct = (a0, a1) => (a0 > 0 ? (a1 - a0) / a0 : null);
+const pctTxt = (a0, a1) => { const v = varPct(a0, a1); return v == null ? (a1 > 0 ? 'novo' : '—') : (v > 0 ? '+' : '') + PCT.format(v); };
+const sinal = (d) => (d > 0.5 ? 'up' : d < -0.5 ? 'down' : '');
+function ybar(d, max) {
+  const td = el('td'); const box = el('div', 'ybar');
+  const l = el('div'); const r = el('div');
+  const w = max > 0 ? Math.min(Math.abs(d) / max, 1) * 100 + '%' : '0';
+  if (d < 0) { const b = el('div', 'neg'); b.style.width = w; l.append(b); }
+  if (d > 0) { const b = el('div', 'pos'); b.style.width = w; r.append(b); }
+  box.append(l, r); td.append(box); return td;
+}
+function yList(box, items, onPick, active) {
+  const max = Math.max(1, ...items.map((d) => Math.abs(d.d)));
+  box.replaceChildren(...(items.length ? items.map((d) => {
+    const row = el('div', 'bar' + (active === d.k ? ' on' : ''));
+    row.tabIndex = 0;
+    row.append(el('span', 'lbl', d.label));
+    const tr = el('div', 'track'); const f = el('div', 'fill');
+    f.style.width = (Math.abs(d.d) / max * 100) + '%'; f.style.background = d.d >= 0 ? 'var(--color-ok)' : 'var(--color-bad)';
+    tr.append(f); row.append(tr);
+    row.append(el('span', 'val ' + sinal(d.d), SBRL(d.d)));
+    row.title = `${d.label}${d.sub ? ' · ' + d.sub : ''}\n${BRL.format(d.a0)} → ${BRL.format(d.a1)} (${pctTxt(d.a0, d.a1)})`;
+    row.addEventListener('click', () => onPick(d.k));
+    row.addEventListener('keydown', (e) => { if (e.key === 'Enter') onPick(d.k); });
+    return row;
+  }) : [el('p', 'note', 'Nada nesse sentido com esses filtros.')]));
+}
+function drawYoy(scope, allGrupos) {
+  const p = P();
+  const y = dash.data('yoy');
+  const ok = y.status === 'ok';
+  document.querySelectorAll('#ind-yoy .dash-skeleton').forEach((e) => { if (ok || y.status === 'error') e.classList.remove('dash-skeleton'); });
+  const per = p.yper === 'mtd' ? 'mtd' : 'ytd';
+  document.querySelectorAll('#y-per-btn button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.per === per)));
+  if (!ok || !y.data.length) return;
+  const head = y.data.find((r) => r.ref) || {};
+  const ref = head.ref || '', refA = head.ref_ant || '';
+  const ano1 = ref.slice(0, 4), ano0 = refA.slice(0, 4);
+  const dm = (iso) => iso.slice(8, 10) + '/' + iso.slice(5, 7);
+  const ini = per === 'ytd' ? '01/01' : '01/' + ref.slice(5, 7);
+  const k0 = per === 'ytd' ? 'a0' : 'm0', k1 = per === 'ytd' ? 'a1' : 'm1';
+  $('#y-per').textContent = `${ini} a ${dm(ref)}/${ano1} contra ${ini} a ${dm(refA)}/${ano0}, cortados no mesmo dia do calendário.`;
+  document.querySelectorAll('#yoy th.y0').forEach((t) => { t.textContent = ano0; });
+  document.querySelectorAll('#yoy th.y1').forEach((t) => { t.textContent = ano1; });
+  $('#y-l0').textContent = `Vendas ${ano0}`; $('#y-l1').textContent = `Vendas ${ano1}`;
+
+  const nome = new Map(allGrupos.map((r) => [r.cod_grupo + '|' + r.vendedor, r]));
+  const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));
+  const rows = y.data.filter((r) => inScope.has(r.g + '|' + r.v)).map((r) => ({ g: r.g, v: r.v, s: r.s, a0: r[k0] || 0, a1: r[k1] || 0, q0: per === 'ytd' ? r.q0 || 0 : null, q1: per === 'ytd' ? r.q1 || 0 : null }))
+    .filter((r) => r.a0 || r.a1);
+  // listas de opções
+  const subs = Array.from(new Set(rows.map((r) => r.s))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  fillSelect($('#f-ysub'), 'Todos', subs, p.ysub);
+  const gnames = Array.from(new Set(rows.map((r) => (nome.get(r.g + '|' + r.v) || {}).grupo).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const dl = $('#lista-ygrupos');
+  if (dl.childElementCount !== gnames.length) dl.replaceChildren(...gnames.map((n) => new Option(n)));
+  const gName = (g) => { const r = allGrupos.find((x) => String(x.cod_grupo) === g); return r ? r.grupo : g; };
+  if (document.activeElement !== $('#f-ygrupo')) $('#f-ygrupo').value = p.ygrupo ? gName(p.ygrupo) : '';
+
+  const both = rows.filter((r) => (!p.ygrupo || r.g === p.ygrupo) && (!p.ysub || r.s === p.ysub));
+  const forGroups = rows.filter((r) => !p.ysub || r.s === p.ysub);
+  const forSubs = rows.filter((r) => !p.ygrupo || r.g === p.ygrupo);
+  const sel = [p.ygrupo ? 'grupo ' + gName(p.ygrupo) : null, p.ysub ? 'subgrupo ' + p.ysub : null].filter(Boolean);
+  $('#y-sel').hidden = !sel.length;
+  $('#y-sel-txt').textContent = sel.length ? 'Seleção: ' + sel.join(' · ') + '.' : '';
+  $('#y-title').textContent = sel.length ? 'Comparativo de ' + sel.join(' · ') : 'Mesmo período do ano anterior';
+
+  const agg = (rs, key) => d3.groups(rs, key).map(([k, xs]) => ({ k, xs, a0: d3.sum(xs, (r) => r.a0), a1: d3.sum(xs, (r) => r.a1) })).map((o) => ({ ...o, d: o.a1 - o.a0 }));
+  const gk = (r) => r.g + '|' + r.v;
+  const tot0 = d3.sum(both, (r) => r.a0), tot1 = d3.sum(both, (r) => r.a1);
+  const grpBoth = agg(both, gk);
+  const up = grpBoth.filter((o) => o.d > 0.5), dn = grpBoth.filter((o) => o.d < -0.5);
+  $('#y-a0').textContent = BRLc.format(tot0); $('#y-a0').title = BRL.format(tot0);
+  $('#y-a0-s').textContent = `${INT.format(grpBoth.filter((o) => o.a0 > 0).length)} grupos compraram`;
+  $('#y-a1').textContent = BRLc.format(tot1); $('#y-a1').title = BRL.format(tot1);
+  $('#y-a1-s').textContent = `${INT.format(grpBoth.filter((o) => o.a1 > 0).length)} grupos compraram`;
+  $('#y-d').textContent = (tot1 - tot0 > 0 ? '+' : '') + BRLc.format(tot1 - tot0); $('#y-d').className = 'v ' + sinal(tot1 - tot0); $('#y-d').title = SBRL(tot1 - tot0);
+  $('#y-d-s').textContent = pctTxt(tot0, tot1) + ` sobre ${ano0}`;
+  $('#y-up').textContent = INT.format(up.length); $('#y-up-s').textContent = `${SBRL(d3.sum(up, (o) => o.d))} · ${INT.format(up.filter((o) => o.a0 <= 0).length)} sem compra em ${ano0}`;
+  $('#y-dn').textContent = INT.format(dn.length); $('#y-dn-s').textContent = `${SBRL(d3.sum(dn, (o) => o.d))} · ${INT.format(dn.filter((o) => o.a1 <= 0).length)} sem compra em ${ano1}`;
+
+  // vendedores
+  const vend = agg(both, (r) => r.v).sort((a, b) => b.d - a.d);
+  const vmax = Math.max(1, ...vend.map((o) => Math.abs(o.d)));
+  $('#tab-yvend tbody').replaceChildren(...vend.map((o) => {
+    const tr = el('tr'); tr.dataset.v = o.k; if (p.vendedor === o.k) tr.className = 'on';
+    const gs = agg(o.xs, gk);
+    const time = (nome.get(o.xs[0].g + '|' + o.k) || {}).time || '';
+    tr.append(el('td', null, o.k), el('td', null, time), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.d), SBRL(o.d)), el('td', 'n ' + sinal(o.d), pctTxt(o.a0, o.a1)),
+      ybar(o.d, vmax), el('td', 'n', INT.format(gs.filter((x) => x.d > 0.5).length)), el('td', 'n', INT.format(gs.filter((x) => x.d < -0.5).length)));
+    return tr;
+  }));
+
+  // quem puxa: grupos (respeita o subgrupo escolhido) e subgrupos (respeita o grupo escolhido)
+  const grp = agg(forGroups, gk).map((o) => { const n = nome.get(o.k) || {}; return { ...o, g: o.xs[0].g, v: o.xs[0].v, label: n.grupo || o.xs[0].g, sub: o.xs[0].v }; });
+  const sub = agg(forSubs, (r) => r.s).map((o) => ({ ...o, label: o.k }));
+  const pickG = (k) => { const g = k.split('|')[0]; set({ ygrupo: p.ygrupo === g ? null : g }); };
+  const pickS = (k) => set({ ysub: p.ysub === k ? null : k });
+  const gUp = grp.filter((o) => o.d > 0.5).sort((a, b) => b.d - a.d), gDn = grp.filter((o) => o.d < -0.5).sort((a, b) => a.d - b.d);
+  const sUp = sub.filter((o) => o.d > 0.5).sort((a, b) => b.d - a.d), sDn = sub.filter((o) => o.d < -0.5).sort((a, b) => a.d - b.d);
+  const actG = p.ygrupo ? (grp.find((o) => o.g === p.ygrupo) || {}).k : null;
+  yList($('#y-gup'), gUp.slice(0, 12), pickG, actG);
+  yList($('#y-gdn'), gDn.slice(0, 12), pickG, actG);
+  yList($('#y-sup'), sUp.slice(0, 12), pickS, p.ysub);
+  yList($('#y-sdn'), sDn.slice(0, 12), pickS, p.ysub);
+  const shareTxt = (xs, tot) => (xs.length ? `Os ${Math.min(12, xs.length)} maiores somam ${SBRL(d3.sum(xs.slice(0, 12), (o) => o.d))} de ${SBRL(tot)} no total de ${INT.format(xs.length)}.` : '');
+  const gTxt = p.ysub ? ` em ${p.ysub}` : '';
+  const sTxt = p.ygrupo ? ` em ${gName(p.ygrupo)}` : '';
+  $('#y-gup-note').textContent = `Maior ganho em R$${gTxt}. ${shareTxt(gUp, d3.sum(gUp, (o) => o.d))} Clique para ver os subgrupos do grupo.`;
+  $('#y-gdn-note').textContent = `Maior perda em R$${gTxt}. ${shareTxt(gDn, d3.sum(gDn, (o) => o.d))} Clique para ver os subgrupos do grupo.`;
+  $('#y-sup-note').textContent = `Maior ganho em R$${sTxt}. ${shareTxt(sUp, d3.sum(sUp, (o) => o.d))} Clique para ver os grupos que compram o subgrupo.`;
+  $('#y-sdn-note').textContent = `Maior perda em R$${sTxt}. ${shareTxt(sDn, d3.sum(sDn, (o) => o.d))} Clique para ver os grupos que compram o subgrupo.`;
+
+  // tabelas completas
+  const lim = Number(p.top || 50);
+  const sit = (o) => (o.a0 <= 0 && o.a1 > 0 ? ['Novo no ano', 'ok'] : o.a1 < 0 ? ['Só devolução/cancelamento', 'bad'] : o.a1 <= 0 && o.a0 > 0 ? ['Sem compra no ano', 'bad'] : o.d > 0.5 ? ['Crescendo', 'ok'] : o.d < -0.5 ? ['Caindo', 'warn'] : ['Estável', '']);
+  const gAll = grp.slice().sort((a, b) => Math.abs(b.d) - Math.abs(a.d));
+  $('#y-tg-note').textContent = `${INT.format(gAll.length)} grupos de clientes${gTxt}, do maior impacto (para cima ou para baixo) para o menor. Mostrando ${INT.format(Math.min(lim, gAll.length))}. Clique em um grupo para ver os subgrupos.`;
+  $('#tab-ygrupos tbody').replaceChildren(...gAll.slice(0, lim).map((o) => {
+    const tr = el('tr'); tr.dataset.g = o.g; tr.dataset.key = keyOf(o.g, o.v); if (p.ygrupo === o.g) tr.className = 'on';
+    const [st, cls] = sit(o); const stc = el('td'); stc.append(el('span', 'pill ' + cls, st));
+    const top = agg(o.xs, (r) => r.s).sort((a, b) => (o.d >= 0 ? b.d - a.d : a.d - b.d))[0];
+    tr.append(el('td', null, o.label), el('td', null, o.v), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.d), SBRL(o.d)), el('td', 'n ' + sinal(o.d), pctTxt(o.a0, o.a1)), stc,
+      el('td', null, top ? `${top.k} (${SBRL(top.d)})` : '—'));
+    return tr;
+  }));
+  const sAll = sub.slice().sort((a, b) => Math.abs(b.d) - Math.abs(a.d));
+  $('#y-ts-note').textContent = `${INT.format(sAll.length)} subgrupos${sTxt}, do maior impacto para o menor.${per === 'mtd' ? ' Quantidades só no acumulado do ano.' : ''} Clique em um subgrupo para ver os grupos de clientes.`;
+  $('#tab-ysubs tbody').replaceChildren(...sAll.map((o) => {
+    const tr = el('tr'); tr.dataset.s = o.k; if (p.ysub === o.k) tr.className = 'on';
+    const q = (f) => (per === 'ytd' ? INT.format(d3.sum(o.xs, (r) => r[f])) : '—');
+    tr.append(el('td', null, o.k), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.d), SBRL(o.d)), el('td', 'n ' + sinal(o.d), pctTxt(o.a0, o.a1)),
+      el('td', 'n', q('q0')), el('td', 'n', q('q1')), el('td', 'n', INT.format(new Set(o.xs.filter((r) => r.a1 > 0).map(gk)).size)));
+    return tr;
+  }));
+  $('#regra-yoy').textContent = `Fonte: Histórico de Pedidos (Valor Total, líquido de cancelamentos e devoluções). As vendas de ${ano0} são atribuídas pela carteira atual: cada cliente vai para o grupo de clientes e o vendedor de hoje, então vendedores que herdaram clientes aparecem com o histórico deles. Clientes fora das carteiras do time não entram. "Novo no ano": grupo sem compra no mesmo período de ${ano0}. "Sem compra no ano": comprou em ${ano0} e ainda não comprou em ${ano1}.`;
+  if ((p.aba || 'pedidos') === 'yoy') {
+    const g1 = gUp[0], g2 = gDn[0], s1 = sUp[0], s2 = sDn[0];
+    $('#takeaway').textContent = both.length
+      ? `${per === 'ytd' ? 'No acumulado do ano' : 'No mês até o dia'}, as carteiras venderam ${BRL.format(tot1)} contra ${BRL.format(tot0)} em ${ano0} (${pctTxt(tot0, tot1)}).` +
+        (g1 ? ` Quem mais puxa para cima: ${g1.label} (${SBRL(g1.d)})` : '') + (g2 ? `; para baixo: ${g2.label} (${SBRL(g2.d)}).` : '.') +
+        (s1 ? ` Subgrupo que mais cresce: ${s1.k} (${SBRL(s1.d)})` : '') + (s2 ? `; que mais cai: ${s2.k} (${SBRL(s2.d)}).` : '.')
+      : 'Nenhuma venda com esses filtros.';
+  }
 }
 function drawPromo(scope) {
   const p = P();
