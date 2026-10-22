@@ -87,7 +87,7 @@
   <nav class="tabs" role="tablist" aria-label="Partes do painel">
     <button type="button" role="tab" id="tab-btn-pedidos" data-aba="pedidos">Pedidos do mês</button>
     <button type="button" role="tab" id="tab-btn-promocoes" data-aba="promocoes">Promoções do mês</button>
-    <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Histórico de faturamento</button>
+    <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Histórico de vendas</button>
   </nav>
 
   <section class="filters" id="filtros" aria-label="Filtros">
@@ -112,7 +112,7 @@
 
   <div class="pane" id="historico">
   <section class="kpis" id="indicadores" data-source="grupos">
-    <div class="kpi"><span class="note">Faturamento comercial (sem duplicidade)</span><span class="v dash-skeleton" id="k-fat">—</span></div>
+    <div class="kpi"><span class="note">Vendas no período</span><span class="v dash-skeleton" id="k-fat">—</span><span class="sub" id="k-per"></span></div>
     <div class="kpi"><span class="note">Grupos de cliente</span><span class="v dash-skeleton" id="k-grp">—</span></div>
     <div class="kpi"><span class="note">Clientes (códigos)</span><span class="v dash-skeleton" id="k-cli">—</span></div>
     <div class="kpi"><span class="note">Vendedores com carteira</span><span class="v dash-skeleton" id="k-vend">—</span></div>
@@ -121,12 +121,12 @@
 
   <div class="grid">
     <section class="card" id="por-time">
-      <h2>Faturamento por time</h2>
+      <h2>Vendas por time</h2>
       <p class="note">Clique em um time para filtrar. Subtimes de líder e inativos somados ao time macro.</p>
       <div class="bars" id="bars-time" data-source="grupos"></div>
     </section>
     <section class="card" id="por-vendedor">
-      <h2>Faturamento por vendedor</h2>
+      <h2>Vendas por vendedor</h2>
       <p class="note">Clique em um vendedor para ver só a carteira dele.</p>
       <div class="bars scroll" id="bars-vend" data-source="grupos"></div>
     </section>
@@ -145,7 +145,7 @@
           <th data-field="uf">UF</th>
           <th data-field="status">Status</th>
           <th data-field="clientes" class="n">Clientes</th>
-          <th data-field="faturamento" class="n">Faturamento</th>
+          <th data-field="faturamento" class="n">Vendas</th>
         </tr></thead>
         <tbody></tbody>
       </table>
@@ -154,7 +154,7 @@
 
   <section class="card" id="detalhe" hidden>
     <header class="picked"><h2 id="det-title"></h2><button id="det-close" type="button">Fechar</button></header>
-    <p class="note">Clientes do grupo nesta carteira. Linhas repetidas da planilha (mesmo cliente e mesmo valor) aparecem uma vez.</p>
+    <p class="note">Clientes do grupo nesta carteira, com as vendas de cada um no período e a data do último pedido.</p>
     <div class="scroll">
       <table id="tab-clientes" data-source="clientes" data-row-key="cod_cliente,vendedor">
         <thead><tr>
@@ -163,8 +163,8 @@
           <th data-field="cidade">Cidade</th>
           <th data-field="uf">UF</th>
           <th data-field="status">Status</th>
-          <th data-field="ultimo_faturamento">Último faturamento</th>
-          <th data-field="faturamento" class="n">Faturamento</th>
+          <th data-field="ultimo_faturamento">Último pedido</th>
+          <th data-field="faturamento" class="n">Vendas</th>
         </tr></thead>
         <tbody></tbody>
       </table>
@@ -221,8 +221,8 @@
         <table id="tab-sem" data-source="pedidos" data-row-key="cod_grupo,vendedor">
           <thead><tr>
             <th data-field="grupo">Grupo de cliente</th><th data-field="cod_grupo">Cód. grupo</th><th data-field="vendedor">Vendedor</th>
-            <th data-field="status_cliente">Status</th><th data-field="ultimo_faturamento">Último faturamento</th>
-            <th data-field="faturamento_historico" class="n">Faturamento histórico</th>
+            <th data-field="status_cliente">Status</th><th data-field="ultimo_faturamento">Último pedido</th>
+            <th data-field="faturamento_historico" class="n">Vendas no histórico</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -283,7 +283,7 @@
     <p class="note" id="regra-promo">Histórico de pedidos de 05/01 a 21/10/2026, ligado à carteira pelo código do cliente. Qtd. histórica soma as compras menos as devoluções do período. Último pedido é a data mais recente com compra do item, e o último valor pago é a média do valor unitário nessa data. Cor da data do último pedido: vermelho até 30 dias, amarelo de 31 a 45 dias, verde acima de 45 dias. Situação: "Comprou recentemente" se o último pedido tem até 30 dias; "Já paga o preço da promo" se o último valor pago está até 0,5% acima do preço da promoção ou abaixo dele; "Potencial" nos demais casos.</p>
   </div>
 
-  <p class="note" id="regra">Regra aplicada: dentro do mesmo código de grupo e vendedor, valores de faturamento iguais contam uma vez e valores diferentes se somam. Só entram vendedores da lista TIME BOPED 2026 (validada em 20/10/2026), buscados em Representante (Z1), Key Account (Z3) e Vendedor Interno (VE).</p>
+  <p class="note" id="regra">Vendas: soma do Valor Total do Histórico de Pedidos no período (pedidos líquidos de cancelamentos e devoluções), ligada a cada grupo de clientes pelo código do cliente. Carteiras, vendedores e status dos clientes vêm da base TIME BOPED 2026 validada em 20/10/2026.</p>
 </div>
 
 <script>
@@ -456,6 +456,7 @@ function draw() {
   if (ok) {
     $('#k-fat').textContent = BRLc.format(total);
     $('#k-fat').title = BRL.format(total);
+    $('#k-per').textContent = all[0] && all[0].periodo ? 'Pedidos de ' + all[0].periodo : '';
     $('#k-grp').textContent = INT.format(new Set(rows.map((r) => r.cod_grupo)).size);
     $('#k-cli').textContent = INT.format(d3.sum(rows, (r) => r.clientes));
     $('#k-vend').textContent = INT.format(new Set(rows.map((r) => r.vendedor)).size);
@@ -463,7 +464,7 @@ function draw() {
     const lead = sorted[0];
     const byM = d3.rollups(rows, (v) => d3.sum(v, (r) => r.faturamento), (r) => r.time_macro).sort((a, b) => b[1] - a[1]);
     if (aba === 'historico') $('#takeaway').textContent = rows.length
-      ? `${BRL.format(total)} em ${INT.format(rows.length)} grupos de clientes nas carteiras. ` +
+      ? `${BRL.format(total)} em vendas de ${INT.format(rows.length)} grupos de clientes nas carteiras. ` +
         (byM.length > 1 ? `${byM[0][0]} lidera com ${PCT.format(byM[0][1] / total)} do total; ` : '') +
         `o maior grupo é ${lead.grupo} (${lead.vendedor}), com ${BRL.format(lead.faturamento)}.`
       : 'Nenhum grupo com esses filtros.';
@@ -611,7 +612,7 @@ function drawPedidos(scope) {
     return tr;
   }));
   const semRows = shown.filter((r) => r.situacao_mes === 'Sem pedido').sort((a, b) => b.faturamento_historico - a.faturamento_historico);
-  $('#sem-note').textContent = `${INT.format(semRows.length)} grupos de clientes, dos que mais faturaram no histórico para as menores.`;
+  $('#sem-note').textContent = `${INT.format(semRows.length)} grupos de clientes, dos que mais compraram no histórico para os que menos compraram.`;
   $('#tab-sem tbody').replaceChildren(...semRows.map((r) => {
     const tr = el('tr'); tr.dataset.key = keyOf(r.cod_grupo, r.vendedor);
     const st = el('td'); st.append(statusPill(r.status_cliente));

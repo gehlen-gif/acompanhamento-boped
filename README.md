@@ -1,6 +1,7 @@
 # Painel de carteiras por grupo de cliente
 
 - Painel HTML: index.html (abre direto no navegador).
+- Atualização completa com um só arquivo: `python3 atualizar_tudo.py <Histórico de Pedidos.xlsx> dados/promocoes_<mes>.json` (refaz histórico de vendas, pedidos do mês e promoções; as carteiras vêm de dados/base/).
 - Painel online (Claude): https://claude.ai/artifact/FUGy2RPQ3xBRs4ALfgy7QV (tipo Dashboard; dados em datasets `grupos`, `clientes`, `pedidos`).
 - Base das carteiras: planilha 20-10.xlsx (histórico), só vendedores da skill vendedores/ (fora da lista = descartado).
 - Regra: no mesmo código de grupo + vendedor, faturamentos iguais contam uma vez; diferentes se somam.
