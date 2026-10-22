@@ -114,7 +114,7 @@ def build_html(data_ref):
     shell = (HERE / 'painel_shell.html').read_text(encoding='utf-8')
     data = ''
     for id_, f in [('grupos', 'carteiras_grupos.json'), ('clientes', 'carteiras_clientes.json'), ('pedidos', 'pedidos.json'),
-                   ('promocoes', 'promocoes.json'), ('promo_potencial', 'promo_potencial.json')]:
+                   ('promocoes', 'promocoes.json'), ('promo_potencial', 'promo_potencial.json'), ('meta', 'meta.json')]:
         if not (DADOS / f).exists():
             txt = '[]'
             data += f'<script type="application/json" id="data-{id_}">{txt}</script>\n'

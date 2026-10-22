@@ -54,6 +54,16 @@
 .cg .cov { display: grid; grid-template-columns: 4.5rem 1fr; gap: 6px; align-items: center; }
 .cg .cov .track { height: 8px; background: var(--cds-chart-grid); border-radius: 4px; overflow: hidden; }
 .cg .cov .fill { height: 100%; background: var(--color-ok); }
+.cg .meta-bar { position: relative; display: grid; grid-template-columns: 4.5rem 1fr; gap: 6px; align-items: center; min-width: 10rem; }
+.cg .meta-bar .track { position: relative; height: 10px; background: var(--cds-chart-grid); border-radius: 4px; overflow: visible; }
+.cg .meta-bar .fill { height: 100%; border-radius: 4px; background: var(--color-warn); max-width: 100%; }
+.cg .meta-bar .fill.ok { background: var(--color-ok); }
+.cg .meta-bar .fill.bad { background: var(--color-bad); }
+.cg .meta-bar .pace { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--cds-text-primary, currentColor); opacity: .7; }
+.cg tr.macro td { font-weight: 600; border-top: 2px solid var(--color-border-line); }
+.cg tr.lider td:first-child { padding-left: 1.5rem; }
+.cg tr.total td { font-weight: 700; border-top: 2px solid var(--color-border-line); }
+.cg .legend-pace { display: inline-block; width: 2px; height: 12px; background: var(--cds-text-primary, currentColor); opacity: .7; vertical-align: middle; margin: 0 4px; }
 .cg .dt { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-fg); white-space: nowrap; }
 .cg .dt::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--dot); flex: none; }
 .cg .dt.d-red { --dot: #d93025; } .cg .dt.d-yellow { --dot: #f2b705; } .cg .dt.d-green { --dot: #1e9e5a; }
@@ -186,14 +196,26 @@
       <div class="kpi"><span class="note">Só cancelamento no mês</span><span class="v dash-skeleton" id="p-canc">—</span><span class="sub" id="p-canc-s"></span></div>
       <div class="kpi"><span class="note">Valor total de pedidos (- canc.)</span><span class="v dash-skeleton" id="p-val">—</span><span class="sub" id="p-val-s"></span></div>
       <div class="kpi"><span class="note">Itens pedidos</span><span class="v dash-skeleton" id="p-itens">—</span><span class="sub" id="p-itens-s"></span></div>
+      <div class="kpi"><span class="note">Meta do mês</span><span class="v dash-skeleton" id="p-meta">—</span><span class="sub" id="p-meta-s"></span></div>
+    </section>
+
+    <section class="card" id="meta-times">
+      <h2>Meta do mês por time e líder</h2>
+      <p class="note" id="meta-note"></p>
+      <div class="scroll">
+        <table id="tab-meta" data-source="meta">
+          <thead><tr><th>Time / líder</th><th class="n">Vendedores</th><th class="n">Meta</th><th class="n">Realizado</th><th>Atingido</th><th class="n">Falta</th><th class="n">Projeção do mês</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </section>
 
     <section class="card" id="cobertura">
       <h2>Cobertura por vendedor</h2>
-      <p class="note">Quantos grupos de clientes da carteira de cada vendedor já colocaram pedido no mês. Clique em um vendedor para filtrar.</p>
+      <p class="note">Quantos grupos de clientes da carteira de cada vendedor já colocaram pedido no mês e quanto da meta já foi atingido. Clique em um vendedor para filtrar.</p>
       <div class="scroll">
         <table id="tab-cob" data-source="pedidos">
-          <thead><tr><th>Vendedor</th><th>Time</th><th class="n">Grupos de clientes</th><th class="n">Com pedido</th><th class="n">Sem pedido</th><th>Cobertura</th><th class="n">Itens</th><th class="n">Valor (- canc.)</th></tr></thead>
+          <thead><tr><th>Vendedor</th><th>Time</th><th class="n">Grupos de clientes</th><th class="n">Com pedido</th><th class="n">Sem pedido</th><th>Cobertura</th><th class="n">Itens</th><th class="n">Valor (- canc.)</th><th class="n">Meta</th><th>Atingido</th><th class="n">Falta</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -555,6 +577,32 @@ function draw() {
   drawPromo(rows);
 }
 
+const FERIADOS = new Set(['2026-01-01', '2026-02-16', '2026-02-17', '2026-04-03', '2026-04-21', '2026-05-01', '2026-06-04', '2026-09-07', '2026-10-12', '2026-11-02', '2026-11-15', '2026-11-20', '2026-12-25']);
+function diasUteis(ref) {
+  if (!ref) return { passados: 0, total: 0 };
+  const [y, m, d] = ref.split('-').map(Number);
+  let passados = 0, total = 0;
+  for (let i = 1; i <= new Date(y, m, 0).getDate(); i++) {
+    const dt = new Date(y, m - 1, i), wd = dt.getDay();
+    const iso = `${y}-${String(m).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+    if (wd === 0 || wd === 6 || FERIADOS.has(iso)) continue;
+    total++; if (i <= d) passados++;
+  }
+  return { passados, total };
+}
+function metaCell(real, meta, ritmo) {
+  const td = el('td');
+  const box = el('div', 'meta-bar');
+  const pct = meta > 0 ? real / meta : 0;
+  box.append(el('span', null, PCT.format(pct)));
+  const tk = el('div', 'track');
+  const fl = el('div', 'fill' + (pct >= ritmo ? ' ok' : pct < ritmo * 0.7 ? ' bad' : ''));
+  fl.style.width = Math.min(pct, 1) * 100 + '%';
+  const pc = el('div', 'pace'); pc.style.left = `calc(${ritmo * 100}% - 1px)`;
+  tk.append(fl, pc); box.append(tk); td.append(box);
+  td.title = `${PCT.format(pct)} da meta · esperado ${PCT.format(ritmo)} pelo ritmo de dias úteis`;
+  return td;
+}
 function drawPedidos(scope) {
   const p = P();
   const d = dash.data('pedidos');
@@ -586,6 +634,46 @@ function drawPedidos(scope) {
       : 'Nenhum grupo de clientes com esses filtros.';
   }
 
+  // META: realizado = pedidos do mês de toda a carteira do vendedor (filtros de UF, segmento etc. não reduzem a meta)
+  const md = dash.data('meta');
+  const metaOk = md.status === 'ok';
+  if (metaOk || md.status === 'error') $('#p-meta').classList.remove('dash-skeleton');
+  const vendOk = (r) => (!p.macro || r.time_macro === p.macro) && (!p.time || r.time === p.time) && (!p.vendedor || r.vendedor === p.vendedor);
+  const metas = metaOk ? md.data.map((r) => ({ ...r, meta: Number(r.meta) })).filter(vendOk) : [];
+  const metaV = new Map(metas.map((r) => [r.vendedor, r]));
+  const realV = new Map(d3.groups(d.data, (r) => r.vendedor).map(([v, rs]) => [v, uniqSum(rs, 'valor_pedidos')]));
+  const du = diasUteis(ref);
+  const ritmo = du.total ? du.passados / du.total : 0;
+  const metaTot = d3.sum(metas, (r) => r.meta);
+  const realTot = d3.sum(metas.filter((r) => r.meta > 0), (r) => realV.get(r.vendedor) || 0);
+  if (metaTot > 0) {
+    $('#p-meta').textContent = BRLc.format(metaTot); $('#p-meta').title = BRL.format(metaTot);
+    $('#p-meta-s').textContent = `${PCT.format(realTot / metaTot)} atingido · esperado ${PCT.format(ritmo)}`;
+  } else { $('#p-meta').textContent = '—'; $('#p-meta-s').textContent = 'Sem meta para esses filtros'; }
+  if ((p.aba || 'pedidos') === 'pedidos' && metaTot > 0 && scoped.length) $('#takeaway').textContent += ` Meta do mês: ${PCT.format(realTot / metaTot)} de ${BRL.format(metaTot)} atingido, com ${PCT.format(ritmo)} dos dias úteis já passados.`;
+  $('#meta-note').innerHTML = '';
+  $('#meta-note').append(`Pedidos até ${refTxt}: ${du.passados} de ${du.total} dias úteis do mês (${PCT.format(ritmo)}). A marca `, el('span', 'legend-pace'),
+    ` na barra mostra onde o time deveria estar nesse ritmo. Projeção = realizado ÷ dias úteis passados × dias úteis do mês. Só entram vendedores do time com meta maior que zero.`);
+  const linha = (cls, nome, rs) => {
+    const m = d3.sum(rs, (r) => r.meta), real = d3.sum(rs, (r) => realV.get(r.vendedor) || 0);
+    const tr = el('tr', cls);
+    tr.append(el('td', null, nome), el('td', 'n', INT.format(rs.filter((r) => r.meta > 0).length)), el('td', 'n', BRL.format(m)), el('td', 'n', BRL.format(real)),
+      metaCell(real, m, ritmo), el('td', 'n', BRL.format(Math.max(m - real, 0))), el('td', 'n', du.passados ? BRL.format(real / du.passados * du.total) : '—'));
+    return tr;
+  };
+  const comMeta = metas.filter((r) => r.meta > 0);
+  const trs = [];
+  d3.groups(comMeta, (r) => r.time_macro).map(([t, rs]) => ({ t, rs, m: d3.sum(rs, (r) => r.meta) })).sort((a, b) => b.m - a.m).forEach(({ t, rs }) => {
+    const tr = linha('macro', t, rs); tr.dataset.macro = t; trs.push(tr);
+    const lids = d3.groups(rs, (r) => r.lider);
+    if (lids.length > 1 || lids[0][0] !== 'Sem líder') {
+      lids.sort((a, b) => (a[0] === 'Sem líder') - (b[0] === 'Sem líder') || d3.sum(b[1], (r) => r.meta) - d3.sum(a[1], (r) => r.meta))
+        .forEach(([l, ls]) => trs.push(linha('lider', l === 'Sem líder' ? 'Sem líder (direto)' : l, ls)));
+    }
+  });
+  if (comMeta.length) trs.push(linha('total', 'Total', comMeta));
+  $('#tab-meta tbody').replaceChildren(...trs);
+
   const byV = d3.groups(scoped, (r) => r.vendedor).map(([v, rs]) => {
     const c = rs.filter((r) => r.situacao_mes === 'Com pedido').length;
     return { v, time: rs[0].time, tot: rs.length, c, s: rs.filter((r) => r.situacao_mes === 'Sem pedido').length, it: uniqSum(rs, 'qt_itens_pedido'), val: uniqSum(rs, 'valor_pedidos') };
@@ -596,7 +684,12 @@ function drawPedidos(scope) {
     tr.append(el('td', null, o.v), el('td', null, o.time), el('td', 'n', INT.format(o.tot)), el('td', 'n', INT.format(o.c)), el('td', 'n', INT.format(o.s)));
     const cv = el('td'); const box = el('div', 'cov'); box.append(el('span', null, PCT.format(o.c / o.tot)));
     const tk = el('div', 'track'); const fl = el('div', 'fill'); fl.style.width = (o.c / o.tot * 100) + '%'; tk.append(fl); box.append(tk); cv.append(box);
+    const mt = metaV.get(o.v);
     tr.append(cv, el('td', 'n', INT.format(o.it)), el('td', 'n', BRL.format(o.val)));
+    if (mt && mt.meta > 0) {
+      const real = realV.get(o.v) || 0;
+      tr.append(el('td', 'n', BRL.format(mt.meta)), metaCell(real, mt.meta, ritmo), el('td', 'n', BRL.format(Math.max(mt.meta - real, 0))));
+    } else tr.append(el('td', 'n note', mt ? 'Meta zero' : 'Sem meta'), el('td'), el('td'));
     return tr;
   }));
 

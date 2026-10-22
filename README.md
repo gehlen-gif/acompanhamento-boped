@@ -21,3 +21,7 @@
 - `python3 atualizar_promocoes.py <Histórico de Pedidos.xlsx> dados/promocoes_outubro_2026.json`
   Gera dados/promocoes.json e dados/promo_potencial.json e refaz o index.html.
 - Situação por grupo de clientes e item: "Comprou recentemente" (último pedido até 30 dias), "Já paga o preço da promo" (último valor até 0,5% acima da promo ou abaixo), "Potencial" (demais).
+
+## Meta do mês
+
+`python atualizar_meta.py meta_out-26.xlsx 2026-10` gera `dados/meta.json` a partir da planilha de metas (colunas Representante e Meta Comercial). Só entram os vendedores mapeados em `dados/base/vendedores_time.csv`; nomes repetidos têm as metas somadas. Depois rode `atualizar_tudo.py` (ou `build_html`) para refazer o painel. A aba Pedidos do mês mostra a meta por vendedor, por time e por líder, com % atingido, falta, ritmo esperado por dias úteis e projeção do mês.
