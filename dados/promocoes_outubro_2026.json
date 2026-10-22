@@ -849,23 +849,6 @@
   "cx_master": 1,
   "icms": "0%",
   "ipi": "0,00%",
-  "preco_promo": 179.0,
-  "segmento": "FARMA OFF",
-  "itens_historico": [
-   "CADEIRA DE HIGIENIZACAO D40"
-  ],
-  "subgrupo": "CADEIRA HIG D40"
- },
- {
-  "id": "P51",
-  "linha": "HOME",
-  "item": "CADEIRA DE HIGIENIZACAO D40",
-  "codigo": "05435",
-  "cond_pagamento": "até 90dd",
-  "promocao": "Natal Azul Home",
-  "cx_master": 1,
-  "icms": "0%",
-  "ipi": "0,00%",
   "preco_promo": 169.0,
   "segmento": "FARMA OFF",
   "itens_historico": [
@@ -874,7 +857,7 @@
   "subgrupo": "CADEIRA HIG D40"
  },
  {
-  "id": "P52",
+  "id": "P51",
   "linha": "HOME",
   "item": "ANDADOR D10",
   "codigo": "05203",

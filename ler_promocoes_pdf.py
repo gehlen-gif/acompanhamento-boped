@@ -18,7 +18,7 @@ NOMES = {
     'ESTETOSCOPIO RAPPAPORT - AZUL / ROSA / ROXO / VERDE / VINHO': [f'ESTETOSCOPIO RAPPAPORT - {c}' for c in ('AZUL', 'ROSA', 'ROXO', 'VERDE', 'VINHO')],
     'FITA KINESIOLÓGICA KO VERMELHA': ['FITA KINESIOLÓGICA KO FIRE RED VERMELHA'],
 }
-LINHA = re.compile(r'^\s*(WELLNESS|HEALTH|HOME|ORTHO)\s+(.*?)\s{2,}(\S.*?)\s{2,}(\S.*?dd)\s+(?:TODOS\s+)?(Natal Azul \w+)\s+(\d+)\s+(\d+)%\s+([\d,]+)%\s+R\$\s+([\d.,]+)')
+LINHA = re.compile(r'^\s*(WELLNESS|HEALTH|HOME|ORTHO)\s+(.*?)\s{2,}(\S.*?)\s+((?:de\s+)?(?:\d+(?:dd)?\s+)?até\s+\d+dd)\s+(?:TODOS\s+)?(Natal Azul \w+)\s+(\d+)\s+(\d+)%\s+([\d,]+)%\s+R\$\s+([\d.,]+)')
 
 
 def norm(s):
