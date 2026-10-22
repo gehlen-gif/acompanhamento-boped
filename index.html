@@ -467,6 +467,7 @@ const FILTERS = [
   ['f-seg', 'segmento', 'Todos'],
   ['f-status', 'status', 'Todos'],
 ];
+const normNome = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
 const P = () => dash.params();
 const set = (o) => dash.setParams(o);
 let sortKey = 'faturamento', sortDir = -1, openKey = null;
@@ -496,8 +497,8 @@ $('#f-pitem').addEventListener('change', (e) => set({ pitem: e.target.value || n
 $('#f-psit').addEventListener('change', (e) => set({ psit: e.target.value || null }));
 $('#f-psub').addEventListener('change', (e) => set({ psub: e.target.value || null }));
 $('#f-pgrupo').addEventListener('change', (e) => {
-  const v = e.target.value.trim().toUpperCase();
-  const g = (dash.data('promo_potencial').data || []).find((r) => r.grupo.toUpperCase() === v || r.cod_grupo === v);
+  const v = normNome(e.target.value);
+  const g = (dash.data('promo_potencial').data || []).find((r) => normNome(r.grupo) === v || r.cod_grupo === v);
   set({ pgrupo: g ? g.cod_grupo : null });
 });
 $('#foco-close').addEventListener('click', () => set({ pgrupo: null, psub: null }));
@@ -519,8 +520,8 @@ $('#foco-chips').addEventListener('click', (e) => {
 document.querySelectorAll('#y-per-btn button').forEach((b) => b.addEventListener('click', () => set({ yper: b.dataset.per === 'ytd' ? null : b.dataset.per })));
 $('#f-ysub').addEventListener('change', (e) => set({ ysub: e.target.value || null }));
 $('#f-ygrupo').addEventListener('change', (e) => {
-  const v = e.target.value.trim().toUpperCase();
-  const g = (dash.data('grupos').data || []).find((r) => String(r.grupo).toUpperCase() === v || String(r.cod_grupo) === v);
+  const v = normNome(e.target.value);
+  const g = (dash.data('grupos').data || []).find((r) => normNome(r.grupo) === v || String(r.cod_grupo) === v);
   set({ ygrupo: g ? String(g.cod_grupo) : null });
 });
 $('#y-sel-close').addEventListener('click', () => set({ ygrupo: null, ysub: null }));
