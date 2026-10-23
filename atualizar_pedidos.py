@@ -80,7 +80,8 @@ def mix_subgrupos(h, ref):
     Conta um subgrupo no mês só se o valor líquido dele no mês for positivo (devolução não conta).
     - mix_mes: subgrupos no mês da data de referência, até ela;
     - mix_medio_ano: média de subgrupos por mês nos meses anteriores do ano em que o grupo comprou;
-    - mix_ano: subgrupos diferentes comprados no ano até a data de referência."""
+    - mix_ano: subgrupos diferentes comprados no ano até a data de referência;
+    - subs_mes: os subgrupos do mês, para o painel contar o mix de cada vendedor (subgrupos diferentes vendidos)."""
     a = h[(h['Data'].dt.year == ref.year) & (h['Data'] <= ref)].copy()
     a['cod_cliente'] = a['Cliente com Código'].astype(str).str.extract(r'^\s*(\d+)')[0].str.lstrip('0')
     a['vt'] = pd.to_numeric(a['Valor Total'], errors='coerce').fillna(0)
@@ -92,13 +93,15 @@ def mix_subgrupos(h, ref):
     gm = gm[gm['vt'] > 0.005]
     por_mes = gm.groupby(['cod_grupo', 'vendedor', 'mes'])['sub'].nunique().reset_index()
     ano = gm.groupby(['cod_grupo', 'vendedor'])['sub'].nunique()
+    subs_mes = gm[gm['mes'] == ref.month].groupby(['cod_grupo', 'vendedor'])['sub'].agg(lambda x: sorted(set(x)))
     out = {}
     for (g, v), x in por_mes.groupby(['cod_grupo', 'vendedor']):
         ant = x[x['mes'] < ref.month]['sub']
         atual = x[x['mes'] == ref.month]['sub']
         out[(g, v)] = {'mix_mes': int(atual.iloc[0]) if len(atual) else 0,
                        'mix_medio_ano': round(float(ant.mean()), 1) if len(ant) else None,
-                       'mix_ano': int(ano.get((g, v), 0)), 'meses_compra_ano': int(len(ant))}
+                       'mix_ano': int(ano.get((g, v), 0)), 'meses_compra_ano': int(len(ant)),
+                       'subs_mes': subs_mes.get((g, v), [])}
     return out
 
 
@@ -127,7 +130,7 @@ def main_historico(h, grupos, data_ref):
             'qt_itens_pedido': int(r['itens']) if r is not None else 0, 'valor_pedidos': valor,
             'qt_itens_cancelados': int(r['cancelados']) if r is not None else 0, 'valor_bonificacao': None,
             'pedidos_pendentes': None, 'nome_compartilhado': 'Não', 'data_ref': data_ref,
-            **mix.get((g['cod_grupo'], g['vendedor']), {'mix_mes': 0, 'mix_medio_ano': None, 'mix_ano': 0, 'meses_compra_ano': 0}),
+            **mix.get((g['cod_grupo'], g['vendedor']), {'mix_mes': 0, 'mix_medio_ano': None, 'mix_ano': 0, 'meses_compra_ano': 0, 'subs_mes': []}),
         })
     fora = h[~h['cod_cliente'].isin(set(cli['cod_cliente']))]
     resumo = {'data_ref': data_ref, 'fonte': 'Histórico de Pedidos', 'linhas_no_mes': int(len(h)),

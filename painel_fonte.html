@@ -72,15 +72,6 @@
 .cg .yfoco { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; justify-content: space-between; }
 .cg .grid.y2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); }
 .cg h3 { margin: 0 0 4px; font-size: var(--cds-font-size-body, 1rem); font-weight: 600; }
-.cg .mixtabs { display: grid; gap: var(--cds-gap-md); }
-.cg .mixtabs .scroll { max-height: 26rem; }
-.cg .mxlist { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
-.cg .mxlist li { display: grid; grid-template-columns: 2.5rem 1fr; column-gap: 8px; align-items: baseline; }
-.cg .mxlist .mx-n { font-size: 1.25rem; text-align: right; font-variant-numeric: tabular-nums; }
-.cg .mxlist .mx-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cg .mxlist .note { grid-column: 2; }
-.cg th[data-k] { cursor: pointer; }
-.cg th[data-k]::after { content: attr(data-sort); margin-left: 4px; font-size: .8em; }
 .cg tr.total td { font-weight: 700; border-top: 2px solid var(--color-border-line); }
 .cg .legend-pace { display: inline-block; width: 2px; height: 12px; background: var(--cds-text-primary, currentColor); opacity: .7; vertical-align: middle; margin: 0 4px; }
 .cg .dt { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-fg); white-space: nowrap; }
@@ -219,7 +210,6 @@
       <div class="kpi"><span class="note">Só cancelamento no mês</span><span class="v dash-skeleton" id="p-canc">—</span><span class="sub" id="p-canc-s"></span></div>
       <div class="kpi"><span class="note">Valor total de pedidos (- canc.)</span><span class="v dash-skeleton" id="p-val">—</span><span class="sub" id="p-val-s"></span></div>
       <div class="kpi"><span class="note">Itens pedidos</span><span class="v dash-skeleton" id="p-itens">—</span><span class="sub" id="p-itens-s"></span></div>
-      <div class="kpi"><span class="note">Mix médio no mês</span><span class="v dash-skeleton" id="p-mix">—</span><span class="sub" id="p-mix-s"></span></div>
       <div class="kpi"><span class="note">Meta do mês</span><span class="v dash-skeleton" id="p-meta">—</span><span class="sub" id="p-meta-s"></span></div>
     </section>
 
@@ -236,49 +226,12 @@
 
     <section class="card" id="cobertura">
       <h2>Cobertura por vendedor</h2>
-      <p class="note">Quantos grupos de clientes da carteira de cada vendedor já colocaram pedido no mês e quanto da meta já foi atingido. Clique em um vendedor para filtrar.</p>
+      <p class="note">Quantos grupos de clientes da carteira de cada vendedor já colocaram pedido no mês e quanto da meta já foi atingido. Mix é quantos subgrupos de itens diferentes o vendedor vendeu no mês (devolução não conta). Clique em um vendedor para filtrar.</p>
       <div class="scroll">
         <table id="tab-cob" data-source="pedidos">
-          <thead><tr><th>Vendedor</th><th>Time</th><th class="n">Grupos de clientes</th><th class="n">Com pedido</th><th class="n">Sem pedido</th><th>Cobertura</th><th class="n">Itens</th><th class="n">Valor (- canc.)</th><th class="n">Meta</th><th>Atingido</th><th class="n">Falta</th></tr></thead>
+          <thead><tr><th>Vendedor</th><th>Time</th><th class="n">Grupos de clientes</th><th class="n">Com pedido</th><th class="n">Sem pedido</th><th>Cobertura</th><th class="n">Itens</th><th class="n" title="Subgrupos de itens diferentes vendidos pelo vendedor no mês">Mix</th><th class="n">Valor (- canc.)</th><th class="n">Meta</th><th>Atingido</th><th class="n">Falta</th></tr></thead>
           <tbody></tbody>
         </table>
-      </div>
-    </section>
-
-    <section class="card" id="mix">
-      <h2>Mix de produtos</h2>
-      <p class="note" id="mix-note"></p>
-      <div class="mixtabs">
-        <div>
-          <h3>Por time e líder</h3>
-          <div class="scroll">
-            <table id="tab-mixtime" data-source="pedidos">
-              <thead><tr><th>Time / líder</th><th class="n">Grupos com pedido</th><th class="n">Mix no mês</th><th class="n">Mix médio no ano</th><th class="n">Variação</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-        <div>
-          <h3>Mix por vendedor</h3>
-          <p class="note">Clique no título de uma coluna para ordenar; clique em um vendedor para filtrar.</p>
-          <div class="scroll">
-            <table id="tab-mixvend" data-source="pedidos">
-              <thead><tr><th data-k="v">Vendedor</th><th data-k="time">Time</th><th class="n" data-k="com">Grupos com pedido</th><th class="n" data-k="mm">Mix no mês</th><th class="n" data-k="maCom">Mix médio no ano</th><th class="n" data-k="dl">Variação</th><th>Grupo com maior mix</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div class="grid y2">
-        <div>
-          <h3>Grupos de clientes que compram mais mix no mês</h3>
-          <ol class="mxlist" id="mix-mais"></ol>
-        </div>
-        <div>
-          <h3>Grupos de clientes que compram menos mix no mês</h3>
-          <p class="note">Entre os que pediram no mês; empates ordenados pelo maior valor, que é onde há mais espaço para ampliar o mix.</p>
-          <ol class="mxlist" id="mix-menos"></ol>
-        </div>
       </div>
     </section>
 
@@ -544,15 +497,6 @@ $('#tab-ysubs tbody').addEventListener('click', (e) => {
 });
 document.querySelectorAll('#tema button').forEach((b) => b.addEventListener('click', () => set({ tema: b.dataset.tema || null })));
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { set({ aba: b.dataset.aba }); dash.setLink(b.dataset.aba); }));
-document.querySelectorAll('#tab-mixvend th[data-k]').forEach((th) => th.addEventListener('click', () => {
-  const k = th.dataset.k;
-  mixSort = mixSort.k === k ? { k, d: -mixSort.d } : { k, d: (k === 'v' || k === 'time') ? 1 : -1 };
-  draw();
-}));
-$('#tab-mixvend tbody').addEventListener('click', (e) => {
-  const tr = e.target.closest('tr[data-v]');
-  if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
-});
 $('#tab-cob tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
   if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
@@ -779,85 +723,9 @@ function metaCell(real, meta, ritmo) {
   td.title = `${PCT.format(pct)} da meta · esperado ${PCT.format(ritmo)} pelo ritmo de dias úteis`;
   return td;
 }
-let mixSort = { k: 'mm', d: -1 };
 const MIX = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 const mixTxt = (v) => (v == null || Number.isNaN(v) ? '—' : MIX.format(v));
 const avg = (xs) => (xs.length ? d3.sum(xs, (v) => v) / xs.length : null);
-function mixDelta(atual, base) {
-  const td = el('td', 'n');
-  if (atual == null || base == null) { td.textContent = '—'; return td; }
-  const d = atual - base;
-  td.textContent = (d > 0.05 ? '+' : '') + MIX.format(d);
-  td.className = 'n ' + (d > 0.05 ? 'up' : d < -0.05 ? 'down' : '');
-  return td;
-}
-function mixResumo(rs) {
-  const com = rs.filter((r) => r.situacao_mes === 'Com pedido');
-  const hist = rs.filter((r) => r.mix_medio_ano != null);
-  const comHist = com.filter((r) => r.mix_medio_ano != null);
-  return {
-    n: rs.length, com: com.length,
-    mm: avg(com.map((r) => Number(r.mix_mes))),
-    ma: avg(hist.map((r) => Number(r.mix_medio_ano))),
-    // base comparável: média do ano só dos grupos que pediram no mês
-    maCom: avg(comHist.map((r) => Number(r.mix_medio_ano))),
-    mmCom: avg(comHist.map((r) => Number(r.mix_mes))),
-    top: com.slice().sort((a, b) => b.mix_mes - a.mix_mes)[0],
-  };
-}
-function drawMix(scoped, p) {
-  const tot = mixResumo(scoped);
-  $('#p-mix').textContent = mixTxt(tot.mm);
-  $('#p-mix-s').textContent = `subgrupos por grupo com pedido · no ano: ${mixTxt(tot.maCom)}/mês`;
-  $('#mix-note').textContent = `Mix = quantos subgrupos de itens diferentes o grupo de clientes comprou (devolução não conta). "Mix no mês" é a média entre os grupos que pediram no mês. "Mix médio no ano" é a média mensal de janeiro até o mês anterior, nos meses em que o grupo comprou, dos mesmos grupos que pediram no mês. A variação compara os dois só entre os grupos que já tinham compra antes no ano (grupos novos ficam de fora dela).`;
-  // times e líderes
-  const trs = [];
-  const linha = (cls, nome, rs) => {
-    const o = mixResumo(rs); const tr = el('tr', cls);
-    tr.append(el('td', null, nome), el('td', 'n', INT.format(o.com)), el('td', 'n', mixTxt(o.mm)), el('td', 'n', mixTxt(o.maCom)), mixDelta(o.mmCom, o.maCom));
-    return tr;
-  };
-  const macroOf = (t) => String(t).split(' - ')[0];
-  const lider = (t) => { const m = String(t).match(/L[IÍ]DER [^-]+/); return m ? m[0].trim() : 'Sem líder'; };
-  d3.groups(scoped, (r) => macroOf(r.time)).map(([t, rs]) => ({ t, rs, m: mixResumo(rs).mm || 0 })).sort((a, b) => b.m - a.m).forEach(({ t, rs }) => {
-    trs.push(linha('macro', t, rs));
-    const lids = d3.groups(rs, (r) => lider(r.time));
-    if (lids.length > 1 || lids[0][0] !== 'Sem líder') lids.sort((a, b) => (a[0] === 'Sem líder') - (b[0] === 'Sem líder') || (mixResumo(b[1]).mm || 0) - (mixResumo(a[1]).mm || 0))
-      .forEach(([l, ls]) => trs.push(linha('lider', l === 'Sem líder' ? 'Sem líder (direto)' : l, ls)));
-  });
-  if (scoped.length) trs.push(linha('total', 'Total', scoped));
-  $('#tab-mixtime tbody').replaceChildren(...trs);
-  // vendedores (ordenável)
-  const vs = d3.groups(scoped, (r) => r.vendedor).map(([v, rs]) => { const o = mixResumo(rs); return { v, time: rs[0].time, ...o, dl: o.mmCom != null && o.maCom != null ? o.mmCom - o.maCom : null }; });
-  const k = mixSort.k, dir = mixSort.d;
-  vs.sort((a, b) => {
-    const x = a[k], y = b[k];
-    if (x == null && y == null) return 0;
-    if (x == null) return 1;
-    if (y == null) return -1;
-    return (typeof x === 'string' ? x.localeCompare(y, 'pt-BR') : x - y) * dir;
-  });
-  document.querySelectorAll('#tab-mixvend th[data-k]').forEach((th) => { th.dataset.sort = th.dataset.k === mixSort.k ? (mixSort.d < 0 ? '▼' : '▲') : ''; });
-  $('#tab-mixvend tbody').replaceChildren(...vs.map((o) => {
-    const tr = el('tr'); tr.dataset.v = o.v; if (p.vendedor === o.v) tr.className = 'on';
-    tr.append(el('td', null, o.v), el('td', null, o.time), el('td', 'n', INT.format(o.com)), el('td', 'n', mixTxt(o.mm)), el('td', 'n', mixTxt(o.maCom)), mixDelta(o.mmCom, o.maCom),
-      el('td', null, o.top ? `${o.top.grupo} (${o.top.mix_mes})` : '—'));
-    return tr;
-  }));
-  // grupos com mais e menos mix no mês
-  const com = scoped.filter((r) => r.situacao_mes === 'Com pedido');
-  const item = (r) => {
-    const li = el('li');
-    const nm = el('span', 'mx-nome', r.grupo); nm.title = `${r.grupo} · ${r.vendedor}`;
-    const base = r.mix_medio_ano == null ? 'sem compra antes no ano' : `média ${mixTxt(r.mix_medio_ano)}/mês`;
-    li.append(el('strong', 'mx-n', String(r.mix_mes)), nm, el('span', 'note', `${r.vendedor} · ${BRL.format(r.valor_pedidos)} · ${base}`));
-    return li;
-  };
-  const mais = com.slice().sort((a, b) => b.mix_mes - a.mix_mes || b.valor_pedidos - a.valor_pedidos).slice(0, 10);
-  const menos = com.slice().sort((a, b) => a.mix_mes - b.mix_mes || b.valor_pedidos - a.valor_pedidos).slice(0, 10);
-  $('#mix-mais').replaceChildren(...mais.map(item));
-  $('#mix-menos').replaceChildren(...menos.map(item));
-}
 function drawPedidos(scope) {
   const p = P();
   const d = dash.data('pedidos');
@@ -889,7 +757,6 @@ function drawPedidos(scope) {
       : 'Nenhum grupo de clientes com esses filtros.';
   }
 
-  drawMix(scoped, p);
   // META: realizado = pedidos do mês de toda a carteira do vendedor (filtros de UF, segmento etc. não reduzem a meta)
   const md = dash.data('meta');
   const metaOk = md.status === 'ok';
@@ -932,7 +799,7 @@ function drawPedidos(scope) {
 
   const byV = d3.groups(scoped, (r) => r.vendedor).map(([v, rs]) => {
     const c = rs.filter((r) => r.situacao_mes === 'Com pedido').length;
-    return { v, time: rs[0].time, tot: rs.length, c, s: rs.filter((r) => r.situacao_mes === 'Sem pedido').length, it: uniqSum(rs, 'qt_itens_pedido'), val: uniqSum(rs, 'valor_pedidos') };
+    return { v, time: rs[0].time, tot: rs.length, c, s: rs.filter((r) => r.situacao_mes === 'Sem pedido').length, it: uniqSum(rs, 'qt_itens_pedido'), mix: new Set(rs.flatMap((r) => r.subs_mes || [])).size, val: uniqSum(rs, 'valor_pedidos') };
   }).sort((a, b) => b.val - a.val);
   $('#tab-cob tbody').replaceChildren(...byV.map((o) => {
     const tr = el('tr'); tr.dataset.v = o.v;
@@ -941,7 +808,7 @@ function drawPedidos(scope) {
     const cv = el('td'); const box = el('div', 'cov'); box.append(el('span', null, PCT.format(o.c / o.tot)));
     const tk = el('div', 'track'); const fl = el('div', 'fill'); fl.style.width = (o.c / o.tot * 100) + '%'; tk.append(fl); box.append(tk); cv.append(box);
     const mt = metaV.get(o.v);
-    tr.append(cv, el('td', 'n', INT.format(o.it)), el('td', 'n', BRL.format(o.val)));
+    tr.append(cv, el('td', 'n', INT.format(o.it)), el('td', 'n', INT.format(o.mix)), el('td', 'n', BRL.format(o.val)));
     if (mt && mt.meta > 0) {
       const real = realV.get(o.v) || 0;
       tr.append(el('td', 'n', BRL.format(mt.meta)), metaCell(real, mt.meta, ritmo), el('td', 'n', BRL.format(Math.max(mt.meta - real, 0))));
