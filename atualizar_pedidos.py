@@ -75,9 +75,37 @@ def main(xlsx, data_ref):
     build_html(data_ref)
 
 
+def mix_subgrupos(h, ref):
+    """Mix de produtos por grupo de clientes da carteira: quantos subgrupos de itens diferentes ele comprou.
+    Conta um subgrupo no mês só se o valor líquido dele no mês for positivo (devolução não conta).
+    - mix_mes: subgrupos no mês da data de referência, até ela;
+    - mix_medio_ano: média de subgrupos por mês nos meses anteriores do ano em que o grupo comprou;
+    - mix_ano: subgrupos diferentes comprados no ano até a data de referência."""
+    a = h[(h['Data'].dt.year == ref.year) & (h['Data'] <= ref)].copy()
+    a['cod_cliente'] = a['Cliente com Código'].astype(str).str.extract(r'^\s*(\d+)')[0].str.lstrip('0')
+    a['vt'] = pd.to_numeric(a['Valor Total'], errors='coerce').fillna(0)
+    a['mes'] = a['Data'].dt.month
+    a['sub'] = a['Sub Grupo'].fillna('(sem subgrupo)').astype(str).str.strip()
+    cli = pd.DataFrame(json.loads((DADOS / 'carteiras_clientes.json').read_text(encoding='utf-8')))[['cod_cliente', 'cod_grupo', 'vendedor']].drop_duplicates()
+    a = a.merge(cli, on='cod_cliente', how='inner')
+    gm = a.groupby(['cod_grupo', 'vendedor', 'mes', 'sub'])['vt'].sum().reset_index()
+    gm = gm[gm['vt'] > 0.005]
+    por_mes = gm.groupby(['cod_grupo', 'vendedor', 'mes'])['sub'].nunique().reset_index()
+    ano = gm.groupby(['cod_grupo', 'vendedor'])['sub'].nunique()
+    out = {}
+    for (g, v), x in por_mes.groupby(['cod_grupo', 'vendedor']):
+        ant = x[x['mes'] < ref.month]['sub']
+        atual = x[x['mes'] == ref.month]['sub']
+        out[(g, v)] = {'mix_mes': int(atual.iloc[0]) if len(atual) else 0,
+                       'mix_medio_ano': round(float(ant.mean()), 1) if len(ant) else None,
+                       'mix_ano': int(ano.get((g, v), 0)), 'meses_compra_ano': int(len(ant))}
+    return out
+
+
 def main_historico(h, grupos, data_ref):
     ref = pd.Timestamp(data_ref)
     h['Data'] = pd.to_datetime(h['Data'], errors='coerce')
+    mix = mix_subgrupos(h, ref)
     h = h[(h['Data'].dt.year == ref.year) & (h['Data'].dt.month == ref.month) & (h['Data'] <= ref)].copy()
     h['cod_cliente'] = h['Cliente com Código'].astype(str).str.extract(r'^\s*(\d+)')[0].str.lstrip('0')
     h['qt'] = pd.to_numeric(h['Qtde'], errors='coerce').fillna(0)
@@ -99,6 +127,7 @@ def main_historico(h, grupos, data_ref):
             'qt_itens_pedido': int(r['itens']) if r is not None else 0, 'valor_pedidos': valor,
             'qt_itens_cancelados': int(r['cancelados']) if r is not None else 0, 'valor_bonificacao': None,
             'pedidos_pendentes': None, 'nome_compartilhado': 'Não', 'data_ref': data_ref,
+            **mix.get((g['cod_grupo'], g['vendedor']), {'mix_mes': 0, 'mix_medio_ano': None, 'mix_ano': 0, 'meses_compra_ano': 0}),
         })
     fora = h[~h['cod_cliente'].isin(set(cli['cod_cliente']))]
     resumo = {'data_ref': data_ref, 'fonte': 'Histórico de Pedidos', 'linhas_no_mes': int(len(h)),
