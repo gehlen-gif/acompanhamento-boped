@@ -21,6 +21,28 @@ DADOS = HERE / 'dados'
 sys.path.insert(0, str(HERE))
 
 
+COLS = ['Item', 'Sub Grupo', 'Cliente com Código', 'Grupo de Cliente', 'Data', 'Qtde', 'Valor Unitário', 'Valor Total']
+
+
+def com_ano_anterior(hist):
+    """Guarda o ano anterior em dados/base/historico_<ano>.csv.gz quando o arquivo o traz,
+    e o reaproveita quando o arquivo do dia só tem o ano corrente (para o comparativo YoY)."""
+    ano = int(hist['Data'].max().year)
+    base = DADOS / 'base' / f'historico_{ano - 1}.csv.gz'
+    ant = hist[hist['Data'].dt.year == ano - 1]
+    if len(ant):
+        ant[COLS].to_csv(base, index=False, compression='gzip')
+        return hist
+    if not base.exists():
+        return hist
+    a = pd.read_csv(base, compression='gzip', dtype={'Cliente com Código': str})
+    a['Data'] = pd.to_datetime(a['Data'], errors='coerce')
+    a['cod_cliente'] = a['Cliente com Código'].astype(str).str.extract(r'^\s*(\d+)')[0].str.lstrip('0')
+    a['vt'] = pd.to_numeric(a['Valor Total'], errors='coerce').fillna(0)
+    print(f'ano anterior: {len(a)} linhas de {base.name}')
+    return pd.concat([a, hist], ignore_index=True)
+
+
 def main(hist_xlsx, promos_json=None):
     import atualizar_pedidos, atualizar_promocoes
     grupos = json.loads((DADOS / 'base' / 'carteiras_grupos_base.json').read_text(encoding='utf-8'))
@@ -29,6 +51,7 @@ def main(hist_xlsx, promos_json=None):
     hist['Data'] = pd.to_datetime(hist['Data'], errors='coerce')
     hist['cod_cliente'] = hist['Cliente com Código'].astype(str).str.extract(r'^\s*(\d+)')[0].str.lstrip('0')
     hist['vt'] = pd.to_numeric(hist['Valor Total'], errors='coerce').fillna(0)
+    hist = com_ano_anterior(hist)
     # Histórico, pedidos e promoções usam só o ano da última data; anos anteriores vão para o comparativo YoY.
     h = hist[hist['Data'].dt.year == hist['Data'].max().year].copy()
     ini, fim = h['Data'].min(), h['Data'].max()

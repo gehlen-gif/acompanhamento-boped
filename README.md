@@ -28,4 +28,4 @@
 
 ## Comparativo YoY
 
-Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` gera `dados/yoy.json` (via `atualizar_yoy.py`): vendas por grupo de clientes, vendedor e subgrupo de itens no acumulado do ano e no mês até o dia, contra o mesmo período do ano anterior, cortados no mesmo dia do calendário. As vendas do ano anterior são atribuídas pela carteira atual. As abas Histórico, Pedidos e Promoções continuam usando só o ano corrente.
+Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` gera `dados/yoy.json` (via `atualizar_yoy.py`): vendas por grupo de clientes, vendedor e subgrupo de itens no acumulado do ano e no mês até o dia, contra o mesmo período do ano anterior, cortados no mesmo dia do calendário. As vendas do ano anterior são atribuídas pela carteira atual. As abas Histórico, Pedidos e Promoções continuam usando só o ano corrente. O ano anterior fica guardado em `dados/base/historico_<ano>.csv.gz`, então o arquivo diário pode trazer só o ano corrente que o YoY continua sendo gerado.
