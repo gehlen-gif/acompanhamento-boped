@@ -44,7 +44,7 @@ Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` 
 
 ## Painel individual por vendedor
 
-`python gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta]` gera um HTML só com a carteira do vendedor (Pedidos do mês, Promoções do mês, Histórico de vendas e Comparativo YoY), sem dados de outras carteiras.
+`python gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta]` gera um HTML só com a carteira do vendedor (Pedidos do mês, Promoções do mês, Histórico de vendas, OrthoCare e Comparativo YoY), sem dados de outras carteiras. `python gerar_painel_vendedor.py --boinas [pasta]` gera um para cada RCA ativo do time BOINAS AZUIS.
 
 ## Escala de Valor
 

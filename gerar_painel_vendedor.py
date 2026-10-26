@@ -2,11 +2,13 @@
 
 Uso: python3 gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta_destino]
 
-Mantém as abas Pedidos do mês, Promoções do mês, Histórico de vendas e
+Mantém as abas Pedidos do mês, Promoções do mês, Histórico de vendas, OrthoCare e
 Comparativo YoY. Nenhuma linha de outra carteira é embutida no arquivo.
+Sem vendedor, gera um painel para cada RCA ativo do time BOINAS AZUIS.
 """
 import json
 import re
+import unicodedata
 import sys
 from pathlib import Path
 
@@ -19,11 +21,23 @@ FONTES = [('grupos', 'carteiras_grupos.json', 'vendedor'), ('clientes', 'carteir
           ('promo_potencial', 'promo_potencial.json', 'vendedor'), ('meta', 'meta.json', 'vendedor'),
           ('yoy', 'yoy.json', 'v')]
 # Abas que não entram no painel individual
-OCULTAR = """<style>#tab-btn-escala,#tab-btn-contas,#tab-btn-ortho,#escala,#contas,#ortho{display:none!important}</style>"""
+OCULTAR = """<style>#tab-btn-escala,#tab-btn-contas,#escala,#contas{display:none!important}</style>"""
+
+
+def ortho(vendedor):
+    """OrthoCare só com os grupos do vendedor; os pedidos (cestas) são reindexados para essa lista."""
+    f = DADOS / 'ortho.json'
+    if not f.exists():
+        return []
+    o = json.loads(f.read_text(encoding='utf-8'))[0]
+    idx = {i: n for n, i in enumerate(i for i, r in enumerate(o['grupos']) if r['v'] == vendedor)}
+    grupos = [r for r in o['grupos'] if r['v'] == vendedor]
+    cestas = [[idx[c[0]]] + c[1:] for c in o['cestas'] if c[0] in idx]
+    return [{**o, 'grupos': grupos, 'cestas': cestas, 'individual': True}]
 
 
 def carregar(vendedor):
-    dados = {'contas': [], 'ortho': []}
+    dados = {'contas': [], 'ortho': ortho(vendedor)}
     for id_, f, campo in FONTES:
         linhas = json.loads((DADOS / f).read_text(encoding='utf-8')) if (DADOS / f).exists() else []
         if campo:
@@ -52,7 +66,7 @@ def main(vendedor, destino=None):
     html = shell.replace('<!--DATA-->', blocos + OCULTAR).replace('<!--PAGE-->', page)
     ref = max((r.get('ref') or '' for r in dados['yoy'][:1]), default='') or \
         json.loads((DADOS / 'pedidos.json').read_text(encoding='utf-8'))[0].get('data_ref', '')
-    slug = re.sub(r'[^A-Z0-9]+', '_', vendedor.split(' - ')[-1].upper()).strip('_')
+    slug = re.sub(r'[^A-Z0-9]+', '_', unicodedata.normalize('NFKD', vendedor.split(' - ')[-1].upper()).encode('ascii', 'ignore').decode()).strip('_')
     pasta = Path(destino) if destino else HERE / 'vendedores'
     pasta.mkdir(parents=True, exist_ok=True)
     dest = pasta / f'painel_{slug}{"_" + ref if ref else ""}.html'
@@ -61,5 +75,14 @@ def main(vendedor, destino=None):
     return dest
 
 
+def rcas_boinas():
+    g = json.loads((DADOS / 'carteiras_grupos.json').read_text(encoding='utf-8'))
+    return sorted({r['vendedor'] for r in g if r['time'] == 'BOINAS AZUIS' and r['situacao_vendedor'] == 'Ativo' and ' RCA ' in r['vendedor']})
+
+
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
+    if len(sys.argv) > 1 and sys.argv[1] != '--boinas':
+        main(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
+    else:
+        for v in rcas_boinas():
+            main(v, sys.argv[2] if len(sys.argv) > 2 else None)

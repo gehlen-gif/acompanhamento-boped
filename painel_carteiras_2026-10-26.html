@@ -1178,9 +1178,9 @@ function drawOrtho(scope, allGrupos) {
   $('#o-cols-note').textContent = `Valores em R$. Cinza: ${ano0}; azul: ${ano1}. ${ref.slice(5, 7)}/${ano1} vai até ${dBR(ref)}.` + (melhor && melhor.v > 0 ? ` Melhor mês: ${MES_AB[+melhor.k.slice(5) - 1]}/${melhor.k.slice(0, 4)}, com ${BRL.format(melhor.v)}.` : '');
 
   // mix sugerido
-  const base = cestas.length >= 30 ? cestas : O.cestas;
+  const base = cestas.length >= 30 || O.individual ? cestas : O.cestas;
   const proprio = base === cestas;
-  $('#o-mix-note').textContent = `Montado a partir de ${INT.format(base.length)} pedidos de OrthoCare ${proprio ? 'dos grupos de clientes no filtro' : 'de todas as carteiras (o filtro tem poucos pedidos para uma sugestão própria)'}. Para cada faixa entram os subgrupos que mais aparecem nos pedidos daquele tamanho, com a quantidade proporcional ao peso deles e o preço médio pago nos últimos 12 meses.`;
+  $('#o-mix-note').textContent = `Montado a partir de ${INT.format(base.length)} pedidos de OrthoCare ${O.individual ? 'da carteira' + (cestas.length < 30 ? ' (poucos pedidos: use a sugestão com cuidado)' : '') : proprio ? 'dos grupos de clientes no filtro' : 'de todas as carteiras (o filtro tem poucos pedidos para uma sugestão própria)'}. Para cada faixa entram os subgrupos que mais aparecem nos pedidos daquele tamanho, com a quantidade proporcional ao peso deles e o preço médio pago nos últimos 12 meses.`;
   $('#o-mixes').replaceChildren(...O_FAIXAS.map((f) => {
     const mx = oMix(base, f, O);
     const box = el('div');
