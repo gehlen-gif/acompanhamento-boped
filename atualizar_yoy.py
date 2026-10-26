@@ -15,6 +15,42 @@ HERE = Path(__file__).resolve().parent
 DADOS = HERE / 'dados'
 
 
+CORRELACAO = HERE / 'dados' / 'base' / 'correlacao_item_subgrupo_linha.csv'
+PALAVRAS_LINHA = [('PEÇA', r'^(PC |PEÇA|PECA)'), ('ORTHO', r'ESTABILIZADOR|ORTESE|TALA|TIPOIA|PALMILHA|JOELHEIRA|CINTA|COLAR|SUPORTE DE OMBRO|TENNIS ELBOW'),
+                  ('HEALTH', r'MONITOR|COMPRESSOR|BOMBA|AIR TUBE|ALMOFADA'), ('HOME', r'^D\d+')]
+
+
+def linha_por_subgrupo(h):
+    """Linha de produto (HEALTH, HOME, ORTHO, BEAUTY, PEÇA) de cada subgrupo: a linha que mais vende nele,
+    pelos itens da planilha de correlação; sem correspondência, por palavra-chave do subgrupo."""
+    import re
+    import unicodedata
+    k = lambda x: re.sub(r'[^A-Z0-9]', '', unicodedata.normalize('NFKD', str(x)).encode('ascii', 'ignore').decode().upper())
+    if not CORRELACAO.exists():
+        return {}
+    c = pd.read_csv(CORRELACAO, sep=';', encoding='utf-8-sig')
+    it2l, sub2l = {}, {}
+    for r in c.itertuples(index=False):
+        if pd.isna(r[2]):
+            continue
+        nomes = [r[0]] + ([] if pd.isna(r[4]) else re.split(r'[|;/]', str(r[4])))
+        for n in nomes:
+            if str(n).strip():
+                it2l[k(n)] = r[2]
+        if not pd.isna(r[1]):
+            sub2l[str(r[1]).strip()] = r[2]
+    x = h[['Item', 'Sub Grupo', 'vt']].copy()
+    x['sub'] = x['Sub Grupo'].fillna('(sem subgrupo)').astype(str).str.strip()
+    x['lin'] = x['Item'].map(lambda i: it2l.get(k(i)))
+    x['lin'] = x['lin'].fillna(x['sub'].map(sub2l))
+    g = x.dropna(subset=['lin']).groupby(['sub', 'lin'])['vt'].sum().reset_index().sort_values('vt', ascending=False).drop_duplicates('sub')
+    out = dict(zip(g['sub'], g['lin']))
+    for s in x['sub'].unique():
+        if s not in out:
+            out[s] = next((l for l, pat in PALAVRAS_LINHA if re.search(pat, s)), 'Sem linha')
+    return out
+
+
 def main(h, data_ref):
     """h: histórico com colunas Data, cod_cliente, vt, Qtde e Sub Grupo."""
     clientes = json.loads((DADOS / 'carteiras_clientes.json').read_text(encoding='utf-8'))
@@ -49,6 +85,7 @@ def main(h, data_ref):
         for c in ('a1', 'a0', 'm1', 'm0', 'q1', 'q0'):
             if o[c] == 0:
                 del o[c]
+    out[0]['linhas'] = linha_por_subgrupo(h)
     out[0]['ref'] = data_ref
     out[0]['ref_ant'] = ref_ant.strftime('%Y-%m-%d')
     (DADOS / 'yoy.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':'), allow_nan=False), encoding='utf-8')

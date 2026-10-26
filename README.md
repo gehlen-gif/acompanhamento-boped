@@ -37,3 +37,7 @@ Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` 
 ## Principais Contas
 
 `python atualizar_contas.py PRINCIPAIS_CONTAS.xlsx` troca a lista base (`dados/base/principais_contas.json`). A cada `atualizar_tudo.py`, `dados/contas.json` é refeito: cada conta é ligada ao histórico pelo Grupo de Cliente (ou pelo nome do cliente), com vendas do ano contra o mesmo período do ano anterior; vendedor e time vêm das carteiras do time e, fora delas, aparecem como "Interno". No painel online, contatos editados por quem pode editar o painel ficam salvos para todos (coleção `contatos`); no HTML e no GitHub Pages ficam salvos no navegador de quem editou. Mapa: @svg-maps/brazil (CC BY 4.0).
+
+## Escala de Valor
+
+Aba construída sobre `dados/yoy.json` (acumulado do ano contra o mesmo período do ano anterior). Selecione grupos de clientes (ou use todos os do filtro) e o painel agrupa os subgrupos em clusters: Âncora (80% do valor, crescendo ou estável), Âncora em queda, Giro (80% das unidades, pouco valor), Em ascensão (≥0,2% do valor e +20%), Em queda (≥0,2% do valor no ano anterior e −20%) e Cauda. O mix sugerido e a contagem de grupos que ainda não compram cada subgrupo são recalculados a cada grupo adicionado. A linha de produto de cada subgrupo vem de `dados/base/correlacao_item_subgrupo_linha.csv`.
