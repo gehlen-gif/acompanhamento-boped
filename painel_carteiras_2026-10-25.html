@@ -141,8 +141,9 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
 .cg .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .cg .chip { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--color-border-line); background: var(--cds-surface-popover); border-radius: 999px; padding: 2px 4px 2px 10px; font-size: var(--cds-font-size-caption); }
 .cg .chip .x { border: 0; background: transparent; padding: 0 6px; font-size: 1rem; line-height: 1; }
-.cg #e-scatter { width: 100%; height: auto; display: block; }
-.cg #e-scatter .ept { cursor: pointer; }
+.cg .reg-leg.left { justify-content: flex-start; }
+.cg label.chk { display: inline-flex; gap: 6px; align-items: center; }
+.cg #e-comp { border-color: var(--reg-sudeste); }
 .cg tr.total td { font-weight: 700; border-top: 2px solid var(--color-border-line); }
 .cg .legend-pace { display: inline-block; width: 2px; height: 12px; background: var(--cds-text-primary, currentColor); opacity: .7; vertical-align: middle; margin: 0 4px; }
 .cg .dt { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-fg); white-space: nowrap; }
@@ -491,10 +492,24 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
           <datalist id="lista-egrupos"></datalist>
           <button type="button" id="e-top5">+ 5 maiores do filtro</button>
           <button type="button" id="e-clear">Limpar seleção</button>
+          <label class="note">Comparar um grupo com a seleção<input id="e-alvo" list="lista-egrupos" placeholder="Grupo a comparar" autocomplete="off"></label>
+          <button type="button" id="e-alvo-clear" hidden>Parar comparação</button>
         </div>
       </div>
       <div class="chips" id="e-chips"></div>
       <p class="note" id="e-sel-note"></p>
+    </section>
+
+    <section class="card" id="e-comp" hidden>
+      <div class="yfoco"><h2 id="e-comp-title"></h2>
+        <label class="note chk"><input type="checkbox" id="e-comp-todos"> Mostrar também os subgrupos em linha</label></div>
+      <p class="note" id="e-comp-note"></p>
+      <div class="scroll">
+        <table id="tab-ecomp" data-source="yoy">
+          <thead><tr><th>Subgrupo</th><th>Linha</th><th class="n">Grupo de referência compra</th><th class="n">% do mix da referência</th><th class="n">Qtd. média por grupo</th><th class="n" id="e-comp-cli">Cliente</th><th class="n">% do mix do cliente</th><th>Situação</th><th class="n">Potencial estimado</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </section>
 
     <section class="kpis" id="ind-escala" data-source="yoy">
@@ -505,16 +520,10 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       <div class="kpi"><span class="note">Concentração em Qtd</span><span class="v dash-skeleton" id="e-concq">—</span><span class="sub" id="e-concq-s"></span></div>
     </section>
 
-    <div class="grid cmap">
-      <section class="card">
-        <h2>Mapa do mix</h2>
-        <p class="note">Cada bolha é um subgrupo. Mais à direita, mais peso em R$; mais acima, mais crescimento sobre o ano anterior; bolha maior, mais quantidade. Clique em uma bolha para ver quem compra.</p>
-        <svg id="e-scatter" role="img" aria-label="Subgrupos por participação em R$ e crescimento"></svg>
-        <div class="reg-leg" id="e-leg"></div>
-      </section>
-      <section class="card">
+    <section class="card">
         <h2>Mix sugerido</h2>
         <p class="note" id="e-sug-note"></p>
+        <div class="reg-leg left" id="e-leg"></div>
         <div class="scroll">
           <table id="tab-esug" data-source="yoy">
             <thead><tr><th>Cluster</th><th>Subgrupo</th><th>Linha</th><th class="n">% R$</th><th class="n">% Qtd</th><th class="n">Variação</th><th class="n">Compram</th><th class="n">Faltam</th></tr></thead>
@@ -522,7 +531,6 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
           </table>
         </div>
       </section>
-    </div>
 
     <section class="card" id="e-quem" hidden>
       <div class="yfoco"><h2 id="e-quem-title"></h2><button type="button" id="e-quem-close">Fechar</button></div>
@@ -654,7 +662,7 @@ const PSITS = ['Potencial', 'Comprou recentemente', 'Já paga o preço da promo'
 defaults();
 $('#f-reset').addEventListener('click', () => {
   dash.resetParams();
-  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null });
+  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null, ealvo: null, ecomptodos: null });
   defaults();
 });
 $('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
@@ -738,14 +746,21 @@ $('#e-top5').addEventListener('click', () => {
   const novos = Array.from(eLabels.values()).filter((k) => !s.includes(k)).slice(0, 5);
   set({ esel: [...s, ...novos].join(';') || null });
 });
-$('#e-clear').addEventListener('click', () => set({ esel: null, esub: null }));
+$('#e-clear').addEventListener('click', () => set({ esel: null, esub: null, ealvo: null }));
 $('#e-chips').addEventListener('click', (e) => {
   const b = e.target.closest('button[data-k]');
   if (b) { const s = eSel(P()).filter((k) => k !== b.dataset.k); set({ esel: s.join(';') || null }); }
 });
-$('#e-scatter').addEventListener('click', (e) => {
-  const c = e.target.closest('[data-sub]');
-  if (c) set({ esub: P().esub === c.dataset.sub ? null : c.dataset.sub });
+$('#e-alvo').addEventListener('change', (e) => {
+  const v = normNome(e.target.value);
+  const hit = Array.from(eLabels.entries()).find(([lbl]) => normNome(lbl) === v) || Array.from(eLabels.entries()).find(([lbl]) => normNome(lbl.split(' · ')[0]) === v);
+  if (hit) set({ ealvo: hit[1] });
+});
+$('#e-alvo-clear').addEventListener('click', () => set({ ealvo: null }));
+$('#e-comp-todos').addEventListener('change', (e) => set({ ecomptodos: e.target.checked ? '1' : null }));
+$('#tab-ecomp tbody').addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-s]');
+  if (tr) set({ esub: P().esub === tr.dataset.s ? null : tr.dataset.s });
 });
 $('#tab-esug tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-s]');
@@ -1466,43 +1481,51 @@ function shareList(box, items, fmt, onPick, active) {
   }) : [el('p', 'note', 'Nada com esses filtros.')]));
 }
 
-function drawScatter(subs, p) {
-  const svg = $('#e-scatter');
-  const W = 560, H = 360, L = 46, R = 12, T = 12, B = 34;
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  const ns = 'http://www.w3.org/2000/svg';
-  const mk = (t, a, txt) => { const e = document.createElementNS(ns, t); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); if (txt != null) e.textContent = txt; return e; };
-  const pts = subs.filter((s) => s.a1 > 0);
-  const xmax = Math.max(0.01, ...pts.map((s) => s.shareR));
-  const sx = (v) => L + Math.sqrt(v / xmax) * (W - L - R);
-  const clampY = (v) => Math.max(-1, Math.min(2, v == null ? 2 : v));
-  const sy = (v) => T + (2 - clampY(v)) / 3 * (H - T - B);
-  const qmax = Math.max(1, ...pts.map((s) => s.q1));
-  const nodes = [];
-  [-1, -0.5, 0, 0.5, 1, 1.5, 2].forEach((v) => {
-    nodes.push(mk('line', { x1: L, x2: W - R, y1: sy(v), y2: sy(v), stroke: v === 0 ? 'var(--color-fg-muted)' : 'var(--cds-chart-grid)', 'stroke-width': v === 0 ? 1 : 0.6 }));
-    nodes.push(mk('text', { x: L - 6, y: sy(v) + 3, 'text-anchor': 'end', 'font-size': 9, fill: 'var(--color-fg-muted)' }, (v > 0 ? '+' : '') + Math.round(v * 100) + '%' + (v === 2 ? '+' : '')));
+function drawComparacao(p, rows, sel, subs, nome, LIN, ano1) {
+  const alvo = p.ealvo;
+  $('#e-alvo-clear').hidden = !alvo;
+  const nA = alvo ? (nome.get(alvo) || {}) : {};
+  if (document.activeElement !== $('#e-alvo')) $('#e-alvo').value = alvo ? `${nA.grupo || alvo} · ${nA.vendedor || ''}` : '';
+  $('#e-comp').hidden = !alvo;
+  if (!alvo) return;
+  $('#e-comp-todos').checked = !!p.ecomptodos;
+  const ar = rows.filter((r) => r.key === alvo);
+  const aTot = d3.sum(ar, (r) => r.a1);
+  const aSub = new Map(d3.groups(ar, (r) => r.s).map(([k, rs]) => [k, { a1: d3.sum(rs, (r) => r.a1), q1: d3.sum(rs, (r) => r.q1) }]));
+  const N = sel.length || new Set(rows.map((r) => r.key)).size - 1;
+  const refNome = sel.length ? `${INT.format(sel.length)} grupos selecionados` : 'todos os grupos do filtro';
+  const linhas = subs.filter((o) => o.a1 > 0).map((o) => {
+    const x = aSub.get(o.k) || { a1: 0, q1: 0 };
+    const xShare = aTot > 0 ? Math.max(0, x.a1) / aTot : 0;
+    const pen = N ? o.compram.size / N : 0;
+    const sit = x.a1 <= 0 ? (pen >= 0.5 || o.shareR >= 0.02 ? 'Não compra' : 'Não compra (pouco comum)') : xShare < o.shareR * 0.5 ? 'Compra pouco' : 'Em linha';
+    const pot = sit.startsWith('Em linha') ? 0 : Math.max(0, (o.shareR - xShare) * aTot);
+    return { ...o, x, xShare, pen, sit, pot, qMed: N ? o.q1 / Math.max(1, o.compram.size) : 0 };
   });
-  [0.01, 0.05, 0.1, 0.2, 0.4].filter((v) => v <= xmax).forEach((v) => {
-    nodes.push(mk('line', { x1: sx(v), x2: sx(v), y1: T, y2: H - B, stroke: 'var(--cds-chart-grid)', 'stroke-width': 0.6 }));
-    nodes.push(mk('text', { x: sx(v), y: H - B + 12, 'text-anchor': 'middle', 'font-size': 9, fill: 'var(--color-fg-muted)' }, Math.round(v * 100) + '%'));
-  });
-  nodes.push(mk('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--color-fg-muted)' }, 'Participação em R$ no ano →'));
-  nodes.push(mk('text', { x: 10, y: (T + H - B) / 2, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--color-fg-muted)', transform: `rotate(-90 10 ${(T + H - B) / 2})` }, 'Variação sobre o ano anterior →'));
-  pts.slice().sort((a, b) => b.q1 - a.q1).forEach((s) => {
-    const r = 3 + 14 * Math.sqrt(Math.max(0, s.q1) / qmax);
-    const c = mk('circle', { cx: sx(s.shareR), cy: sy(s.pct), r, fill: CL_COR[s.cl], 'fill-opacity': p.esub && p.esub !== s.k ? 0.25 : 0.75, stroke: p.esub === s.k ? 'var(--color-fg)' : 'var(--color-panel)', 'stroke-width': p.esub === s.k ? 2 : 0.8, class: 'ept' });
-    c.dataset.sub = s.k;
-    c.append(mk('title', {}, `${s.k} (${s.cl})\n${PCT.format(s.shareR)} do R$ · ${PCT.format(s.shareQ)} da Qtd · ${pctTxt(s.a0, s.a1)} sobre o ano anterior`));
-    nodes.push(c);
-  });
-  pts.slice(0, 8).forEach((s) => nodes.push(mk('text', { x: sx(s.shareR), y: sy(s.pct) - 6 - 14 * Math.sqrt(Math.max(0, s.q1) / qmax) * 0.6, 'text-anchor': 'middle', 'font-size': 9, fill: 'var(--color-fg)', 'pointer-events': 'none' }, s.k.length > 22 ? s.k.slice(0, 21) + '…' : s.k)));
-  svg.replaceChildren(...nodes);
-  $('#e-leg').replaceChildren(...CLUSTERS.map((c) => {
-    const b = el('span', 'leg'); const sw = el('span', 'sw'); sw.style.background = c.cor; b.append(sw, `${c.k} (${subs.filter((s) => s.cl === c.k).length})`); b.title = c.d; return b;
+  const prio = { 'Não compra': 0, 'Compra pouco': 1, 'Não compra (pouco comum)': 2, 'Em linha': 3 };
+  const show = linhas.filter((o) => p.ecomptodos || (o.sit !== 'Em linha' && (o.pen >= 0.2 || o.shareR >= 0.01)))
+    .sort((a, b) => prio[a.sit] - prio[b.sit] || b.pot - a.pot);
+  const naoCompra = linhas.filter((o) => o.sit === 'Não compra');
+  const pouco = linhas.filter((o) => o.sit === 'Compra pouco');
+  const potTot = d3.sum(show, (o) => o.pot);
+  $('#e-comp-title').textContent = `${nA.grupo || alvo} comparado com ${refNome}`;
+  $('#e-comp-cli').textContent = `${nA.grupo || 'Cliente'} (R$ ${ano1})`;
+  $('#e-comp-note').textContent = aTot > 0
+    ? `${nA.grupo} comprou ${BRL.format(aTot)} em ${ano1}, em ${INT.format(aSub.size)} subgrupos. Não compra ${INT.format(naoCompra.length)} subgrupos que o grupo de referência compra com frequência e compra pouco de ${INT.format(pouco.length)}. Potencial estimado nas linhas abaixo: ${BRL.format(potTot)} — o que ${nA.grupo} venderia a mais se o seu mix tivesse o mesmo peso de cada subgrupo que o grupo de referência, mantendo o tamanho atual de compra.`
+    : `${nA.grupo} não tem compras em ${ano1}; todos os subgrupos da referência aparecem como oportunidade.`;
+  const pill = { 'Não compra': 'bad', 'Compra pouco': 'warn', 'Não compra (pouco comum)': '', 'Em linha': 'ok' };
+  $('#tab-ecomp tbody').replaceChildren(...show.slice(0, 80).map((o) => {
+    const tr = el('tr'); tr.dataset.s = o.k; if (p.esub === o.k) tr.className = 'on';
+    const st = el('td'); st.append(el('span', 'pill ' + pill[o.sit], o.sit));
+    tr.append(el('td', null, o.k), el('td', null, o.linha), el('td', 'n', `${INT.format(o.compram.size)} de ${INT.format(N)}`), el('td', 'n', PCT.format(o.shareR)),
+      el('td', 'n', INT.format(Math.round(o.qMed))), el('td', 'n', o.x.a1 ? BRL.format(o.x.a1) : '—'), el('td', 'n', PCT.format(o.xShare)), st, el('td', 'n', o.pot > 0.5 ? BRL.format(o.pot) : '—'));
+    return tr;
   }));
+  if ((p.aba || 'pedidos') === 'escala') {
+    const top = show.filter((o) => o.sit === 'Não compra').slice(0, 3).map((o) => o.k);
+    $('#takeaway').textContent = `${nA.grupo} frente a ${refNome}: não compra ${INT.format(naoCompra.length)} subgrupos comuns na referência` + (top.length ? ` (como ${top.join(', ')})` : '') + ` e compra pouco de ${INT.format(pouco.length)}. Potencial estimado: ${BRL.format(potTot)}.`;
+  }
 }
-
 function drawEscala(scope, allGrupos) {
   const p = P();
   const y = dash.data('yoy');
@@ -1525,7 +1548,7 @@ function drawEscala(scope, allGrupos) {
   eLabels = new Map(porGrupo.map((o) => { const n = nome.get(o.k) || {}; return [`${n.grupo || o.k} · ${n.vendedor || ''}`, o.k]; }));
   const dl = $('#lista-egrupos');
   if (dl.childElementCount !== eLabels.size) dl.replaceChildren(...Array.from(eLabels.keys()).map((n) => new Option(n)));
-  const sel = eSel(p);
+  const sel = eSel(p).filter((k) => k !== p.ealvo);
   const selSet = new Set(sel);
   $('#e-chips').replaceChildren(...sel.map((k) => {
     const n = nome.get(k) || {};
@@ -1533,8 +1556,9 @@ function drawEscala(scope, allGrupos) {
     const x = el('button', 'x', '×'); x.type = 'button'; x.dataset.k = k; x.title = 'Tirar da seleção'; x.setAttribute('aria-label', 'Tirar ' + (n.grupo || k));
     c.append(x); return c;
   }));
-  const base = sel.length ? rows.filter((r) => selSet.has(r.key)) : rows;
-  const N = sel.length ? sel.length : porGrupo.length;
+  if (p.ealvo) selSet.delete(p.ealvo);
+  const base = (sel.length ? rows.filter((r) => selSet.has(r.key)) : rows.filter((r) => r.key !== p.ealvo));
+  const N = sel.length ? selSet.size : porGrupo.length - (p.ealvo ? 1 : 0);
   $('#e-sel-note').textContent = sel.length
     ? `${INT.format(sel.length)} grupos selecionados. O mix sugerido muda a cada grupo que você adiciona ou tira.`
     : `Nenhum grupo selecionado: mostrando os ${INT.format(porGrupo.length)} grupos dos filtros atuais.`;
@@ -1563,7 +1587,10 @@ function drawEscala(scope, allGrupos) {
   $('#e-mix-s').textContent = `subgrupos comprados em ${ano1} · média ${mixTxt(N ? d3.sum(Array.from(d3.groups(base.filter((r) => r.a1 > 0), (r) => r.key)), ([, rs]) => new Set(rs.map((r) => r.s)).size) / N : null)} por grupo`;
   $('#e-conc').textContent = INT.format(aR.size); $('#e-conc-s').textContent = 'subgrupos fazem 80% do valor';
   $('#e-concq').textContent = INT.format(aQ.size); $('#e-concq-s').textContent = 'subgrupos fazem 80% das unidades';
-  drawScatter(subs, p);
+  $('#e-leg').replaceChildren(...CLUSTERS.map((c) => {
+    const b = el('span', 'leg'); const sw = el('span', 'sw'); sw.style.background = c.cor; b.append(sw, `${c.k} (${subs.filter((s) => s.cl === c.k).length})`); b.title = c.d; return b;
+  }));
+  drawComparacao(p, rows, sel, subs, nome, LIN, ano1);
   // mix sugerido
   const ordem = Object.fromEntries(SUGERIDOS.map((c, i) => [c, i]));
   const sug = subs.filter((o) => SUGERIDOS.includes(o.cl)).sort((a, b) => ordem[a.cl] - ordem[b.cl] || b.a1 - a.a1);
@@ -1607,7 +1634,7 @@ function drawEscala(scope, allGrupos) {
     return tr;
   }));
   $('#regra-escala').textContent = 'Clusters: ' + CLUSTERS.map((c) => `${c.k} — ${c.d}`).join('; ') + '. Linha de produto pela planilha de correlação item/subgrupo/linha. Vendas do ano anterior atribuídas pela carteira atual.';
-  if ((p.aba || 'pedidos') === 'escala') {
+  if ((p.aba || 'pedidos') === 'escala' && !p.ealvo) {
     const anc = subs.filter((o) => o.cl === 'Âncora').slice(0, 3).map((o) => o.k);
     const asc = subs.filter((o) => o.cl === 'Em ascensão').sort((a, b) => b.d - a.d).slice(0, 2).map((o) => o.k);
     $('#takeaway').textContent = base.length
