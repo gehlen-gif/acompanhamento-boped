@@ -33,3 +33,7 @@ Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` 
 ## Mix de produtos
 
 `atualizar_pedidos.py` calcula, para cada grupo de clientes da carteira, os subgrupos de itens com valor líquido positivo: `mix_mes` e `subs_mes` (mês da data de referência), `mix_medio_ano` (média mensal de janeiro até o mês anterior, nos meses com compra) e `mix_ano` (subgrupos diferentes no ano). Na aba Pedidos do mês, a coluna Mix da Cobertura por vendedor conta os subgrupos diferentes que o vendedor vendeu no mês, e as listas de clientes com e sem pedido mostram o mix de cada grupo.
+
+## Principais Contas
+
+`python atualizar_contas.py PRINCIPAIS_CONTAS.xlsx` troca a lista base (`dados/base/principais_contas.json`). A cada `atualizar_tudo.py`, `dados/contas.json` é refeito: cada conta é ligada ao histórico pelo Grupo de Cliente (ou pelo nome do cliente), com vendas do ano contra o mesmo período do ano anterior; vendedor e time vêm das carteiras do time e, fora delas, aparecem como "Interno". No painel online, contatos editados por quem pode editar o painel ficam salvos para todos (coleção `contatos`); no HTML e no GitHub Pages ficam salvos no navegador de quem editou. Mapa: @svg-maps/brazil (CC BY 4.0).
