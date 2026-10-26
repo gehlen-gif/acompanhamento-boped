@@ -69,6 +69,14 @@
 .cg .ybar .pos { height: 10px; background: var(--color-ok); border-radius: 0 4px 4px 0; }
 .cg .up { color: var(--color-ok); }
 .cg .down { color: var(--color-bad); }
+.cg .ocols { display: flex; align-items: flex-end; gap: 4px; height: 13rem; overflow-x: auto; padding-top: var(--cds-gap-sm); }
+.cg .ocols .col { flex: 1 0 2.4rem; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 2px; }
+.cg .ocols .b { width: 100%; background: var(--c1); border-radius: 3px 3px 0 0; min-height: 1px; }
+.cg .ocols .b.ant { background: var(--cds-chart-muted); }
+.cg .ocols .m, .cg .ocols .val { font-size: 11px; color: var(--color-fg-muted); white-space: nowrap; }
+.cg .grid.omix { grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); }
+.cg .omix h3 { margin: 0 0 2px; font-size: var(--cds-font-size-body); }
+.cg .omix tfoot td { font-weight: 600; border-top: 1px solid var(--color-border-line); }
 .cg .yfoco { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; justify-content: space-between; }
 .cg .grid.y2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); }
 .cg h3 { margin: 0 0 4px; font-size: var(--cds-font-size-body, 1rem); font-weight: 600; }
@@ -136,6 +144,7 @@
     <button type="button" role="tab" id="tab-btn-promocoes" data-aba="promocoes">Promoções do mês</button>
     <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Histórico de vendas</button>
     <button type="button" role="tab" id="tab-btn-yoy" data-aba="yoy">Comparativo YoY</button>
+    <button type="button" role="tab" id="tab-btn-ortho" data-aba="ortho">OrthoCare</button>
     <button type="button" role="tab" id="tab-btn-escala" data-aba="escala">Escala de Valor</button>
     <button type="button" role="tab" id="tab-btn-contas" data-aba="contas">Principais Contas</button>
   </nav>
@@ -435,6 +444,79 @@
     <p class="note" id="regra-yoy"></p>
   </div>
 
+  <div class="pane" id="ortho">
+    <section class="card">
+      <h2 id="o-title">Linha OrthoCare</h2>
+      <p class="note" id="o-per"></p>
+    </section>
+
+    <section class="kpis" id="ind-ortho" data-source="ortho">
+      <div class="kpi"><span class="note">OrthoCare no ano</span><span class="v dash-skeleton" id="o-ano">—</span><span class="sub" id="o-ano-s"></span></div>
+      <div class="kpi"><span class="note">OrthoCare no mês</span><span class="v dash-skeleton" id="o-mes">—</span><span class="sub" id="o-mes-s"></span></div>
+      <div class="kpi"><span class="note">Peso nas vendas do ano</span><span class="v dash-skeleton" id="o-part">—</span><span class="sub" id="o-part-s"></span></div>
+      <div class="kpi"><span class="note">Grupos comprando</span><span class="v dash-skeleton" id="o-comp">—</span><span class="sub" id="o-comp-s"></span></div>
+      <div class="kpi"><span class="note">Pararam de comprar</span><span class="v dash-skeleton" id="o-par">—</span><span class="sub" id="o-par-s"></span></div>
+      <div class="kpi"><span class="note">Nunca compraram</span><span class="v dash-skeleton" id="o-nun">—</span><span class="sub" id="o-nun-s"></span></div>
+      <div class="kpi"><span class="note">Pedido médio OrthoCare</span><span class="v dash-skeleton" id="o-tkt">—</span><span class="sub" id="o-tkt-s"></span></div>
+      <div class="kpi"><span class="note">Mix OrthoCare por comprador</span><span class="v dash-skeleton" id="o-mix">—</span><span class="sub" id="o-mix-s"></span></div>
+    </section>
+
+    <section class="card">
+      <h2>Vendas OrthoCare por mês</h2>
+      <p class="note" id="o-cols-note"></p>
+      <div class="ocols" id="o-cols" role="img" aria-label="Vendas OrthoCare por mês"></div>
+    </section>
+
+    <section class="card">
+      <h2>Mix sugerido por faixa de pedido</h2>
+      <p class="note" id="o-mix-note"></p>
+      <div class="grid omix" id="o-mixes"></div>
+    </section>
+
+    <section class="card">
+      <h2>Por vendedor</h2>
+      <p class="note">Quantos grupos de clientes de cada carteira compram OrthoCare, pararam ou nunca compraram. Clique em um vendedor para filtrar.</p>
+      <div class="scroll">
+        <table id="tab-ovend" data-source="ortho">
+          <thead><tr><th>Vendedor</th><th>Time</th><th class="n">Grupos</th><th class="n">Comprando</th><th class="n">Pararam</th><th class="n">Nunca</th><th class="n">Penetração</th><th class="n y0">Ano anterior</th><th class="n y1">Ano atual</th><th class="n">%</th><th class="n">Peso nas vendas</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Subgrupos OrthoCare</h2>
+      <p class="note" id="o-subs-note"></p>
+      <div class="scroll">
+        <table id="tab-osubs" data-source="ortho">
+          <thead><tr><th>Subgrupo</th><th class="n y0">Ano anterior</th><th class="n y1">Ano atual</th><th class="n">Variação</th><th class="n">%</th><th class="n">Qtd. ano atual</th><th class="n">Grupos que compram</th><th class="n">Preço médio</th><th class="n">Nos pedidos</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="yfoco">
+        <div>
+          <h2>Grupos de clientes</h2>
+          <p class="note" id="o-cli-note"></p>
+        </div>
+        <div class="seg" id="o-sit-btn" role="group" aria-label="Situação em OrthoCare">
+          <button type="button" data-sit="compram">Com venda</button>
+          <button type="button" data-sit="pararam">Pararam de comprar</button>
+          <button type="button" data-sit="nunca">Sem venda</button>
+        </div>
+      </div>
+      <div class="scroll tall">
+        <table id="tab-ocli" data-source="ortho">
+          <thead><tr></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <p class="note" id="regra-ortho"></p>
+  </div>
+
   <div class="pane" id="escala">
     <section class="card">
       <div class="yfoco">
@@ -617,7 +699,7 @@ const PSITS = ['Potencial', 'Comprou recentemente', 'Já paga o preço da promo'
 defaults();
 $('#f-reset').addEventListener('click', () => {
   dash.resetParams();
-  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null, ealvo: null, ecomptodos: null });
+  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null, ealvo: null, ecomptodos: null, osit: null });
   defaults();
 });
 $('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
@@ -722,6 +804,11 @@ $('#tab-esug tbody').addEventListener('click', (e) => {
   if (tr) set({ esub: P().esub === tr.dataset.s ? null : tr.dataset.s });
 });
 $('#e-quem-close').addEventListener('click', () => set({ esub: null }));
+document.querySelectorAll('#o-sit-btn button').forEach((b) => b.addEventListener('click', () => set({ osit: b.dataset.sit === 'compram' ? null : b.dataset.sit })));
+$('#tab-ovend tbody').addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-v]');
+  if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
+});
 document.querySelectorAll('#y-per-btn button').forEach((b) => b.addEventListener('click', () => set({ yper: b.dataset.per === 'ytd' ? null : b.dataset.per })));
 $('#f-ysub').addEventListener('change', (e) => set({ ysub: e.target.value || null }));
 $('#f-ygrupo').addEventListener('change', (e) => {
@@ -749,7 +836,7 @@ $('#tab-cob tbody').addEventListener('click', (e) => {
   if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
 });
 const named = location.hash.slice(1);
-if (['pedidos', 'historico', 'promocoes', 'yoy', 'escala', 'contas'].includes(named)) set({ aba: named });
+if (['pedidos', 'historico', 'promocoes', 'yoy', 'ortho', 'escala', 'contas'].includes(named)) set({ aba: named });
 $('#det-close').addEventListener('click', () => { openKey = null; draw(); });
 document.querySelectorAll('#tab-grupos th').forEach((th) => th.addEventListener('click', () => {
   const f = th.dataset.field;
@@ -806,6 +893,7 @@ function draw() {
   $('#yoy').hidden = aba !== 'yoy';
   $('#contas').hidden = aba !== 'contas';
   $('#escala').hidden = aba !== 'escala';
+  $('#ortho').hidden = aba !== 'ortho';
   ['#f-creg', '#f-cuf', '#f-ctime', '#f-cvend', '#f-csit'].forEach((x) => { $(x).closest('label').hidden = aba !== 'contas'; });
   ['#f-macro', '#f-time', '#f-vend', '#f-sit', '#f-uf', '#f-seg', '#f-status'].forEach((x) => { $(x).closest('label').hidden = aba === 'contas'; });
   $('#f-q').placeholder = aba === 'contas' ? 'Conta, cidade, dono ou comprador' : 'Nome ou código';
@@ -949,7 +1037,208 @@ function draw() {
   drawPromo(rows);
   drawYoy(rows, all);
   drawEscala(rows, all);
+  drawOrtho(rows, all);
   drawContas();
+}
+
+
+// OrthoCare: linha ORTHO em todo o histórico (ano anterior + atual)
+const O_FAIXAS = [
+  { nome: 'Mix de R$ 1.000', alvo: 1000, lo: 700, hi: 2000, max: 5 },
+  { nome: 'Mix de R$ 3.000', alvo: 3000, lo: 2000, hi: 4000, max: 8 },
+  { nome: 'Mix de R$ 5.000', alvo: 5000, lo: 4000, hi: 7500, max: 10 },
+  { nome: 'Mix de +R$ 10.000', alvo: 10000, lo: 7500, hi: Infinity, max: 14 },
+];
+const O_DIAS = 90;
+const MES_AB = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const oFaixa = (v) => (v < 2000 ? O_FAIXAS[0] : v < 4000 ? O_FAIXAS[1] : v < 7500 ? O_FAIXAS[2] : O_FAIXAS[3]);
+const med = (xs, f) => { const v = xs.map(f).sort((a, b) => a - b); const n = v.length; return n ? (n % 2 ? v[(n - 1) / 2] : (v[n / 2 - 1] + v[n / 2]) / 2) : 0; };
+const dBR = (iso) => (iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) + '/' + iso.slice(0, 4) : '—');
+
+function oMix(cestas, f, O) {
+  const cs = cestas.filter((c) => c[1] >= f.lo && c[1] < f.hi);
+  const n = cs.length; if (!n) return { n, itens: [] };
+  const pen = new Map(), val = new Map(), q = new Map();
+  let tot = 0;
+  cs.forEach((c) => { tot += c[1]; c[2].forEach(([s, v, qt]) => { pen.set(s, (pen.get(s) || 0) + 1); val.set(s, (val.get(s) || 0) + v); q.set(s, (q.get(s) || 0) + qt); }); });
+  let cand = Array.from(pen.keys()).map((s) => ({ s, pen: pen.get(s) / n, share: val.get(s) / tot, preco: O.preco[s] || val.get(s) / Math.max(1, q.get(s)) }))
+    .sort((a, b) => b.pen - a.pen || b.share - a.share);
+  const fortes = cand.filter((c) => c.pen >= 0.1);
+  cand = (fortes.length >= 3 ? fortes : cand).slice(0, f.max);
+  const sh = d3.sum(cand, (c) => c.share);
+  const itens = cand.map((c) => {
+    const qtd = Math.max(1, Math.round(f.alvo * c.share / sh / c.preco));
+    return { ...c, nome: O.subs[c.s], qtd, sub: qtd * c.preco };
+  }).sort((a, b) => b.sub - a.sub);
+  return { n, itens };
+}
+
+function drawOrtho(scope, allGrupos) {
+  const p = P();
+  const od = dash.data('ortho');
+  const ok = od.status === 'ok' && od.data && od.data.length;
+  document.querySelectorAll('#ind-ortho .dash-skeleton').forEach((e) => { if (ok || od.status === 'error') e.classList.remove('dash-skeleton'); });
+  if (!ok) return;
+  const O = od.data[0];
+  const ref = O.ref, refA = O.ref_ant, ano1 = ref.slice(0, 4), ano0 = refA.slice(0, 4);
+  const corte = new Date(Date.parse(ref) - O_DIAS * 864e5).toISOString().slice(0, 10);
+  document.querySelectorAll('#ortho th.y0').forEach((t) => { t.textContent = ano0 + ' (até ' + refA.slice(8, 10) + '/' + refA.slice(5, 7) + ')'; });
+  document.querySelectorAll('#ortho th.y1').forEach((t) => { t.textContent = ano1; });
+  const sit = p.osit === 'pararam' || p.osit === 'nunca' ? p.osit : 'compram';
+  document.querySelectorAll('#o-sit-btn button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sit === sit)));
+
+  const gk = (r) => r.cod_grupo + '|' + r.vendedor;
+  const ortho = new Map(O.grupos.map((r, i) => [r.g + '|' + r.v, { ...r, i }]));
+  const linhas = scope.map((r) => { const o = ortho.get(gk(r)); const s = !o || !o.u ? 'nunca' : o.u >= corte ? 'compram' : 'pararam'; return { r, o, s }; });
+  const comp = linhas.filter((x) => x.s === 'compram'), par = linhas.filter((x) => x.s === 'pararam'), nun = linhas.filter((x) => x.s === 'nunca');
+  const buy = linhas.filter((x) => x.o);
+  const inScope = new Set(buy.map((x) => x.o.i));
+  const cestas = O.cestas.filter((c) => inScope.has(c[0]));
+  const sum = (xs, k) => d3.sum(xs, (x) => (x.o && x.o[k]) || 0);
+  const a1 = sum(buy, 'a1'), a0 = sum(buy, 'a0'), m = sum(buy, 'm'), fat = d3.sum(scope, (r) => r.faturamento);
+  $('#o-per').textContent = `Vendas da linha ORTHO (OrthoCare) desde ${dBR(O.inicio)}, primeira venda no histórico, até ${dBR(ref)}. "Comprando" é quem comprou OrthoCare nos últimos ${O_DIAS} dias (desde ${dBR(corte)}); "Pararam" já compraram, mas não desde então.`;
+  $('#o-ano').textContent = BRLc.format(a1); $('#o-ano').title = BRL.format(a1);
+  $('#o-ano-s').textContent = `${pctTxt(a0, a1)} sobre ${BRL.format(a0)} no mesmo período de ${ano0}`;
+  $('#o-mes').textContent = BRLc.format(m); $('#o-mes').title = BRL.format(m);
+  $('#o-mes-s').textContent = `${INT.format(buy.filter((x) => x.o.m > 0).length)} grupos compraram no mês`;
+  $('#o-part').textContent = fat > 0 ? PCT.format(a1 / fat) : '—';
+  $('#o-part-s').textContent = `de ${BRLc.format(fat)} vendidos no ano pelas carteiras`;
+  $('#o-comp').textContent = INT.format(comp.length);
+  $('#o-comp-s').textContent = scope.length ? `${PCT.format(comp.length / scope.length)} dos ${INT.format(scope.length)} grupos de clientes` : '';
+  $('#o-par').textContent = INT.format(par.length);
+  $('#o-par-s').textContent = `compraram ${BRL.format(sum(par, 't'))} no histórico`;
+  $('#o-nun').textContent = INT.format(nun.length);
+  $('#o-nun-s').textContent = `${INT.format(nun.filter((x) => x.r.faturamento > 0).length)} deles compraram outras linhas no ano`;
+  const c12 = cestas;
+  const tkt = c12.length ? d3.sum(c12, (c) => c[1]) / c12.length : 0;
+  $('#o-tkt').textContent = c12.length ? BRL.format(tkt) : '—';
+  $('#o-tkt-s').textContent = `${INT.format(c12.length)} pedidos · mediana ${c12.length ? BRL.format(med(c12, (c) => c[1])) : '—'}`;
+  const mixes = buy.map((x) => Object.keys(x.o.s || {}).length);
+  $('#o-mix').textContent = mixes.length ? mixTxt(avg(mixes)) : '—';
+  $('#o-mix-s').textContent = `subgrupos diferentes por grupo comprador, de ${INT.format(O.subs.length)} da linha`;
+
+  // vendas por mês
+  const meses = [];
+  for (let d = new Date(+O.inicio.slice(0, 4), +O.inicio.slice(5, 7) - 1, 1); d <= new Date(+ref.slice(0, 4), +ref.slice(5, 7) - 1, 1); d.setMonth(d.getMonth() + 1)) meses.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+  const porMes = meses.map((k) => ({ k, v: d3.sum(buy, (x) => (x.o.mm && x.o.mm[k]) || 0) }));
+  const vmax = Math.max(1, ...porMes.map((o) => o.v));
+  $('#o-cols').replaceChildren(...porMes.map((o) => {
+    const c = el('div', 'col'); c.title = `${MES_AB[+o.k.slice(5) - 1]}/${o.k.slice(0, 4)}: ${BRL.format(o.v)}`;
+    const b = el('div', 'b' + (o.k.slice(0, 4) === ano1 ? '' : ' ant')); b.style.height = Math.max(0, o.v) / vmax * 82 + '%';
+    c.append(el('span', 'val', o.v ? BRLc.format(o.v).replace('R$', '').trim() : ''), b, el('span', 'm', MES_AB[+o.k.slice(5) - 1] + '/' + o.k.slice(2, 4)));
+    return c;
+  }));
+  const melhor = porMes.slice().sort((a, b) => b.v - a.v)[0];
+  $('#o-cols-note').textContent = `Valores em R$. Cinza: ${ano0}; azul: ${ano1}. ${ref.slice(5, 7)}/${ano1} vai até ${dBR(ref)}.` + (melhor && melhor.v > 0 ? ` Melhor mês: ${MES_AB[+melhor.k.slice(5) - 1]}/${melhor.k.slice(0, 4)}, com ${BRL.format(melhor.v)}.` : '');
+
+  // mix sugerido
+  const base = cestas.length >= 30 ? cestas : O.cestas;
+  const proprio = base === cestas;
+  $('#o-mix-note').textContent = `Montado a partir de ${INT.format(base.length)} pedidos de OrthoCare ${proprio ? 'dos grupos de clientes no filtro' : 'de todas as carteiras (o filtro tem poucos pedidos para uma sugestão própria)'}. Para cada faixa entram os subgrupos que mais aparecem nos pedidos daquele tamanho, com a quantidade proporcional ao peso deles e o preço médio pago nos últimos 12 meses.`;
+  $('#o-mixes').replaceChildren(...O_FAIXAS.map((f) => {
+    const mx = oMix(base, f, O);
+    const box = el('div');
+    box.append(el('h3', null, f.nome));
+    box.append(el('p', 'note', mx.n ? `${INT.format(mx.n)} pedidos de ${BRL.format(f.lo)}${f.hi < Infinity ? ' a ' + BRL.format(f.hi) : ' ou mais'}` : 'Nenhum pedido nesta faixa.'));
+    if (!mx.n) return box;
+    const t = el('table'); const th = el('thead'); const hr = el('tr');
+    [['Subgrupo', ''], ['Qtd.', 'n'], ['Preço', 'n'], ['Subtotal', 'n'], ['Nos pedidos', 'n']].forEach(([x, c]) => hr.append(el('th', c, x)));
+    th.append(hr); const tb = el('tbody');
+    mx.itens.forEach((it) => { const tr = el('tr'); tr.append(el('td', null, it.nome), el('td', 'n', INT.format(it.qtd)), el('td', 'n', BRL2.format(it.preco)), el('td', 'n', BRL.format(it.sub)), el('td', 'n', PCT.format(it.pen))); tb.append(tr); });
+    const tf = el('tfoot'); const fr = el('tr');
+    fr.append(el('td', null, 'Total'), el('td', 'n', INT.format(d3.sum(mx.itens, (i) => i.qtd))), el('td'), el('td', 'n', BRL.format(d3.sum(mx.itens, (i) => i.sub))), el('td'));
+    tf.append(fr); t.append(th, tb, tf);
+    const w = el('div', 'scroll'); w.append(t); box.append(w);
+    return box;
+  }));
+
+  // por vendedor
+  const vend = d3.groups(linhas, (x) => x.r.vendedor).map(([v, xs]) => {
+    const b = xs.filter((x) => x.o);
+    return { v, time: xs[0].r.time, n: xs.length, c: xs.filter((x) => x.s === 'compram').length, pa: xs.filter((x) => x.s === 'pararam').length, nu: xs.filter((x) => x.s === 'nunca').length,
+      a0: sum(b, 'a0'), a1: sum(b, 'a1'), fat: d3.sum(xs, (x) => x.r.faturamento) };
+  }).sort((a, b) => b.a1 - a.a1 || b.c - a.c);
+  $('#tab-ovend tbody').replaceChildren(...vend.map((o) => {
+    const tr = el('tr'); tr.dataset.v = o.v; if (p.vendedor === o.v) tr.className = 'on';
+    tr.append(el('td', 'link', o.v), el('td', null, o.time), el('td', 'n', INT.format(o.n)), el('td', 'n', INT.format(o.c)), el('td', 'n', INT.format(o.pa)), el('td', 'n', INT.format(o.nu)),
+      el('td', 'n', PCT.format(o.c / o.n)), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.a1 - o.a0), pctTxt(o.a0, o.a1)), el('td', 'n', o.fat > 0 ? PCT.format(o.a1 / o.fat) : '—'));
+    return tr;
+  }));
+
+  // subgrupos (YoY da linha ORTHO no mesmo recorte)
+  const y = dash.data('yoy');
+  const yd = y.status === 'ok' ? y.data : [];
+  const L = (yd.find((r) => r.linhas) || {}).linhas || {};
+  const keys = new Set(scope.map(gk));
+  const ys = yd.filter((r) => L[r.s] === 'ORTHO' && keys.has(r.g + '|' + r.v));
+  const pen = new Map(); cestas.forEach((c) => c[2].forEach(([s]) => pen.set(O.subs[s], (pen.get(O.subs[s]) || 0) + 1)));
+  const subs = d3.groups(ys, (r) => r.s).map(([k, xs]) => ({ k, a0: d3.sum(xs, (r) => r.a0 || 0), a1: d3.sum(xs, (r) => r.a1 || 0), q1: d3.sum(xs, (r) => r.q1 || 0), g: new Set(xs.filter((r) => (r.a1 || 0) > 0).map((r) => r.g + '|' + r.v)).size }))
+    .filter((o) => o.a0 || o.a1).sort((a, b) => b.a1 - a.a1);
+  const pIdx = new Map(O.subs.map((s, i) => [s, O.preco[i]]));
+  $('#o-subs-note').textContent = `${INT.format(subs.length)} subgrupos com venda nos grupos de clientes do filtro, comparando o acumulado do ano com o mesmo período de ${ano0}. "Nos pedidos": em quantos pedidos de OrthoCare o subgrupo aparece.`;
+  $('#tab-osubs tbody').replaceChildren(...subs.map((o) => {
+    const tr = el('tr');
+    tr.append(el('td', null, o.k), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.a1 - o.a0), SBRL(o.a1 - o.a0)), el('td', 'n ' + sinal(o.a1 - o.a0), pctTxt(o.a0, o.a1)),
+      el('td', 'n', INT.format(o.q1)), el('td', 'n', INT.format(o.g)), el('td', 'n', pIdx.get(o.k) ? BRL2.format(pIdx.get(o.k)) : '—'), el('td', 'n', cestas.length ? PCT.format((pen.get(o.k) || 0) / cestas.length) : '—'));
+    return tr;
+  }));
+
+  // grupos de clientes por situação
+  const cont = new Map(); buy.forEach((x) => Object.keys(x.o.s || {}).forEach((s) => cont.set(s, (cont.get(s) || 0) + 1)));
+  const rank = Array.from(cont.entries()).sort((a, b) => b[1] - a[1]).map(([s]) => s);
+  const falta = (o) => rank.filter((s) => !(o.s || {})[s]).slice(0, 3).join(', ');
+  const topS = (o) => Object.entries(o.s || {}).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s]) => s).join(', ');
+  const fat1 = (x) => x.r.faturamento;
+  const shares = buy.filter((x) => x.o.a1 > 0 && fat1(x) > 0).map((x) => x.o.a1 / fat1(x));
+  const shareMed = shares.length ? med(shares, (v) => v) : 0;
+  // porte parecido: os 20 compradores com vendas no ano (todas as linhas) mais próximas
+  const porte = buy.filter((x) => x.o.np > 0 && fat1(x) > 0).map((x) => ({ f: fat1(x), t: x.o.t / x.o.np })).sort((a, b) => a.f - b.f);
+  const pedidoTipico = (f) => {
+    if (!porte.length) return 0;
+    let i = porte.findIndex((o) => o.f >= f); if (i < 0) i = porte.length;
+    const lo = Math.max(0, Math.min(i - 10, porte.length - 20));
+    return med(porte.slice(lo, lo + 20), (o) => o.t);
+  };
+  const n = p.top || 50;
+  const HEAD = {
+    compram: ['Grupo de cliente', 'Vendedor', 'UF', 'Segmento', ['OrthoCare ' + ano0, 'n'], ['OrthoCare ' + ano1, 'n'], ['%', 'n'], ['Última compra', 'n'], ['Pedidos', 'n'], ['Mix', 'n'], 'Faixa do pedido médio', 'Ainda não compra'],
+    pararam: ['Grupo de cliente', 'Vendedor', 'UF', 'Segmento', ['OrthoCare no histórico', 'n'], ['Última compra', 'n'], ['Dias sem comprar', 'n'], ['Pedidos', 'n'], 'O que comprava', ['Vendas no ano (todas as linhas)', 'n'], 'Faixa do pedido médio'],
+    nunca: ['Grupo de cliente', 'Vendedor', 'UF', 'Segmento', 'Status', ['Vendas no ano (todas as linhas)', 'n'], ['Último faturamento', 'n'], ['Pedido OrthoCare de quem tem porte parecido', 'n'], 'Mix sugerido para começar'],
+  };
+  $('#tab-ocli thead tr').replaceChildren(...HEAD[sit].map((h) => (Array.isArray(h) ? el('th', h[1], h[0]) : el('th', null, h))));
+  let lista;
+  if (sit === 'compram') lista = comp.slice().sort((a, b) => b.o.a1 - a.o.a1 || b.o.t - a.o.t);
+  else if (sit === 'pararam') lista = par.slice().sort((a, b) => b.o.t - a.o.t);
+  else lista = nun.slice().sort((a, b) => fat1(b) - fat1(a));
+  const dias = (iso) => Math.round((Date.parse(ref) - Date.parse(iso)) / 864e5);
+  $('#tab-ocli tbody').replaceChildren(...lista.slice(0, n).map((x) => {
+    const r = x.r, o = x.o, tr = el('tr');
+    tr.append(el('td', null, r.grupo), el('td', null, r.vendedor), el('td', null, r.uf || ''), el('td', null, r.segmento || ''));
+    if (sit === 'compram') {
+      tr.append(el('td', 'n', BRL.format(o.a0 || 0)), el('td', 'n', BRL.format(o.a1 || 0)), el('td', 'n ' + sinal((o.a1 || 0) - (o.a0 || 0)), pctTxt(o.a0 || 0, o.a1 || 0)), el('td', 'n', dBR(o.u)),
+        el('td', 'n', INT.format(o.np || 0)), el('td', 'n', INT.format(Object.keys(o.s || {}).length)), el('td', null, oFaixa(o.t / Math.max(1, o.np)).nome.replace('Mix de ', '')), el('td', null, falta(o)));
+    } else if (sit === 'pararam') {
+      tr.append(el('td', 'n', BRL.format(o.t)), el('td', 'n', dBR(o.u)), el('td', 'n', INT.format(dias(o.u))), el('td', 'n', INT.format(o.np || 0)), el('td', null, topS(o)),
+        el('td', 'n', BRL.format(fat1(x))), el('td', null, oFaixa(o.t / Math.max(1, o.np)).nome.replace('Mix de ', '')));
+    } else {
+      const esp = pedidoTipico(fat1(x));
+      const st = el('td'); st.append(statusPill(r.status || '')); tr.append(st, el('td', 'n', BRL.format(fat1(x))), el('td', 'n', dBR(r.ultimo_faturamento)), el('td', 'n', fat1(x) > 0 ? BRL.format(esp) : '—'), el('td', null, fat1(x) > 0 ? oFaixa(esp).nome : O_FAIXAS[0].nome));
+    }
+    return tr;
+  }));
+  const txt = {
+    compram: `${INT.format(comp.length)} grupos compraram OrthoCare nos últimos ${O_DIAS} dias, do maior valor no ano para o menor. "Ainda não compra": os subgrupos mais comprados pelos outros grupos do filtro que este grupo nunca levou.`,
+    pararam: `${INT.format(par.length)} grupos já compraram OrthoCare, mas não desde ${dBR(corte)}. Ordem: quem mais comprou no histórico. A faixa mostra o tamanho do pedido médio que faziam.`,
+    nunca: `${INT.format(nun.length)} grupos nunca compraram OrthoCare, dos que mais compram outras linhas no ano para os que menos compram. "Porte parecido": pedido médio de OrthoCare (mediana) dos 20 compradores do filtro com vendas no ano mais próximas às do grupo; ele define a faixa do mix sugerido. Nos compradores, OrthoCare pesa ${PCT.format(shareMed)} das vendas (mediana).`,
+  };
+  $('#o-cli-note').textContent = txt[sit] + (lista.length > n ? ` Mostrando ${INT.format(n)} de ${INT.format(lista.length)}.` : '');
+  $('#regra-ortho').textContent = `Fonte: Histórico de Pedidos (Valor Total, líquido de cancelamentos e devoluções), subgrupos da linha ORTHO pela planilha de correlação item × subgrupo × linha. Cada cliente vai para o grupo de clientes e o vendedor da carteira de hoje; clientes fora das carteiras do time não entram. Um pedido é o conjunto de itens OrthoCare de um grupo de clientes no mesmo dia.`;
+  if ((p.aba || 'pedidos') === 'ortho') {
+    const s1 = subs[0];
+    $('#takeaway').textContent = scope.length
+      ? `OrthoCare vendeu ${BRL.format(a1)} no ano (${pctTxt(a0, a1)} sobre ${ano0}), ${fat > 0 ? PCT.format(a1 / fat) : '—'} das vendas. ${INT.format(comp.length)} de ${INT.format(scope.length)} grupos de clientes compram; ${INT.format(par.length)} pararam e ${INT.format(nun.length)} nunca compraram.` + (s1 ? ` Subgrupo que mais vende: ${s1.k} (${BRL.format(s1.a1)}).` : '')
+      : 'Nenhum grupo de clientes com esses filtros.';
+  }
 }
 
 const FERIADOS = new Set(['2026-01-01', '2026-02-16', '2026-02-17', '2026-04-03', '2026-04-21', '2026-05-01', '2026-06-04', '2026-09-07', '2026-10-12', '2026-11-02', '2026-11-15', '2026-11-20', '2026-12-25']);

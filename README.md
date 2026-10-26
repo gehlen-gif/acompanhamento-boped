@@ -38,6 +38,14 @@ Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` 
 
 `python atualizar_contas.py PRINCIPAIS_CONTAS.xlsx` troca a lista base (`dados/base/principais_contas.json`). A cada `atualizar_tudo.py`, `dados/contas.json` é refeito: cada conta é ligada ao histórico pelo Grupo de Cliente (ou pelo nome do cliente), com vendas do ano contra o mesmo período do ano anterior; vendedor e time vêm das carteiras do time e, fora delas, aparecem como "Interno". No painel online, contatos editados por quem pode editar o painel ficam salvos para todos (coleção `contatos`); no HTML e no GitHub Pages ficam salvos no navegador de quem editou. Mapa: @svg-maps/brazil (CC BY 4.0).
 
+## OrthoCare
+
+`atualizar_ortho.py` roda dentro de `atualizar_tudo.py` e gera `dados/ortho.json` com a linha ORTHO (subgrupos pela planilha de correlação) em todo o histórico, por grupo de clientes e vendedor. A aba mostra vendas no ano contra o ano anterior, peso nas vendas, grupos comprando (últimos 90 dias), que pararam e que nunca compraram, vendas por mês, subgrupos e o mix sugerido por faixa de pedido (R$ 1.000, 3.000, 5.000 e +10.000), montado a partir dos pedidos de OrthoCare (grupo + dia) do tamanho de cada faixa dentro dos filtros.
+
+## Painel individual por vendedor
+
+`python gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta]` gera um HTML só com a carteira do vendedor (Pedidos do mês, Promoções do mês, Histórico de vendas e Comparativo YoY), sem dados de outras carteiras.
+
 ## Escala de Valor
 
 Aba construída sobre `dados/yoy.json` (acumulado do ano contra o mesmo período do ano anterior). Selecione grupos de clientes (ou use todos os do filtro) e o painel agrupa os subgrupos em clusters: Âncora (80% do valor, crescendo ou estável), Âncora em queda, Giro (80% das unidades, pouco valor), Em ascensão (≥0,2% do valor e +20%), Em queda (≥0,2% do valor no ano anterior e −20%) e Cauda. O mix sugerido e a contagem de grupos que ainda não compram cada subgrupo são recalculados a cada grupo adicionado. O campo "Comparar um grupo com a seleção" põe um grupo de cliente frente ao conjunto selecionado (que passa a excluí-lo) e lista os subgrupos que ele não compra ou compra pouco, com o potencial estimado: a diferença entre o peso do subgrupo no mix da referência e no mix do cliente, aplicada ao tamanho de compra atual do cliente. A linha de produto de cada subgrupo vem de `dados/base/correlacao_item_subgrupo_linha.csv`.

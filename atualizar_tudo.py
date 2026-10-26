@@ -80,6 +80,8 @@ def main(hist_xlsx, promos_json=None):
     if hist['Data'].min().year < h['Data'].min().year:
         import atualizar_yoy
         atualizar_yoy.main(hist, data_ref)
+    import atualizar_ortho
+    atualizar_ortho.main(hist, data_ref)
     import atualizar_contas
     atualizar_contas.main(hist)
     if promos_json:
