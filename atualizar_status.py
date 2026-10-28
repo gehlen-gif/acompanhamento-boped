@@ -79,23 +79,30 @@ def main(hist, data_ref):
         linhas.append(o)
 
     # evolução: fim de cada um dos últimos 13 meses + o mês atual até a data de referência
-    mensal = []
-    unicos = sorted({r['cod_grupo'] for r in grupos})
     inicio = h['Data'].min()
-    for m in pd.period_range((ref - pd.DateOffset(months=13)).to_period('M'), ref.to_period('M'), freq='M'):
-        fim = min(m.to_timestamp(how='end').normalize(), ref)
-        if fim < inicio + pd.Timedelta(days=TOLERANCIA_PADRAO):
-            continue
-        c = {'Ativo': 0, 'Inativo': 0, 'Nunca comprou': 0, 'Novo': 0, 'Reativado': 0, 'Inativou no mês': 0, 'Inativariam no mês': 0, 'Recuperado': 0}
-        for g in unicos:
-            s = status_em(compras.get(g, []), fim, tol_de(g))
-            c[s['st']] += 1
-            for t in s['tags']:
-                if t in c:
-                    c[t] += 1
-        mensal.append({'m': str(m), 'fim': fim.strftime('%Y-%m-%d'), **c})
 
-    out = [{'ref': data_ref, 'tol': TOLERANCIA_PADRAO, 'inicio': inicio.strftime('%Y-%m-%d'), 'mensal': mensal, 'grupos': linhas}]
+    def evolucao(gs):
+        out = []
+        for m in pd.period_range((ref - pd.DateOffset(months=13)).to_period('M'), ref.to_period('M'), freq='M'):
+            fim = min(m.to_timestamp(how='end').normalize(), ref)
+            if fim < inicio + pd.Timedelta(days=TOLERANCIA_PADRAO):
+                continue
+            c = {'Ativo': 0, 'Inativo': 0, 'Nunca comprou': 0, 'Novo': 0, 'Reativado': 0, 'Inativou no mês': 0, 'Inativariam no mês': 0, 'Recuperado': 0}
+            for g in gs:
+                s = status_em(compras.get(g, []), fim, tol_de(g))
+                c[s['st']] += 1
+                for t in s['tags']:
+                    if t in c:
+                        c[t] += 1
+            out.append({'m': str(m), 'fim': fim.strftime('%Y-%m-%d'), **c})
+        return out
+    mensal = evolucao(sorted({r['cod_grupo'] for r in grupos}))
+    por_vend = {}
+    for r in grupos:
+        por_vend.setdefault(r['vendedor'], set()).add(r['cod_grupo'])
+    mensal_v = {v: evolucao(sorted(gs)) for v, gs in por_vend.items()}
+
+    out = [{'ref': data_ref, 'tol': TOLERANCIA_PADRAO, 'inicio': inicio.strftime('%Y-%m-%d'), 'mensal': mensal, 'mensal_v': mensal_v, 'grupos': linhas}]
     (DADOS / 'status.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':'), allow_nan=False), encoding='utf-8')
     atual = mensal[-1] if mensal else {}
     print('status:', {k: atual.get(k) for k in ('Ativo', 'Inativo', 'Nunca comprou', 'Inativariam no mês', 'Recuperado')})

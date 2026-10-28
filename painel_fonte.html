@@ -1654,7 +1654,7 @@ function drawStatus(scope) {
   // evolução (empresa toda, sem os filtros de carteira)
   const M = S.mensal;
   const vmax = Math.max(1, ...M.map((m) => m.Ativo + m.Inativo));
-  $('#st-mes-note').textContent = `Grupos de clientes das carteiras de hoje, contados uma vez cada (não seguem os filtros). O mês atual vai até ${dBR(S.ref)}.`;
+  $('#st-mes-note').textContent = S.individual ? `Grupos de clientes da carteira de hoje.` : `Grupos de clientes das carteiras de hoje, contados uma vez cada (não seguem os filtros). O mês atual vai até ${dBR(S.ref)}.`;
   $('#st-cols').replaceChildren(...M.map((m) => {
     const c = el('div', 'col'); c.title = `${MES_AB[+m.m.slice(5) - 1]}/${m.m.slice(0, 4)}: ${INT.format(m.Ativo)} ativos, ${INT.format(m.Inativo)} inativos`;
     const st = el('div', 'stack'); const a = el('div', 'a'); a.style.height = m.Ativo / vmax * 100 + '%'; const i = el('div', 'i'); i.style.height = m.Inativo / vmax * 100 + '%';

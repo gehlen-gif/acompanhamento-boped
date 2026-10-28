@@ -2,7 +2,7 @@
 
 Uso: python3 gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta_destino]
 
-Mantém as abas Pedidos do mês, Promoções do mês, OrthoCare e Comparativo YoY.
+Mantém as abas Pedidos do mês, Promoções do mês, Status Clientes, OrthoCare e Comparativo YoY.
 Nenhuma linha de outra carteira é embutida no arquivo.
 Sem vendedor, gera um painel para cada RCA ativo do time BOINAS AZUIS e para os de EXTRAS.
 """
@@ -21,7 +21,7 @@ FONTES = [('grupos', 'carteiras_grupos.json', 'vendedor'), ('clientes', 'carteir
           ('promo_potencial', 'promo_potencial.json', 'vendedor'), ('meta', 'meta.json', 'vendedor'),
           ('yoy', 'yoy.json', 'v')]
 # Abas que não entram no painel individual
-OCULTAR = """<style>#tab-btn-historico,#tab-btn-escala,#tab-btn-contas,#tab-btn-saojoao,#historico,#escala,#contas,#saojoao{display:none!important}</style>"""
+OCULTAR = """<style>#tab-btn-escala,#tab-btn-contas,#tab-btn-saojoao,#escala,#contas,#saojoao{display:none!important}</style>"""
 
 
 def ortho(vendedor):
@@ -36,8 +36,18 @@ def ortho(vendedor):
     return [{**o, 'grupos': grupos, 'cestas': cestas, 'individual': True}]
 
 
+def status(vendedor):
+    """Status Clientes só com os grupos do vendedor e a evolução mensal da carteira dele."""
+    f = DADOS / 'status.json'
+    if not f.exists():
+        return []
+    s = json.loads(f.read_text(encoding='utf-8'))[0]
+    return [{'ref': s['ref'], 'tol': s['tol'], 'inicio': s['inicio'], 'individual': True,
+             'mensal': s.get('mensal_v', {}).get(vendedor, []), 'grupos': [r for r in s['grupos'] if r['v'] == vendedor]}]
+
+
 def carregar(vendedor):
-    dados = {'contas': [], 'saojoao': [], 'status': [], 'ortho': ortho(vendedor)}
+    dados = {'contas': [], 'saojoao': [], 'status': status(vendedor), 'ortho': ortho(vendedor)}
     for id_, f, campo in FONTES:
         linhas = json.loads((DADOS / f).read_text(encoding='utf-8')) if (DADOS / f).exists() else []
         if campo:

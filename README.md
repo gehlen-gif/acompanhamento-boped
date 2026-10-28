@@ -36,7 +36,7 @@ Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` 
 
 ## Principais Contas
 
-`python atualizar_contas.py PRINCIPAIS_CONTAS.xlsx` troca a lista base (`dados/base/principais_contas.json`). A cada `atualizar_tudo.py`, `dados/contas.json` é refeito: cada conta é ligada ao histórico pelo Grupo de Cliente (ou pelo nome do cliente), com vendas do ano contra o mesmo período do ano anterior; vendedor e time vêm das carteiras do time e, fora delas, aparecem como "Interno". No painel online, contatos editados por quem pode editar o painel ficam salvos para todos (coleção `contatos`); no HTML e no GitHub Pages ficam salvos no navegador de quem editou. Mapa: @svg-maps/brazil (CC BY 4.0).
+`python atualizar_contas.py PRINCIPAIS_CONTAS.xlsx` troca a lista base (`dados/base/principais_contas.json`). A cada `atualizar_tudo.py`, `dados/contas.json` é refeito: cada conta é ligada ao histórico pelos clientes que já estiveram no Grupo de Cliente dela (ou pelo nome do cliente), para que uma troca de nome do grupo no sistema não zere a conta, com vendas do ano contra o mesmo período do ano anterior; vendedor e time vêm das carteiras do time e, fora delas, aparecem como "Interno". No painel online, contatos editados por quem pode editar o painel ficam salvos para todos (coleção `contatos`); no HTML e no GitHub Pages ficam salvos no navegador de quem editou. Mapa: @svg-maps/brazil (CC BY 4.0).
 
 ## OrthoCare
 
@@ -54,7 +54,7 @@ Os dados do cliente não vão para este repositório nem para o GitHub Pages: `i
 
 ## Painel individual por vendedor
 
-`python gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta]` gera um HTML só com a carteira do vendedor (Pedidos do mês, Promoções do mês, OrthoCare e Comparativo YoY), sem dados de outras carteiras. `python gerar_painel_vendedor.py --boinas [pasta]` gera um para cada RCA ativo do time BOINAS AZUIS e para os RCAs da lista EXTRAS (hoje, BEHIKES - RCA SAMUEL).
+`python gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta]` gera um HTML só com a carteira do vendedor (Pedidos do mês, Promoções do mês, Status Clientes, OrthoCare e Comparativo YoY), sem dados de outras carteiras. `python gerar_painel_vendedor.py --boinas [pasta]` gera um para cada RCA ativo do time BOINAS AZUIS e para os RCAs da lista EXTRAS (hoje, BEHIKES - RCA SAMUEL).
 
 ## Escala de Valor
 

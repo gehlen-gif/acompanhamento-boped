@@ -68,7 +68,9 @@ def main(hist):
     out = []
     for c in contas:
         k = chave(c['nome_sistema'])
-        m = h[h['kg'] == k]
+        # pelos clientes que já estiveram no grupo: o nome do grupo muda no sistema (ex.: GRUPO MEDICAL virou
+        # GRUPO MEDICAL.COM e GRUPO CASA MÉDICA em 28/10/2026) e o histórico antigo fica com o nome velho
+        m = h[h['cod_cliente'].isin(set(h.loc[h['kg'] == k, 'cod_cliente']))]
         ligacao = 'Grupo de cliente'
         if m.empty:
             m = h[h['kc'].str.startswith(k)]
