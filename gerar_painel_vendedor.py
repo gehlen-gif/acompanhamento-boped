@@ -2,9 +2,9 @@
 
 Uso: python3 gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta_destino]
 
-Mantém as abas Pedidos do mês, Promoções do mês, Histórico de vendas, OrthoCare e
-Comparativo YoY. Nenhuma linha de outra carteira é embutida no arquivo.
-Sem vendedor, gera um painel para cada RCA ativo do time BOINAS AZUIS.
+Mantém as abas Pedidos do mês, Promoções do mês, OrthoCare e Comparativo YoY.
+Nenhuma linha de outra carteira é embutida no arquivo.
+Sem vendedor, gera um painel para cada RCA ativo do time BOINAS AZUIS e para os de EXTRAS.
 """
 import json
 import re
@@ -21,7 +21,7 @@ FONTES = [('grupos', 'carteiras_grupos.json', 'vendedor'), ('clientes', 'carteir
           ('promo_potencial', 'promo_potencial.json', 'vendedor'), ('meta', 'meta.json', 'vendedor'),
           ('yoy', 'yoy.json', 'v')]
 # Abas que não entram no painel individual
-OCULTAR = """<style>#tab-btn-escala,#tab-btn-contas,#escala,#contas{display:none!important}</style>"""
+OCULTAR = """<style>#tab-btn-historico,#tab-btn-escala,#tab-btn-contas,#historico,#escala,#contas{display:none!important}</style>"""
 
 
 def ortho(vendedor):
@@ -75,6 +75,10 @@ def main(vendedor, destino=None):
     return dest
 
 
+# RCAs de outros times que também recebem o painel individual
+EXTRAS = ['BEHIKES - RCA SAMUEL']
+
+
 def rcas_boinas():
     g = json.loads((DADOS / 'carteiras_grupos.json').read_text(encoding='utf-8'))
     return sorted({r['vendedor'] for r in g if r['time'] == 'BOINAS AZUIS' and r['situacao_vendedor'] == 'Ativo' and ' RCA ' in r['vendedor']})
@@ -84,5 +88,5 @@ if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] != '--boinas':
         main(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
     else:
-        for v in rcas_boinas():
+        for v in rcas_boinas() + EXTRAS:
             main(v, sys.argv[2] if len(sys.argv) > 2 else None)
