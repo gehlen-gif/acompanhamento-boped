@@ -37,7 +37,7 @@ def ortho(vendedor):
 
 
 def carregar(vendedor):
-    dados = {'contas': [], 'saojoao': [], 'ortho': ortho(vendedor)}
+    dados = {'contas': [], 'saojoao': [], 'status': [], 'ortho': ortho(vendedor)}
     for id_, f, campo in FONTES:
         linhas = json.loads((DADOS / f).read_text(encoding='utf-8')) if (DADOS / f).exists() else []
         if campo:

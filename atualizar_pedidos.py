@@ -151,7 +151,7 @@ def build_html(data_ref):
     shell = (HERE / 'painel_shell.html').read_text(encoding='utf-8')
     data, publico = '', ''
     for id_, f in [('grupos', 'carteiras_grupos.json'), ('clientes', 'carteiras_clientes.json'), ('pedidos', 'pedidos.json'),
-                   ('promocoes', 'promocoes.json'), ('promo_potencial', 'promo_potencial.json'), ('meta', 'meta.json'), ('yoy', 'yoy.json'), ('contas', 'contas.json'), ('ortho', 'ortho.json'), ('saojoao', 'saojoao.json')]:
+                   ('promocoes', 'promocoes.json'), ('promo_potencial', 'promo_potencial.json'), ('meta', 'meta.json'), ('yoy', 'yoy.json'), ('contas', 'contas.json'), ('ortho', 'ortho.json'), ('saojoao', 'saojoao.json'), ('status', 'status.json')]:
         txt = (DADOS / f).read_text(encoding='utf-8').replace('</', '<\\/') if (DADOS / f).exists() else '[]'
         data += f'<script type="application/json" id="data-{id_}">{txt}</script>\n'
         publico += f'<script type="application/json" id="data-{id_}">{"[]" if id_ in PRIVADOS else txt}</script>\n'

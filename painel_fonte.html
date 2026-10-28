@@ -132,6 +132,13 @@
 .cg .tile .big { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-title); line-height: 1.1; }
 .cg .tile .lbl { font-weight: var(--cds-font-weight-medium); }
 .cg .tile .hint { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cg .tile.s-ativo { --tc: var(--color-ok); } .cg .tile.s-inativo { --tc: var(--color-bad); } .cg .tile.s-risco { --tc: var(--color-warn); } .cg .tile.s-bom { --tc: var(--c1); } .cg .tile.s-neutro { --tc: var(--cds-chart-muted); }
+.cg .stcols { display: flex; align-items: flex-end; gap: 6px; height: 11rem; overflow-x: auto; }
+.cg .stcols .col { flex: 1 0 2.2rem; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; gap: 2px; }
+.cg .stcols .stack { display: flex; flex-direction: column-reverse; flex: 1; justify-content: flex-start; }
+.cg .stcols .stack div { width: 100%; }
+.cg .stcols .a { background: var(--color-ok); } .cg .stcols .i { background: var(--color-bad); opacity: .8; }
+.cg .stcols .m { font-size: 11px; color: var(--color-fg-muted); text-align: center; white-space: nowrap; }
 .cg .tile.t-pot { --tc: #1e9e5a; } .cg .tile.t-rec { --tc: #d93025; } .cg .tile.t-ja { --tc: #f2b705; }
 .cg .chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; font-size: var(--cds-font-size-caption); }
 .cg .chips button { border-radius: 999px; padding: 2px 10px; font-size: var(--cds-font-size-caption); }
@@ -156,7 +163,7 @@
   <nav class="tabs" role="tablist" aria-label="Partes do painel">
     <button type="button" role="tab" id="tab-btn-pedidos" data-aba="pedidos">Pedidos do mês</button>
     <button type="button" role="tab" id="tab-btn-promocoes" data-aba="promocoes">Promoções do mês</button>
-    <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Histórico de vendas</button>
+    <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Status Clientes</button>
     <button type="button" role="tab" id="tab-btn-yoy" data-aba="yoy">Comparativo YoY</button>
     <button type="button" role="tab" id="tab-btn-ortho" data-aba="ortho">OrthoCare</button>
     <button type="button" role="tab" id="tab-btn-escala" data-aba="escala">Escala de Valor</button>
@@ -171,7 +178,7 @@
     <label>Situação do vendedor<select id="f-sit"></select></label>
     <label>UF<select id="f-uf"></select></label>
     <label>Segmento<select id="f-seg"></select></label>
-    <label>Status do cliente<select id="f-status"></select></label>
+    <label>Status no cadastro<select id="f-status"></select></label>
     <label>Situação no mês<select id="f-mes"></select></label>
     <label>Buscar grupo<input id="f-q" type="search" placeholder="Nome ou código"></label>
     <label>Linha da promoção<select id="f-plinha"></select></label>
@@ -193,6 +200,45 @@
   </section>
 
   <div class="pane" id="historico">
+  <section class="card">
+    <div class="yfoco">
+      <div>
+        <h2>Status dos grupos de clientes</h2>
+        <p class="note" id="st-per"></p>
+      </div>
+      <label>Status<select id="f-sts"></select></label>
+    </div>
+    <div class="tiles" id="st-tiles" data-source="status" style="margin-top:var(--cds-gap-sm)"></div>
+  </section>
+
+  <div class="grid sj2">
+    <section class="card">
+      <h2>Ativos e inativos no fim de cada mês</h2>
+      <p class="note" id="st-mes-note"></p>
+      <div class="sjleg"><span><i style="background:var(--color-ok)"></i>Ativos</span><span><i style="background:var(--color-bad)"></i>Inativos</span></div>
+      <div class="stcols" id="st-cols" role="img" aria-label="Grupos ativos e inativos por mês"></div>
+    </section>
+    <section class="card">
+      <h2>Movimento de cada mês</h2>
+      <div class="scroll">
+        <table id="tab-stmes" data-source="status">
+          <thead><tr><th>Mês</th><th class="n">Ativos</th><th class="n">Inativos</th><th class="n">Novos</th><th class="n">Reativados</th><th class="n">Inativariam</th><th class="n">Recuperados</th><th class="n">Inativaram</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2 id="st-lista-title">Grupos de clientes</h2>
+    <p class="note" id="st-lista-note"></p>
+    <div class="scroll tall">
+      <table id="tab-status" data-source="status" data-row-key="g,v">
+        <thead><tr><th>Grupo de cliente</th><th>Vendedor</th><th>UF</th><th>Segmento</th><th>Status</th><th>Também</th><th class="n">Última compra</th><th class="n">Dias sem comprar</th><th class="n">Data de inativação</th><th>Próxima mudança</th><th class="n">Vendas em 12 meses</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
   <section class="kpis" id="indicadores" data-source="grupos">
     <div class="kpi"><span class="note">Vendas no período</span><span class="v dash-skeleton" id="k-fat">—</span><span class="sub" id="k-per"></span></div>
     <div class="kpi"><span class="note">Grupos de cliente</span><span class="v dash-skeleton" id="k-grp">—</span></div>
@@ -836,7 +882,7 @@ const PSITS = ['Potencial', 'Comprou recentemente', 'Já paga o preço da promo'
 defaults();
 $('#f-reset').addEventListener('click', () => {
   dash.resetParams();
-  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null, ealvo: null, ecomptodos: null, osit: null, sjuf: null });
+  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null, ealvo: null, ecomptodos: null, osit: null, sjuf: null, sts: null });
   defaults();
 });
 $('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
@@ -942,6 +988,8 @@ $('#tab-esug tbody').addEventListener('click', (e) => {
 });
 $('#e-quem-close').addEventListener('click', () => set({ esub: null }));
 $('#tab-sjuf tbody').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-uf]'); if (tr) set({ sjuf: P().sjuf === tr.dataset.uf ? null : tr.dataset.uf }); });
+$('#f-sts').addEventListener('change', (e) => set({ sts: e.target.value || null }));
+$('#st-tiles').addEventListener('click', (e) => { const b = e.target.closest('[data-sts]'); if (b) set({ sts: P().sts === b.dataset.sts ? null : b.dataset.sts }); });
 $('#sj-uf-btn').addEventListener('click', (e) => { const b = e.target.closest('button[data-uf]'); if (b) set({ sjuf: b.dataset.uf || null }); });
 document.querySelectorAll('#o-sit-btn button').forEach((b) => b.addEventListener('click', () => set({ osit: b.dataset.sit === 'compram' ? null : b.dataset.sit })));
 $('#tab-ovend tbody').addEventListener('click', (e) => {
@@ -1180,6 +1228,7 @@ function draw() {
   drawEscala(rows, all);
   drawOrtho(rows, all);
   drawSaoJoao();
+  drawStatus(rows);
   drawContas();
 }
 
@@ -1566,6 +1615,79 @@ function drawSaoJoao() {
   $('#sj-pontos').replaceChildren(...pts.map(([b, t]) => { const li = el('li'); li.append(el('b', null, b), document.createTextNode(t)); return li; }));
   $('#regra-sj').textContent = `Fontes: Histórico de Pedidos (sell in, grupo ${S.grupo}), planilha de vendas das lojas (sell out) e de estoque enviadas pelo cliente. Os produtos do cliente foram ligados aos nossos itens pelo nome; a muleta canadense é vendida em par na loja e contada em unidades no sell in, então o sell in dela é dividido por 2. Valores de sell out são a preço de loja e não se comparam em R$ com o sell in; por isso a comparação é em unidades. Redes do segmento: ${S.pares.map((x) => x.g).join(', ')}.`;
   if ((p.aba || 'pedidos') === 'saojoao') $('#takeaway').textContent = pts.slice(0, 2).map(([b, t]) => b + t).join(' ');
+}
+
+// Status Clientes: regras de StatusGruposClientes sobre o Histórico de Pedidos
+const ST_FILTROS = ['Ativo', 'Inativo', 'Inativam em até 30 dias', 'Ativo mês anterior', 'Inativariam no mês', 'Recuperado', 'Inativou no mês', 'Reativado', 'Novo', 'Nunca comprou'];
+const stTem = (r, f) => f === 'Inativam em até 30 dias' ? r.st === 'Ativo' && r.mudar != null && r.mudar <= 30 : r.st === f || (r.tags || []).includes(f);
+function drawStatus(scope) {
+  const p = P();
+  const sd = dash.data('status');
+  const ok = sd.status === 'ok' && sd.data && sd.data.length;
+  if (!ok) return;
+  const S = sd.data[0];
+  const sts = ST_FILTROS.includes(p.sts) ? p.sts : null;
+  fillSelect($('#f-sts'), 'Todos', ST_FILTROS, sts);
+  const info = new Map(scope.map((r) => [r.cod_grupo + '|' + r.vendedor, r]));
+  const rows = S.grupos.filter((r) => info.has(r.g + '|' + r.v)).map((r) => ({ ...r, i: info.get(r.g + '|' + r.v) }));
+  const ini = S.ref.slice(0, 8) + '01';
+  $('#st-per').textContent = `Régua: até ${S.tol} dias sem compra, Ativo; acima disso, Inativo (tolerância padrão, igual para todos os segmentos). Compras pelo Histórico de Pedidos desde ${dBR(S.inicio)}, até ${dBR(S.ref)}; o mês de referência começa em ${dBR(ini)}. Clique em um indicador para listar os grupos.`;
+  const cnt = (f) => rows.filter((r) => stTem(r, f));
+  const soma = (xs) => d3.sum(xs, (r) => r.v12);
+  const ina = cnt('Inativo'), atv = cnt('Ativo'), r30 = cnt('Inativam em até 30 dias'), inm = cnt('Inativariam no mês'), rec = cnt('Recuperado'), inat = cnt('Inativou no mês'), reat = cnt('Reativado'), nov = cnt('Novo'), nun = cnt('Nunca comprou');
+  const unicos = (xs) => new Set(xs.map((r) => r.g)).size;
+  const tiles = [
+    ['Ativo', 'Ativos', atv, `compraram nos últimos ${S.tol} dias`, 's-ativo'],
+    ['Inativo', 'Clientes inativos', ina, `${BRLc.format(soma(ina))} comprados por eles em 12 meses`, 's-inativo'],
+    ['Inativam em até 30 dias', 'Inativam em até 30 dias', r30, 'ativos que ainda podem ser salvos', 's-risco'],
+    ['Inativariam no mês', 'Inativariam no mês', inm, `${INT.format(cnt('Recuperado').length)} recuperados com compra a tempo`, 's-risco'],
+    ['Inativou no mês', 'Inativaram no mês', inat, 'passaram da tolerância neste mês', 's-inativo'],
+    ['Reativado', 'Reativados', reat, 'voltaram a comprar no mês', 's-bom'],
+    ['Novo', 'Novos', nov, 'primeira compra no mês', 's-bom'],
+    ['Nunca comprou', 'Nunca compraram', nun, `sem compra desde ${dBR(S.inicio)}`, 's-neutro'],
+  ];
+  $('#st-tiles').replaceChildren(...tiles.map(([k, lbl, xs, hint, cls]) => {
+    const b = el('button', 'tile ' + cls + (sts === k ? ' on' : '')); b.type = 'button'; b.dataset.sts = k;
+    b.append(el('span', 'lbl', lbl), el('span', 'big', INT.format(unicos(xs))), el('span', 'hint', hint));
+    return b;
+  }));
+  // evolução (empresa toda, sem os filtros de carteira)
+  const M = S.mensal;
+  const vmax = Math.max(1, ...M.map((m) => m.Ativo + m.Inativo));
+  $('#st-mes-note').textContent = `Grupos de clientes das carteiras de hoje, contados uma vez cada (não seguem os filtros). O mês atual vai até ${dBR(S.ref)}.`;
+  $('#st-cols').replaceChildren(...M.map((m) => {
+    const c = el('div', 'col'); c.title = `${MES_AB[+m.m.slice(5) - 1]}/${m.m.slice(0, 4)}: ${INT.format(m.Ativo)} ativos, ${INT.format(m.Inativo)} inativos`;
+    const st = el('div', 'stack'); const a = el('div', 'a'); a.style.height = m.Ativo / vmax * 100 + '%'; const i = el('div', 'i'); i.style.height = m.Inativo / vmax * 100 + '%';
+    st.append(a, i); c.append(st, el('span', 'm', MES_AB[+m.m.slice(5) - 1] + '/' + m.m.slice(2, 4))); return c;
+  }));
+  $('#tab-stmes tbody').replaceChildren(...M.slice().reverse().map((m) => {
+    const tr = el('tr'); tr.append(el('td', null, MES_AB[+m.m.slice(5) - 1] + '/' + m.m.slice(0, 4)), ...['Ativo', 'Inativo', 'Novo', 'Reativado', 'Inativariam no mês', 'Recuperado', 'Inativou no mês'].map((k) => el('td', 'n', INT.format(m[k])))); return tr;
+  }));
+  // listagem
+  let lista = sts ? cnt(sts) : rows.slice();
+  const ordem = (r) => (r.st === 'Ativo' ? r.mudar : r.st === 'Inativo' ? 1e6 - r.v12 / 1e3 : 2e6);
+  lista.sort((a, b) => (sts === 'Inativo' ? b.v12 - a.v12 : ordem(a) - ordem(b)) || b.v12 - a.v12);
+  const n = p.top || 50;
+  $('#st-lista-title').textContent = sts ? `Grupos de clientes: ${sts}` : 'Grupos de clientes';
+  $('#st-lista-note').textContent = `${INT.format(lista.length)} grupos de clientes${sts ? '' : ' em todos os status'}. Ativos primeiro, dos que inativam mais cedo para os mais tarde; depois os inativos, dos que mais compraram em 12 meses. "Próxima mudança": para um ativo, em quantos dias ele inativa se não comprar; para um inativo, há quantos dias inativou (uma compra o devolve a Ativo, como Reativado).` + (lista.length > n ? ` Mostrando ${INT.format(n)}; aumente em "Mostrar".` : '');
+  const pillSt = (st) => el('span', 'pill ' + (st === 'Ativo' ? 'ok' : st === 'Inativo' ? 'bad' : ''), st);
+  $('#tab-status tbody').replaceChildren(...lista.slice(0, n).map((r) => {
+    const tr = el('tr');
+    const s1 = el('td'); s1.append(pillSt(r.st));
+    const tags = (r.tags || []).filter((t) => t !== 'Ativo mês anterior');
+    let prox = '—', cls = null;
+    if (r.st === 'Ativo') { prox = r.mudar <= 0 ? 'último dia como ativo' : `inativa em ${INT.format(r.mudar)} dia${r.mudar === 1 ? '' : 's'}`; cls = r.mudar <= 30 ? 'down' : null; }
+    else if (r.st === 'Inativo') prox = `inativo há ${INT.format(-r.mudar)} dias`;
+    tr.append(el('td', null, r.i.grupo), el('td', null, r.v), el('td', null, r.i.uf || ''), el('td', null, r.i.segmento || ''), s1, el('td', null, tags.join(', ')),
+      el('td', 'n', r.ult ? dBR(r.ult) : '—'), el('td', 'n', r.dias != null ? INT.format(r.dias) : '—'), el('td', 'n', r.inat ? dBR(r.inat) : '—'), el('td', cls, prox), el('td', 'n', BRL.format(r.v12)));
+    return tr;
+  }));
+  if ((p.aba || 'pedidos') === 'historico') {
+    const base = unicos(atv) + unicos(ina);
+    $('#takeaway').textContent = rows.length
+      ? `${INT.format(unicos(ina))} grupos de clientes inativos (${base ? PCT.format(unicos(ina) / base) : '—'} dos que já compraram), que somaram ${BRL.format(soma(ina))} em 12 meses. ${INT.format(unicos(r30))} ativos inativam nos próximos 30 dias se não comprarem; neste mês, ${INT.format(unicos(inat))} inativaram, ${INT.format(unicos(rec))} foram recuperados a tempo e ${INT.format(unicos(reat))} voltaram a comprar.`
+      : 'Nenhum grupo de clientes com esses filtros.';
+  }
 }
 
 const FERIADOS = new Set(['2026-01-01', '2026-02-16', '2026-02-17', '2026-04-03', '2026-04-21', '2026-05-01', '2026-06-04', '2026-09-07', '2026-10-12', '2026-11-02', '2026-11-15', '2026-11-20', '2026-12-25']);

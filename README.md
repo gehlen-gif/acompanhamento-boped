@@ -42,6 +42,10 @@ Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` 
 
 `atualizar_ortho.py` roda dentro de `atualizar_tudo.py` e gera `dados/ortho.json` com a linha ORTHO (subgrupos pela planilha de correlação) em todo o histórico, por grupo de clientes e vendedor. A aba mostra vendas no ano contra o ano anterior, peso nas vendas, grupos comprando (últimos 90 dias), que pararam e que nunca compraram, vendas por mês, subgrupos e o mix sugerido por faixa de pedido (R$ 1.000, 3.000, 5.000 e +10.000), montado a partir dos pedidos de OrthoCare (grupo + dia) do tamanho de cada faixa dentro dos filtros.
 
+## Status Clientes
+
+A antiga aba Histórico de vendas agora se chama Status Clientes. `atualizar_status.py` roda dentro de `atualizar_tudo.py` e gera `dados/status.json` pelas regras de StatusGruposClientes: até 90 dias sem compra, Ativo; acima, Inativo (a tolerância por segmento pode ser preenchida em `TOLERANCIA_SEGMENTO`), mais Novo, Reativado, Inativou no mês, Ativo mês anterior, Inativariam no mês, Recuperado e Nunca comprou, com a data de inativação, os dias até mudar de status e a evolução dos últimos 13 meses. A data do pedido faz o papel do faturamento. Os desdobramentos "com Pedido" e "com Inadimplência" não são calculados, porque o histórico não traz pedidos pendentes nem contas a receber.
+
 ## SÃO JOÃO
 
 `python atualizar_saojoao.py VENDA.xlsx ESTOQUE.xlsx` troca a base de sell out e estoque enviada pelo GRUPO FARMÁCIAS SÃO JOÃO (`dados/base/saojoao_*.csv.gz`). A cada `atualizar_tudo.py`, `dados/saojoao.json` é refeito com o sell in mais recente: sell in × sell out × estoque por produto, estados, lojas, sazonalidade, pedido sugerido (60 dias + 45 de estoque final no giro de 30 dias) e oportunidades frente às redes FARMA REDES com pelo menos R$ 30 mil nos últimos 12 meses.
