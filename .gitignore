@@ -1,3 +1,6 @@
 __pycache__/
 *.xlsx
 vendedores/
+privado/
+dados/saojoao.json
+dados/base/saojoao_*

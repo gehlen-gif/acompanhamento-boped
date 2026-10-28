@@ -21,7 +21,7 @@ FONTES = [('grupos', 'carteiras_grupos.json', 'vendedor'), ('clientes', 'carteir
           ('promo_potencial', 'promo_potencial.json', 'vendedor'), ('meta', 'meta.json', 'vendedor'),
           ('yoy', 'yoy.json', 'v')]
 # Abas que não entram no painel individual
-OCULTAR = """<style>#tab-btn-historico,#tab-btn-escala,#tab-btn-contas,#historico,#escala,#contas{display:none!important}</style>"""
+OCULTAR = """<style>#tab-btn-historico,#tab-btn-escala,#tab-btn-contas,#tab-btn-saojoao,#historico,#escala,#contas,#saojoao{display:none!important}</style>"""
 
 
 def ortho(vendedor):
@@ -37,7 +37,7 @@ def ortho(vendedor):
 
 
 def carregar(vendedor):
-    dados = {'contas': [], 'ortho': ortho(vendedor)}
+    dados = {'contas': [], 'saojoao': [], 'ortho': ortho(vendedor)}
     for id_, f, campo in FONTES:
         linhas = json.loads((DADOS / f).read_text(encoding='utf-8')) if (DADOS / f).exists() else []
         if campo:

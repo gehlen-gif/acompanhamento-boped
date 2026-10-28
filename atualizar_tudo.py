@@ -84,6 +84,8 @@ def main(hist_xlsx, promos_json=None):
     atualizar_ortho.main(hist, data_ref)
     import atualizar_contas
     atualizar_contas.main(hist)
+    import atualizar_saojoao
+    atualizar_saojoao.main(hist)
     if promos_json:
         atualizar_promocoes.main(h, promos_json)
     atualizar_pedidos.build_html(data_ref)

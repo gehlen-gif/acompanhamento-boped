@@ -141,23 +141,29 @@ def main_historico(h, grupos, data_ref):
     build_html(data_ref)
 
 
+# Dados do cliente (sell out e estoque da São João) ficam fora do repositório público e do GitHub Pages.
+PRIVADOS = {'saojoao'}
+OCULTAR_PRIVADOS = '<style>#tab-btn-saojoao,#saojoao{display:none!important}</style>'
+
+
 def build_html(data_ref):
     page = (HERE / 'painel_fonte.html').read_text(encoding='utf-8')
     shell = (HERE / 'painel_shell.html').read_text(encoding='utf-8')
-    data = ''
+    data, publico = '', ''
     for id_, f in [('grupos', 'carteiras_grupos.json'), ('clientes', 'carteiras_clientes.json'), ('pedidos', 'pedidos.json'),
-                   ('promocoes', 'promocoes.json'), ('promo_potencial', 'promo_potencial.json'), ('meta', 'meta.json'), ('yoy', 'yoy.json'), ('contas', 'contas.json'), ('ortho', 'ortho.json')]:
-        if not (DADOS / f).exists():
-            txt = '[]'
-            data += f'<script type="application/json" id="data-{id_}">{txt}</script>\n'
-            continue
-        txt = (DADOS / f).read_text(encoding='utf-8').replace('</', '<\\/')
+                   ('promocoes', 'promocoes.json'), ('promo_potencial', 'promo_potencial.json'), ('meta', 'meta.json'), ('yoy', 'yoy.json'), ('contas', 'contas.json'), ('ortho', 'ortho.json'), ('saojoao', 'saojoao.json')]:
+        txt = (DADOS / f).read_text(encoding='utf-8').replace('</', '<\\/') if (DADOS / f).exists() else '[]'
         data += f'<script type="application/json" id="data-{id_}">{txt}</script>\n'
-    html = shell.replace('<!--DATA-->', data).replace('<!--PAGE-->', page)
+        publico += f'<script type="application/json" id="data-{id_}">{"[]" if id_ in PRIVADOS else txt}</script>\n'
+    html = shell.replace('<!--DATA-->', publico + OCULTAR_PRIVADOS).replace('<!--PAGE-->', page)
     dest = HERE / f'painel_carteiras_{data_ref}.html'
     dest.write_text(html, encoding='utf-8')
     (HERE / 'index.html').write_text(html, encoding='utf-8')
-    print('painel:', dest, '+ index.html')
+    # versão completa, com as abas de dados de clientes: só local e nos arquivos do projeto
+    (HERE / 'privado').mkdir(exist_ok=True)
+    completo = HERE / 'privado' / f'painel_carteiras_completo_{data_ref}.html'
+    completo.write_text(shell.replace('<!--DATA-->', data).replace('<!--PAGE-->', page), encoding='utf-8')
+    print('painel:', dest, '+ index.html (públicos) |', completo)
 
 
 if __name__ == '__main__':

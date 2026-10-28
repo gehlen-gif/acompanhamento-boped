@@ -42,6 +42,12 @@ Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` 
 
 `atualizar_ortho.py` roda dentro de `atualizar_tudo.py` e gera `dados/ortho.json` com a linha ORTHO (subgrupos pela planilha de correlação) em todo o histórico, por grupo de clientes e vendedor. A aba mostra vendas no ano contra o ano anterior, peso nas vendas, grupos comprando (últimos 90 dias), que pararam e que nunca compraram, vendas por mês, subgrupos e o mix sugerido por faixa de pedido (R$ 1.000, 3.000, 5.000 e +10.000), montado a partir dos pedidos de OrthoCare (grupo + dia) do tamanho de cada faixa dentro dos filtros.
 
+## SÃO JOÃO
+
+`python atualizar_saojoao.py VENDA.xlsx ESTOQUE.xlsx` troca a base de sell out e estoque enviada pelo GRUPO FARMÁCIAS SÃO JOÃO (`dados/base/saojoao_*.csv.gz`). A cada `atualizar_tudo.py`, `dados/saojoao.json` é refeito com o sell in mais recente: sell in × sell out × estoque por produto, estados, lojas, sazonalidade, pedido sugerido (60 dias + 45 de estoque final no giro de 30 dias) e oportunidades frente às redes FARMA REDES com pelo menos R$ 30 mil nos últimos 12 meses.
+
+Os dados do cliente não vão para este repositório nem para o GitHub Pages: `index.html` e `painel_carteiras_*.html` saem sem a aba SÃO JOÃO, e a versão completa fica em `privado/` (fora do git).
+
 ## Painel individual por vendedor
 
 `python gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta]` gera um HTML só com a carteira do vendedor (Pedidos do mês, Promoções do mês, OrthoCare e Comparativo YoY), sem dados de outras carteiras. `python gerar_painel_vendedor.py --boinas [pasta]` gera um para cada RCA ativo do time BOINAS AZUIS e para os RCAs da lista EXTRAS (hoje, BEHIKES - RCA SAMUEL).

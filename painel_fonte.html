@@ -77,6 +77,20 @@
 .cg .grid.omix { grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); }
 .cg .omix h3 { margin: 0 0 2px; font-size: var(--cds-font-size-body); }
 .cg .omix tfoot td { font-weight: 600; border-top: 1px solid var(--color-border-line); }
+.cg .sjcols { display: flex; align-items: flex-end; gap: 6px; height: 14rem; overflow-x: auto; padding-top: var(--cds-gap-sm); }
+.cg .sjcols .col { flex: 1 0 1.9rem; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; height: 100%; gap: 2px; }
+.cg .sjcols .pair { display: flex; align-items: flex-end; gap: 2px; flex: 1; }
+.cg .sjcols .b { flex: 1; background: var(--c1); border-radius: 3px 3px 0 0; min-height: 1px; }
+.cg .sjcols .b.ant { background: var(--cds-chart-muted); }
+.cg .sjcols .m { font-size: 11px; color: var(--color-fg-muted); text-align: center; white-space: nowrap; }
+.cg .sjleg { display: flex; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cg .sjleg i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.cg .sjpontos { margin: 0; padding-left: 1.2rem; display: grid; gap: 6px; }
+.cg .sjpontos b { font-weight: 600; }
+.cg .sjmini { display: inline-flex; align-items: flex-end; gap: 2px; height: 22px; vertical-align: middle; }
+.cg .sjmini span { width: 7px; background: var(--c1); border-radius: 1px; min-height: 1px; }
+.cg .sjmini span.parc { opacity: .5; }
+.cg .grid.sj2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); }
 .cg .yfoco { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; justify-content: space-between; }
 .cg .grid.y2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); }
 .cg h3 { margin: 0 0 4px; font-size: var(--cds-font-size-body, 1rem); font-weight: 600; }
@@ -146,6 +160,7 @@
     <button type="button" role="tab" id="tab-btn-yoy" data-aba="yoy">Comparativo YoY</button>
     <button type="button" role="tab" id="tab-btn-ortho" data-aba="ortho">OrthoCare</button>
     <button type="button" role="tab" id="tab-btn-escala" data-aba="escala">Escala de Valor</button>
+    <button type="button" role="tab" id="tab-btn-saojoao" data-aba="saojoao">SÃO JOÃO</button>
     <button type="button" role="tab" id="tab-btn-contas" data-aba="contas">Principais Contas</button>
   </nav>
 
@@ -517,6 +532,128 @@
     <p class="note" id="regra-ortho"></p>
   </div>
 
+  <div class="pane" id="saojoao">
+    <section class="card">
+      <div class="yfoco">
+        <div>
+          <h2>GRUPO FARMÁCIAS SÃO JOÃO: sell in, sell out e estoque</h2>
+          <p class="note" id="sj-per"></p>
+        </div>
+        <div class="seg" id="sj-uf-btn" role="group" aria-label="Estado do sell out e do estoque"></div>
+      </div>
+    </section>
+
+    <section class="kpis" id="ind-sj" data-source="saojoao">
+      <div class="kpi"><span class="note" id="sj-l1">Sell in no ano</span><span class="v dash-skeleton" id="sj-a1">—</span><span class="sub" id="sj-a1-s"></span></div>
+      <div class="kpi"><span class="note" id="sj-l0">Sell in no ano anterior</span><span class="v dash-skeleton" id="sj-a0">—</span><span class="sub" id="sj-a0-s"></span></div>
+      <div class="kpi"><span class="note">Sell out no período</span><span class="v dash-skeleton" id="sj-so">—</span><span class="sub" id="sj-so-s"></span></div>
+      <div class="kpi"><span class="note">Sell through</span><span class="v dash-skeleton" id="sj-st">—</span><span class="sub" id="sj-st-s"></span></div>
+      <div class="kpi"><span class="note">Estoque no cliente</span><span class="v dash-skeleton" id="sj-est">—</span><span class="sub" id="sj-est-s"></span></div>
+      <div class="kpi"><span class="note">Lojas vendendo Dellamed</span><span class="v dash-skeleton" id="sj-lj">—</span><span class="sub" id="sj-lj-s"></span></div>
+    </section>
+
+    <section class="card">
+      <h2>Pontos para a reunião</h2>
+      <ol class="sjpontos" id="sj-pontos"></ol>
+    </section>
+
+    <div class="grid sj2">
+      <section class="card">
+        <h2>Sell in por mês</h2>
+        <p class="note" id="sj-cols-note"></p>
+        <div class="sjleg" id="sj-leg"></div>
+        <div class="sjcols" id="sj-cols" role="img" aria-label="Sell in por mês, ano atual contra o anterior"></div>
+      </section>
+      <section class="card">
+        <h2>Sell in × sell out por mês</h2>
+        <p class="note" id="sj-mes-note"></p>
+        <div class="scroll">
+          <table id="tab-sjmes" data-source="saojoao">
+            <thead><tr><th>Mês</th><th class="n">Sell in (un.)</th><th class="n">Sell out (un.)</th><th class="n">Sell out ÷ sell in</th><th class="n">Sell in (R$)</th><th class="n">Sell out (R$ na loja)</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <h2 style="margin-top:var(--cds-gap-md)">Sell in por linha</h2>
+        <div class="scroll">
+          <table id="tab-sjlin" data-source="saojoao">
+            <thead><tr><th>Linha</th><th class="n sy0">Ano anterior</th><th class="n sy1">Ano atual</th><th class="n">Variação</th><th class="n">%</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>Sell in, sell out e estoque por produto</h2>
+      <p class="note" id="sj-prod-note"></p>
+      <div class="scroll">
+        <table id="tab-sjprod" data-source="saojoao">
+          <thead><tr><th>Produto</th><th class="n">Sell in (un.)</th><th class="n">Sell out (un.)</th><th class="n">Sell through</th><th>Sell out por mês</th><th class="n">Estoque (un.)</th><th class="n">Giro 30 dias</th><th class="n">Cobertura</th><th>Situação</th><th class="n">Lojas com saldo</th><th class="n">Lojas que venderam</th><th class="n">Preço na loja</th><th class="n">Pedido sugerido</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="grid sj2">
+      <section class="card">
+        <h2>Por estado</h2>
+        <div class="scroll">
+          <table id="tab-sjuf" data-source="saojoao">
+            <thead><tr><th>UF</th><th class="n">Sell out (R$ na loja)</th><th class="n">Sell out (un.)</th><th class="n">Lojas vendendo</th><th class="n">Estoque (un.)</th><th class="n">Giro 30 dias</th><th class="n">Cobertura</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <h2 style="margin-top:var(--cds-gap-md)">Produtos Dellamed por loja</h2>
+        <p class="note" id="sj-mix-note"></p>
+        <div class="bars" id="sj-mix"></div>
+      </section>
+      <section class="card">
+        <h2>Lojas que mais vendem</h2>
+        <p class="note" id="sj-lojas-note"></p>
+        <div class="scroll">
+          <table id="tab-sjlojas" data-source="saojoao">
+            <thead><tr><th>Loja</th><th>Cidade</th><th>UF</th><th class="n">Sell out (R$)</th><th class="n">Unidades</th><th class="n">Produtos</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>Oportunidades: o que as redes do segmento compram</h2>
+      <p class="note" id="sj-op-note"></p>
+      <div class="scroll">
+        <table id="tab-sjop" data-source="saojoao">
+          <thead><tr id="sj-op-head"></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Redes do segmento no ano</h2>
+      <p class="note">Sell in de cada rede FARMA REDES no acumulado do ano contra o mesmo período do ano anterior.</p>
+      <div class="scroll">
+        <table id="tab-sjseg" data-source="saojoao">
+          <thead><tr><th>Rede</th><th class="n sy0">Ano anterior</th><th class="n sy1">Ano atual</th><th class="n">Variação</th><th class="n">%</th><th class="n">Subgrupos comprados (12 meses)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Plano para os próximos meses</h2>
+      <p class="note" id="sj-plano-note"></p>
+      <div class="scroll">
+        <table id="tab-sjplano" data-source="saojoao">
+          <thead><tr id="sj-plano-head"></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <p class="note" id="regra-sj"></p>
+  </div>
+
   <div class="pane" id="escala">
     <section class="card">
       <div class="yfoco">
@@ -699,7 +836,7 @@ const PSITS = ['Potencial', 'Comprou recentemente', 'Já paga o preço da promo'
 defaults();
 $('#f-reset').addEventListener('click', () => {
   dash.resetParams();
-  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null, ealvo: null, ecomptodos: null, osit: null });
+  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null, ealvo: null, ecomptodos: null, osit: null, sjuf: null });
   defaults();
 });
 $('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
@@ -804,6 +941,8 @@ $('#tab-esug tbody').addEventListener('click', (e) => {
   if (tr) set({ esub: P().esub === tr.dataset.s ? null : tr.dataset.s });
 });
 $('#e-quem-close').addEventListener('click', () => set({ esub: null }));
+$('#tab-sjuf tbody').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-uf]'); if (tr) set({ sjuf: P().sjuf === tr.dataset.uf ? null : tr.dataset.uf }); });
+$('#sj-uf-btn').addEventListener('click', (e) => { const b = e.target.closest('button[data-uf]'); if (b) set({ sjuf: b.dataset.uf || null }); });
 document.querySelectorAll('#o-sit-btn button').forEach((b) => b.addEventListener('click', () => set({ osit: b.dataset.sit === 'compram' ? null : b.dataset.sit })));
 $('#tab-ovend tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
@@ -836,7 +975,7 @@ $('#tab-cob tbody').addEventListener('click', (e) => {
   if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
 });
 const named = location.hash.slice(1);
-if (['pedidos', 'historico', 'promocoes', 'yoy', 'ortho', 'escala', 'contas'].includes(named)) set({ aba: named });
+if (['pedidos', 'historico', 'promocoes', 'yoy', 'ortho', 'escala', 'saojoao', 'contas'].includes(named)) set({ aba: named });
 $('#det-close').addEventListener('click', () => { openKey = null; draw(); });
 document.querySelectorAll('#tab-grupos th').forEach((th) => th.addEventListener('click', () => {
   const f = th.dataset.field;
@@ -893,6 +1032,8 @@ function draw() {
   $('#yoy').hidden = aba !== 'yoy';
   $('#contas').hidden = aba !== 'contas';
   $('#escala').hidden = aba !== 'escala';
+  $('#saojoao').hidden = aba !== 'saojoao';
+  $('#filtros').style.display = aba === 'saojoao' ? 'none' : '';
   $('#ortho').hidden = aba !== 'ortho';
   ['#f-creg', '#f-cuf', '#f-ctime', '#f-cvend', '#f-csit'].forEach((x) => { $(x).closest('label').hidden = aba !== 'contas'; });
   ['#f-macro', '#f-time', '#f-vend', '#f-sit', '#f-uf', '#f-seg', '#f-status'].forEach((x) => { $(x).closest('label').hidden = aba === 'contas'; });
@@ -1038,6 +1179,7 @@ function draw() {
   drawYoy(rows, all);
   drawEscala(rows, all);
   drawOrtho(rows, all);
+  drawSaoJoao();
   drawContas();
 }
 
@@ -1239,6 +1381,191 @@ function drawOrtho(scope, allGrupos) {
       ? `OrthoCare vendeu ${BRL.format(a1)} no ano (${pctTxt(a0, a1)} sobre ${ano0}), ${fat > 0 ? PCT.format(a1 / fat) : '—'} das vendas. ${INT.format(comp.length)} de ${INT.format(scope.length)} grupos de clientes compram; ${INT.format(par.length)} pararam e ${INT.format(nun.length)} nunca compraram.` + (s1 ? ` Subgrupo que mais vende: ${s1.k} (${BRL.format(s1.a1)}).` : '')
       : 'Nenhum grupo de clientes com esses filtros.';
   }
+}
+
+// SÃO JOÃO: sell in (Histórico de Pedidos) × sell out e estoque enviados pelo cliente
+const NUM1 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+function sjSituacao(p, est, giro) {
+  if (est <= 0 && giro <= 0) return p.cad && !p.so_un && !p.si_jo ? ['Cadastrado sem estoque', 'warn'] : ['Sem estoque', 'bad'];
+  if (giro <= 0) return ['Parado', 'bad'];
+  const d = est / giro * 30;
+  if (d < 30) return ['Risco de ruptura', 'bad'];
+  if (d <= 90) return ['Saudável', 'ok'];
+  if (d <= 180) return ['Estoque alto', 'warn'];
+  return ['Excesso', 'bad'];
+}
+function drawSaoJoao() {
+  const p = P();
+  const sd = dash.data('saojoao');
+  const ok = sd.status === 'ok' && sd.data && sd.data.length;
+  document.querySelectorAll('#ind-sj .dash-skeleton').forEach((e) => { if (ok || sd.status === 'error') e.classList.remove('dash-skeleton'); });
+  if (!ok) return;
+  const S = sd.data[0];
+  const ufs = S.estados.map((e) => e.uf);
+  const uf = ufs.includes(p.sjuf) ? p.sjuf : null;
+  const btns = $('#sj-uf-btn');
+  if (btns.childElementCount !== ufs.length + 1) btns.replaceChildren(...[['', 'Todos os estados'], ...ufs.map((u) => [u, u])].map(([v, t]) => { const b = el('button', null, t); b.type = 'button'; b.dataset.uf = v; return b; }));
+  btns.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.uf || null) === uf)));
+  const ref = S.ref, refA = S.ref_ant, ano1 = ref.slice(0, 4), ano0 = refA.slice(0, 4);
+  const mesNome = (k) => MES_AB[+k.slice(5, 7) - 1] + '/' + k.slice(2, 4);
+  const ms = S.meses_so, mIni = mesNome(ms[0]), mFim = mesNome(ms[ms.length - 1]);
+  const parcial = S.dias_ult < 28;
+  document.querySelectorAll('#saojoao th.sy0').forEach((t) => { t.textContent = ano0 + ' (até ' + refA.slice(8, 10) + '/' + refA.slice(5, 7) + ')'; });
+  document.querySelectorAll('#saojoao th.sy1').forEach((t) => { t.textContent = ano1; });
+  $('#sj-per').textContent = `Sell in: nossas vendas ao grupo (Histórico de Pedidos) até ${dBR(ref)}. Sell out: vendas das lojas de ${mIni} a ${mFim}${parcial ? ' (até o dia ' + S.dias_ult + ')' : ''}. Estoque e giro de 30 dias: posição enviada pelo cliente. Vendedor: ${S.vendedor}.` + (uf ? ` Sell out e estoque só de ${uf}; o sell in é do grupo todo.` : '');
+
+  // produtos no recorte de estado
+  const prods = S.produtos.map((x) => {
+    const est = uf ? (x.est_uf[uf] || 0) : x.est, giro = uf ? (x.giro_uf[uf] || 0) : x.giro, so = uf ? (x.so_uf[uf] || 0) : x.so_un;
+    const ped = giro > 0 ? Math.max(0, Math.ceil(giro * (S.horizonte + S.cobertura) / 30 - est)) : 0;
+    return { ...x, est, giro, so, ped, dias: giro > 0 ? est / giro * 30 : null, sit: sjSituacao(x, est, giro) };
+  });
+  const ativos = prods.filter((x) => x.si_jo || x.so || x.est || x.si_q1 || x.si_q0);
+  const tot = (f) => d3.sum(ativos, f);
+  const a1 = d3.sum(S.produtos, (x) => x.si_a1), a0 = d3.sum(S.produtos, (x) => x.si_a0);
+  const lin1 = d3.sum(S.linhas, (l) => l.a1), lin0 = d3.sum(S.linhas, (l) => l.a0);
+  const segA1 = d3.sum(S.segmento.slice(1), (g) => g.a1), segA0 = d3.sum(S.segmento.slice(1), (g) => g.a0);
+  $('#sj-l1').textContent = `Sell in ${ano1}`; $('#sj-l0').textContent = `Sell in ${ano0} (ano fechado)`;
+  $('#sj-a1').textContent = BRLc.format(lin1); $('#sj-a1').title = BRL.format(lin1);
+  $('#sj-a1-s').textContent = `${pctTxt(lin0, lin1)} sobre ${BRL.format(lin0)} no mesmo período · redes do segmento: ${pctTxt(segA0, segA1)}`;
+  $('#sj-a0').textContent = BRLc.format(S.ano_ant_total); $('#sj-a0').title = BRL.format(S.ano_ant_total);
+  $('#sj-a0-s').textContent = `${BRL.format(S.sj12)} nos últimos 12 meses`;
+  const est = uf ? S.estados.find((e) => e.uf === uf) : null;
+  const soRs = est ? est.so : d3.sum(S.estados, (e) => e.so), soUn = est ? est.soq : d3.sum(S.estados, (e) => e.soq);
+  $('#sj-so').textContent = BRLc.format(soRs); $('#sj-so').title = BRL.format(soRs);
+  $('#sj-so-s').textContent = `${INT.format(soUn)} unidades de ${mIni} a ${mFim}, a preço de loja`;
+  const siJo = tot((x) => x.si_jo), soJo = tot((x) => x.so);
+  $('#sj-st').textContent = !uf && siJo ? PCT.format(soJo / siJo) : '—';
+  $('#sj-st-s').textContent = uf ? 'o sell in não é separado por estado' : `${INT.format(soJo)} un. vendidas nas lojas para ${INT.format(siJo)} un. compradas de nós no período`;
+  const estUn = tot((x) => x.est), giroUn = tot((x) => x.giro), estRs = tot((x) => x.est * (x.pm_si || 0));
+  $('#sj-est').textContent = INT.format(estUn) + ' un.';
+  $('#sj-est-s').textContent = `${giroUn ? INT.format(Math.round(estUn / giroUn * 30)) + ' dias de cobertura média' : ''} · cerca de ${BRLc.format(estRs)} a preço de compra`;
+  const lojas = est ? est.lojas : S.lojas.total;
+  $('#sj-lj').textContent = INT.format(lojas);
+  $('#sj-lj-s').textContent = uf ? `em ${uf}` : `${S.estados.map((e) => e.uf + ' ' + INT.format(e.lojas)).join(' · ')} · ${NUM1.format(S.lojas.p_por_loja)} produtos por loja`;
+
+  // sell in por mês
+  const porMes = new Map(S.mensal.map((m) => [m.m, m]));
+  const vmax = Math.max(1, ...S.mensal.map((m) => m.si));
+  $('#sj-leg').replaceChildren(...[[ano0, 'var(--cds-chart-muted)'], [ano1, 'var(--c1)']].map(([t, c]) => { const s = el('span', null, t); const i = el('i'); i.style.background = c; s.prepend(i); return s; }));
+  $('#sj-cols').replaceChildren(...MES_AB.map((nm, i) => {
+    const k0 = `${ano0}-${String(i + 1).padStart(2, '0')}`, k1 = `${ano1}-${String(i + 1).padStart(2, '0')}`;
+    const v0 = (porMes.get(k0) || {}).si || 0, v1 = (porMes.get(k1) || {}).si;
+    const c = el('div', 'col'); c.title = `${nm}: ${ano0} ${BRL.format(v0)}` + (v1 != null ? ` · ${ano1} ${BRL.format(v1)}` : '');
+    const pr = el('div', 'pair');
+    const b0 = el('div', 'b ant'); b0.style.height = Math.max(0, v0) / vmax * 100 + '%';
+    const b1 = el('div', 'b'); b1.style.height = v1 != null ? Math.max(0, v1) / vmax * 100 + '%' : '0';
+    pr.append(b0, b1); c.append(pr, el('span', 'm', nm)); return c;
+  }));
+  const pico = S.mensal.filter((m) => m.m.startsWith(ano0)).sort((a, b) => b.si - a.si)[0];
+  $('#sj-cols-note').textContent = `Valores em R$ de sell in, líquidos de devoluções. ${ano1} vai até ${dBR(ref)}.` + (pico ? ` Em ${ano0}, o maior mês foi ${MES_AB[+pico.m.slice(5) - 1]}, com ${BRL.format(pico.si)}.` : '');
+  $('#sj-mes-note').textContent = `Unidades de todos os produtos Dellamed, do grupo todo. Acima de 100%, as lojas venderam mais do que compraram de nós no mês e o estoque baixou.` + (parcial ? ` ${mFim} vai até o dia ${S.dias_ult}.` : '');
+  $('#tab-sjmes tbody').replaceChildren(...ms.map((k) => {
+    const m = porMes.get(k) || {};
+    const tr = el('tr');
+    tr.append(el('td', null, mesNome(k) + (k === ms[ms.length - 1] && parcial ? '*' : '')));
+    tr.append(el('td', 'n', m.siq != null ? INT.format(m.siq) : '—'), el('td', 'n', m.soq != null ? INT.format(m.soq) : '—'),
+      el('td', 'n', m.siq ? PCT.format(m.soq / m.siq) : '—'), el('td', 'n', BRL.format(m.si || 0)), el('td', 'n', m.so != null ? BRL.format(m.so) : '—'));
+    return tr;
+  }));
+  $('#tab-sjlin tbody').replaceChildren(...S.linhas.filter((l) => l.a0 || l.a1).sort((a, b) => b.a1 - a.a1).map((l) => {
+    const tr = el('tr'); tr.append(el('td', null, l.l), el('td', 'n', BRL.format(l.a0)), el('td', 'n', BRL.format(l.a1)), el('td', 'n ' + sinal(l.a1 - l.a0), SBRL(l.a1 - l.a0)), el('td', 'n ' + sinal(l.a1 - l.a0), pctTxt(l.a0, l.a1))); return tr;
+  }));
+
+  // produtos
+  const lista = ativos.slice().sort((a, b) => b.so - a.so || b.est - a.est);
+  const maxMes = Math.max(1, ...lista.flatMap((x) => ms.map((k) => (uf ? 0 : x.so_m[k] || 0))));
+  $('#sj-prod-note').textContent = `Sell in e sell out em unidades de ${mIni} a ${mFim}. Cobertura = estoque ÷ giro dos últimos 30 dias. Pedido sugerido: o que falta para atender os próximos ${S.horizonte} dias e terminar com ${S.cobertura} dias de estoque, no giro atual. Situação: menos de 30 dias, risco de ruptura; até 90, saudável; até 180, alto; acima, excesso.` + (uf ? ` Estoque, giro, sell out e pedido de ${uf}.` : '');
+  $('#tab-sjprod tbody').replaceChildren(...lista.map((x) => {
+    const tr = el('tr');
+    const mini = el('td'); const box = el('span', 'sjmini');
+    if (!uf) ms.forEach((k, i) => { const s = el('span', i === ms.length - 1 && parcial ? 'parc' : null); s.style.height = Math.max(1, (x.so_m[k] || 0) / maxMes * 22) + 'px'; s.title = `${mesNome(k)}: ${INT.format(x.so_m[k] || 0)} un.`; box.append(s); });
+    mini.append(box); if (!uf) mini.title = ms.map((k) => `${mesNome(k)} ${INT.format(x.so_m[k] || 0)}`).join(' · ');
+    const st = el('td'); st.append(el('span', 'pill ' + x.sit[1], x.sit[0]));
+    tr.append(el('td', null, x.p), el('td', 'n', uf ? '—' : INT.format(x.si_jo)), el('td', 'n', INT.format(x.so)), el('td', 'n', !uf && x.si_jo ? PCT.format(x.so / x.si_jo) : '—'), mini,
+      el('td', 'n', INT.format(x.est)), el('td', 'n', INT.format(x.giro)), el('td', 'n', x.dias != null ? INT.format(Math.round(x.dias)) + ' dias' : '—'), st,
+      el('td', 'n', uf ? '—' : INT.format(x.lojas_saldo)), el('td', 'n', uf ? '—' : INT.format(x.lojas_venda)), el('td', 'n', x.pm_so ? BRL2.format(x.pm_so) : '—'),
+      el('td', 'n', x.ped ? INT.format(x.ped) + ' un.' : '—'));
+    return tr;
+  }));
+
+  // estados e lojas
+  $('#tab-sjuf tbody').replaceChildren(...S.estados.map((e) => {
+    const tr = el('tr'); if (e.uf === uf) tr.className = 'on'; tr.dataset.uf = e.uf;
+    tr.append(el('td', 'link', e.uf), el('td', 'n', BRL.format(e.so)), el('td', 'n', INT.format(e.soq)), el('td', 'n', INT.format(e.lojas)), el('td', 'n', INT.format(e.est)), el('td', 'n', INT.format(e.giro)), el('td', 'n', e.giro ? INT.format(Math.round(e.est / e.giro * 30)) + ' dias' : '—'));
+    return tr;
+  }));
+  const mix = Object.entries(S.lojas.mix).map(([k, v]) => ({ k: k + (k === '1' ? ' produto' : ' produtos'), v: +v }));
+  const poucos = d3.sum(Object.entries(S.lojas.mix).filter(([k]) => +k <= 2), ([, v]) => v);
+  $('#sj-mix-note').textContent = `Quantos produtos Dellamed diferentes cada loja vendeu no período. ${INT.format(poucos)} lojas venderam só 1 ou 2.`;
+  const mmax = Math.max(1, ...mix.map((d) => d.v));
+  $('#sj-mix').replaceChildren(...mix.map((d) => { const row = el('div', 'bar'); row.append(el('span', 'lbl', d.k)); const t = el('div', 'track'); const f = el('div', 'fill'); f.style.width = d.v / mmax * 100 + '%'; f.style.background = 'var(--c1)'; t.append(f); row.append(t, el('span', 'val', INT.format(d.v) + ' lojas')); return row; }));
+  const tl = S.lojas.top.filter((l) => !uf || l.uf === uf);
+  $('#sj-lojas-note').textContent = `As 20 lojas com maior sell out de ${mIni} a ${mFim}, a preço de loja. Mediana por loja: ${BRL.format(S.lojas.mediana)}.`;
+  $('#tab-sjlojas tbody').replaceChildren(...tl.map((l) => { const tr = el('tr'); tr.append(el('td', null, l.l), el('td', null, l.c), el('td', null, l.uf), el('td', 'n', BRL.format(l.v)), el('td', 'n', INT.format(l.q)), el('td', 'n', INT.format(l.n))); return tr; }));
+
+  // oportunidades
+  const porSub = new Map(); S.produtos.forEach((x) => { if (x.sub) porSub.set(x.sub, [...(porSub.get(x.sub) || []), x]); });
+  const nomeRede = (g) => ({ 'GRUPO PANVEL': 'Panvel', 'GRUPO INDIANA': 'Indiana', 'DROGARIA ARAUJO S A': 'Araújo', 'GRUPO NISSEI': 'Nissei', 'GRUPO VENANCIO': 'Venancio' })[g] || g;
+  $('#sj-op-head').replaceChildren(...['Subgrupo', 'Linha', ['Redes que compram', 'n'], ['Peso nas redes', 'n'], ['Peso na São João', 'n'], ...S.destaque.map((g) => [nomeRede(g), 'n']), ['Potencial em 12 meses', 'n'], ['Preço médio', 'n'], 'Na São João hoje'].map((h) => (Array.isArray(h) ? el('th', h[1], h[0]) : el('th', null, h))));
+  const opps = S.oport.filter((o) => o.pot > 500).map((o) => {
+    const px = porSub.get(o.s) || [];
+    const e = d3.sum(px, (x) => x.est), g = d3.sum(px, (x) => x.giro);
+    let st = o.sjv > 0 ? 'Já compra, abaixo das redes' : 'Não compra';
+    if (px.length && px.some((x) => x.cad) && !e && !g) st = 'Cadastrado, sem estoque';
+    if (e > 0) st = g > 0 ? `Tem estoque: ${INT.format(Math.round(e / g * 30))} dias de cobertura` : `Tem ${INT.format(e)} un. paradas`;
+    return { ...o, st, excesso: e > 0 && (!g || e / g * 30 > 120) };
+  });
+  const novos = opps.filter((o) => !o.excesso);
+  $('#sj-op-note').textContent = `Mix dos últimos 12 meses das ${S.pares.length} redes FARMA REDES com pelo menos R$ 30 mil de compras no período, comparado com o da São João. "Peso nas redes" é a parte do sell in somado das redes que vai para o subgrupo (as maiores pesam mais); nas colunas de cada rede, a parte do sell in dela. Potencial = (peso nas redes − peso na São João) × sell in da São João nos 12 meses (${BRL.format(S.sj12)}). Subgrupos em que a São João já tem estoque alto ficam no fim da lista: ali a ação é de sell out, não de compra.`;
+  $('#tab-sjop tbody').replaceChildren(...novos.concat(opps.filter((o) => o.excesso)).slice(0, 30).map((o) => {
+    const tr = el('tr'); if (o.excesso) tr.style.opacity = '.6';
+    tr.append(el('td', null, o.s), el('td', null, o.linha), el('td', 'n', `${o.n} de ${S.pares.length}`), el('td', 'n', PCT.format(o.media)), el('td', 'n', o.sj ? PCT.format(o.sj) : '—'),
+      ...S.destaque.map((g) => el('td', 'n', o.dest[g] ? PCT.format(o.dest[g]) : '—')), el('td', 'n', BRL.format(o.pot)), el('td', 'n', o.pm ? BRL2.format(o.pm) : '—'));
+    const stt = el('td'); stt.append(el('span', 'pill ' + (o.st.startsWith('Cadastrado') ? 'ok' : o.excesso ? 'bad' : ''), o.st)); tr.append(stt);
+    return tr;
+  }));
+
+  // segmento
+  $('#tab-sjseg tbody').replaceChildren(...S.segmento.map((g) => {
+    const tr = el('tr'); if (g.g === S.grupo) tr.className = 'on';
+    const info = S.pares.find((x) => x.g === g.g);
+    tr.append(el('td', null, g.g), el('td', 'n', BRL.format(g.a0)), el('td', 'n', BRL.format(g.a1)), el('td', 'n ' + sinal(g.a1 - g.a0), SBRL(g.a1 - g.a0)), el('td', 'n ' + sinal(g.a1 - g.a0), pctTxt(g.a0, g.a1)), el('td', 'n', INT.format(g.g === S.grupo ? S.sj_subs : info ? info.subs : 0)));
+    return tr;
+  }));
+
+  // plano
+  const prox = ['2025-11', '2025-12', '2026-01'];
+  $('#sj-plano-head').replaceChildren(...['Produto', ...prox.map((k) => ['Sell in ' + mesNome(k), 'n']), ['Giro 30 dias', 'n'], ['Estoque', 'n'], ['Cobertura', 'n'], ['Pedido sugerido', 'n'], ['Valor estimado', 'n'], 'Ação'].map((h) => (Array.isArray(h) ? el('th', h[1], h[0]) : el('th', null, h))));
+  const plano = ativos.filter((x) => x.giro > 0 || x.est > 0).sort((a, b) => b.ped * (b.pm_si || 0) - a.ped * (a.pm_si || 0) || b.giro - a.giro);
+  const acao = (x) => x.sit[0] === 'Risco de ruptura' ? 'Repor já' : x.ped > 0 ? 'Programar reposição' : x.sit[0] === 'Excesso' || x.sit[0] === 'Parado' ? 'Ação de sell out (exposição, preço, lojas sem venda)' : x.sit[0] === 'Estoque alto' ? 'Segurar compra e acompanhar giro' : 'Manter';
+  const pedTot = d3.sum(plano, (x) => x.ped * (x.pm_si || 0));
+  $('#sj-plano-note').textContent = `Sazonalidade: quanto a São João comprou de cada produto nos mesmos meses do ano passado. Pedido sugerido no giro atual (${S.horizonte} dias + ${S.cobertura} de estoque final); valor ao preço médio de ${ano1}. Total estimado: ${BRL.format(pedTot)}.` + (uf ? ` Só ${uf}.` : '');
+  $('#tab-sjplano tbody').replaceChildren(...plano.map((x) => {
+    const tr = el('tr');
+    tr.append(el('td', null, x.p), ...prox.map((k) => el('td', 'n', x.saz[k] ? INT.format(x.saz[k]) : '—')), el('td', 'n', INT.format(x.giro)), el('td', 'n', INT.format(x.est)),
+      el('td', 'n', x.dias != null ? INT.format(Math.round(x.dias)) + ' dias' : '—'), el('td', 'n', x.ped ? INT.format(x.ped) + ' un.' : '—'), el('td', 'n', x.ped && x.pm_si ? BRL.format(x.ped * x.pm_si) : '—'), el('td', null, acao(x)));
+    return tr;
+  }));
+
+  // pontos para a reunião
+  const pts = [];
+  pts.push([`Ano: `, `sell in de ${BRL.format(lin1)} até ${dBR(ref)}, ${pctTxt(lin0, lin1)} sobre ${ano0}, enquanto as outras redes do segmento somadas fizeram ${pctTxt(segA0, segA1)}. ${ano0} fechou em ${BRL.format(S.ano_ant_total)}.`]);
+  if (!uf && siJo) pts.push(['Giro: ', `de ${mIni} a ${mFim} as lojas venderam ${INT.format(soJo)} unidades para ${INT.format(siJo)} compradas de nós (${PCT.format(soJo / siJo)}). Estoque hoje: ${INT.format(estUn)} un., ${INT.format(Math.round(estUn / Math.max(1, giroUn) * 30))} dias de cobertura média.`]);
+  const top3 = lista.slice(0, 3);
+  pts.push(['Carro-chefe: ', top3.map((x) => `${x.p} (${INT.format(x.so)} un.)`).join(', ') + `, ${PCT.format(d3.sum(top3, (x) => x.so) / Math.max(1, soJo))} das unidades vendidas nas lojas.`]);
+  const repor = plano.filter((x) => x.ped > 0).slice(0, 5);
+  if (repor.length) pts.push(['Repor: ', repor.map((x) => `${x.p} (${INT.format(x.ped)} un., ${INT.format(Math.round(x.dias))} dias)`).join(', ') + `. Pedido estimado de ${BRL.format(pedTot)}.`]);
+  const exc = ativos.filter((x) => x.sit[0] === 'Excesso' || x.sit[0] === 'Parado').sort((a, b) => b.est * (b.pm_si || 0) - a.est * (a.pm_si || 0)).slice(0, 5);
+  if (exc.length) pts.push(['Girar estoque: ', exc.map((x) => `${x.p} (${INT.format(x.est)} un., ${x.dias != null ? INT.format(Math.round(x.dias)) + ' dias' : 'sem giro'})`).join(', ') + '. Aqui a conversa é de sell out, não de nova compra.']);
+  const cad = opps.filter((o) => o.st.startsWith('Cadastrado')).slice(0, 4);
+  const nv = novos.filter((o) => !o.st.startsWith('Cadastrado') && !o.sjv).slice(0, 4);
+  if (cad.length) pts.push(['Já cadastrados, sem estoque: ', cad.map((o) => `${o.s} (${o.n} de ${S.pares.length} redes compram; potencial ${BRLc.format(o.pot)}/ano)`).join(', ') + '.']);
+  if (nv.length) pts.push(['Novos itens: ', nv.map((o) => `${o.s} (${o.n} redes; potencial ${BRLc.format(o.pot)}/ano)`).join(', ') + '.']);
+  pts.push(['Lojas: ', `${INT.format(S.lojas.total)} lojas venderam Dellamed, em média ${NUM1.format(S.lojas.p_por_loja)} produtos cada; ${INT.format(poucos)} venderam só 1 ou 2. Ampliar o sortimento nas lojas existentes é o caminho mais rápido de sell out.`]);
+  $('#sj-pontos').replaceChildren(...pts.map(([b, t]) => { const li = el('li'); li.append(el('b', null, b), document.createTextNode(t)); return li; }));
+  $('#regra-sj').textContent = `Fontes: Histórico de Pedidos (sell in, grupo ${S.grupo}), planilha de vendas das lojas (sell out) e de estoque enviadas pelo cliente. Os produtos do cliente foram ligados aos nossos itens pelo nome; a muleta canadense é vendida em par na loja e contada em unidades no sell in, então o sell in dela é dividido por 2. Valores de sell out são a preço de loja e não se comparam em R$ com o sell in; por isso a comparação é em unidades. Redes do segmento: ${S.pares.map((x) => x.g).join(', ')}.`;
+  if ((p.aba || 'pedidos') === 'saojoao') $('#takeaway').textContent = pts.slice(0, 2).map(([b, t]) => b + t).join(' ');
 }
 
 const FERIADOS = new Set(['2026-01-01', '2026-02-16', '2026-02-17', '2026-04-03', '2026-04-21', '2026-05-01', '2026-06-04', '2026-09-07', '2026-10-12', '2026-11-02', '2026-11-15', '2026-11-20', '2026-12-25']);
