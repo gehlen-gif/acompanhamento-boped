@@ -3,10 +3,12 @@ régua de tolerância sem compra por segmento (padrão 90 dias) entre Ativo e In
 Inativou no Mês, Ativo Mês Anterior, Inativariam no Mês, Recuperado e Nunca Comprou.
 
 Base: Histórico de Pedidos (a data do pedido faz o papel do faturamento; vale o dia com valor líquido > 0),
-desde o início do arquivo do ano anterior. Sem dados de inadimplência nem de pedidos pendentes, os
-desdobramentos "com Pedido" e "com Inadimplência" não são calculados.
+desde o início do arquivo do ano anterior. Inadimplente, Valor Vencido e Total Pedidos Pendentes vêm da base das
+carteiras (posição do dia da base, como no documento: a inadimplência é sempre a atual) e dão os desdobramentos
+Inativo com Pedido, Inativo com Pedido no Mês, Inativo com Inadimplência e Inativo com Inadimplência e Pedido
+só na posição atual, não na evolução mensal.
 
-Gera dados/status.json: [{ref, tol, inicio, mensal: [...], grupos: [{g, v, st, tags, prim, ult, dias, inat, mudar, v12}]}]
+Gera dados/status.json: [{ref, tol, inicio, base, mensal: [...], grupos: [{g, v, st, tags, prim, ult, dias, inat, mudar, v12, inad, venc, pend, ped}]}]
 """
 import json
 from pathlib import Path
@@ -71,6 +73,21 @@ def main(hist, data_ref):
         tol = tol_de(g)
         s = status_em(compras.get(g, []), ref, tol)
         o = {'g': g, 'v': r['vendedor'], 'st': s['st'], 'tags': s['tags'], 'v12': round(float(v12.get(g, 0)), 2)}
+        inad = r.get('inadimplente') == 'Sim'
+        pend = (r.get('pedidos_pendentes') or 0) > 0
+        if inad:
+            o.update({'inad': 1, 'venc': r.get('valor_vencido') or 0})
+        if pend:
+            o.update({'pend': r['pedidos_pendentes'], 'ped': r.get('ultimo_pedido_aberto')})
+        if s['st'] == 'Inativo':
+            if pend:
+                o['tags'] = o['tags'] + ['Inativo com Pedido']
+                if (r.get('ultimo_pedido_aberto') or '')[:7] == ref.strftime('%Y-%m'):
+                    o['tags'].append('Inativo com Pedido no Mês')
+            if inad:
+                o['tags'] = o['tags'] + ['Inativo com Inadimplência']
+                if pend:
+                    o['tags'].append('Inativo com Inadimplência e Pedido')
         if s['st'] != 'Nunca comprou':
             o.update({'prim': s['prim'].strftime('%Y-%m-%d'), 'ult': s['ult'].strftime('%Y-%m-%d'), 'dias': s['dias'],
                       'inat': s['inat'].strftime('%Y-%m-%d'),
@@ -102,7 +119,9 @@ def main(hist, data_ref):
         por_vend.setdefault(r['vendedor'], set()).add(r['cod_grupo'])
     mensal_v = {v: evolucao(sorted(gs)) for v, gs in por_vend.items()}
 
-    out = [{'ref': data_ref, 'tol': TOLERANCIA_PADRAO, 'inicio': inicio.strftime('%Y-%m-%d'), 'mensal': mensal, 'mensal_v': mensal_v, 'grupos': linhas}]
+    info = DADOS / 'base' / 'carteiras_base_info.json'
+    base = json.loads(info.read_text(encoding='utf-8')).get('data') if info.exists() else None
+    out = [{'ref': data_ref, 'tol': TOLERANCIA_PADRAO, 'base': base, 'inicio': inicio.strftime('%Y-%m-%d'), 'mensal': mensal, 'mensal_v': mensal_v, 'grupos': linhas}]
     (DADOS / 'status.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':'), allow_nan=False), encoding='utf-8')
     atual = mensal[-1] if mensal else {}
     print('status:', {k: atual.get(k) for k in ('Ativo', 'Inativo', 'Nunca comprou', 'Inativariam no mês', 'Recuperado')})

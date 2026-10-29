@@ -42,7 +42,7 @@ def status(vendedor):
     if not f.exists():
         return []
     s = json.loads(f.read_text(encoding='utf-8'))[0]
-    return [{'ref': s['ref'], 'tol': s['tol'], 'inicio': s['inicio'], 'individual': True,
+    return [{'ref': s['ref'], 'tol': s['tol'], 'inicio': s['inicio'], 'base': s.get('base'), 'individual': True,
              'mensal': s.get('mensal_v', {}).get(vendedor, []), 'grupos': [r for r in s['grupos'] if r['v'] == vendedor]}]
 
 

@@ -3,7 +3,7 @@
 - Painel HTML: index.html (abre direto no navegador).
 - Atualização completa com um só arquivo: `python3 atualizar_tudo.py <Histórico de Pedidos.xlsx> dados/promocoes_<mes>.json` (refaz histórico de vendas, pedidos do mês e promoções; as carteiras vêm de dados/base/).
 - Painel online (Claude): https://claude.ai/artifact/FUGy2RPQ3xBRs4ALfgy7QV (tipo Dashboard; dados em datasets `grupos`, `clientes`, `pedidos`).
-- Base das carteiras: planilha 20-10.xlsx (histórico), só vendedores da skill vendedores/ (fora da lista = descartado).
+- Base das carteiras: relatório de clientes do sistema (hoje, base_carteiras_29-10.xlsx; antes, 20-10.xlsx), só vendedores de `dados/base/vendedores_time.csv` (fora da lista = descartado). Para trocar: `python3 importar_carteiras.py <base_carteiras_dd-mm.xlsx> [AAAA-MM-DD]` e depois `atualizar_tudo.py`. O vendedor vem de Representante (Z1), Key Account (Z3) ou Vendedor Interno (VE), nessa ordem. A data da base (do argumento ou do nome do arquivo) aparece abaixo do resumo, no topo do painel, e fica em `dados/base/carteiras_base_info.json`.
 - Regra: no mesmo código de grupo + vendedor, faturamentos iguais contam uma vez; diferentes se somam.
 - Saídas: dados/carteiras_grupos.json, dados/carteiras_clientes.json.
 
@@ -44,13 +44,15 @@ Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` 
 
 ## Status Clientes
 
-A antiga aba Histórico de vendas agora se chama Status Clientes. `atualizar_status.py` roda dentro de `atualizar_tudo.py` e gera `dados/status.json` pelas regras de StatusGruposClientes: até 90 dias sem compra, Ativo; acima, Inativo (a tolerância por segmento pode ser preenchida em `TOLERANCIA_SEGMENTO`), mais Novo, Reativado, Inativou no mês, Ativo mês anterior, Inativariam no mês, Recuperado e Nunca comprou, com a data de inativação, os dias até mudar de status e a evolução dos últimos 13 meses. A data do pedido faz o papel do faturamento. Os desdobramentos "com Pedido" e "com Inadimplência" não são calculados, porque o histórico não traz pedidos pendentes nem contas a receber.
+A antiga aba Histórico de vendas agora se chama Status Clientes. `atualizar_status.py` roda dentro de `atualizar_tudo.py` e gera `dados/status.json` pelas regras de StatusGruposClientes: até 90 dias sem compra, Ativo; acima, Inativo (a tolerância por segmento pode ser preenchida em `TOLERANCIA_SEGMENTO`), mais Novo, Reativado, Inativou no mês, Ativo mês anterior, Inativariam no mês, Recuperado e Nunca comprou, com a data de inativação, os dias até mudar de status e a evolução dos últimos 13 meses. A data do pedido faz o papel do faturamento.
 
 ## SÃO JOÃO
 
 `python atualizar_saojoao.py VENDA.xlsx ESTOQUE.xlsx` troca a base de sell out e estoque enviada pelo GRUPO FARMÁCIAS SÃO JOÃO (`dados/base/saojoao_*.csv.gz`). A cada `atualizar_tudo.py`, `dados/saojoao.json` é refeito com o sell in mais recente: sell in × sell out × estoque por produto, estados, lojas, sazonalidade, pedido sugerido (60 dias + 45 de estoque final no giro de 30 dias) e oportunidades frente às redes FARMA REDES com pelo menos R$ 30 mil nos últimos 12 meses.
 
 Os dados do cliente não vão para este repositório nem para o GitHub Pages: `index.html` e `painel_carteiras_*.html` saem sem a aba SÃO JOÃO, e a versão completa fica em `privado/` (fora do git).
+
+Inadimplente, Valor Vencido e Total Pedidos Pendentes vêm da base das carteiras (posição do dia da base). Com eles, a aba mostra Inadimplentes, Inativos com inadimplência e Inativos com pedido, e a lista ganha as colunas Inadimplente, Valor vencido e Pedidos pendentes. Os desdobramentos valem só para a posição atual, não para a evolução mensal.
 
 ## Painel individual por vendedor
 

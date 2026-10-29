@@ -152,6 +152,7 @@
     <div>
       <h1>Carteiras por grupo de cliente</h1>
       <p class="lead" id="takeaway"></p>
+      <p class="note" id="atualizacao"></p>
     </div>
     <div class="seg" id="tema" role="group" aria-label="Tema">
       <button type="button" data-tema="">Automático</button>
@@ -234,7 +235,7 @@
     <p class="note" id="st-lista-note"></p>
     <div class="scroll tall">
       <table id="tab-status" data-source="status" data-row-key="g,v">
-        <thead><tr><th>Grupo de cliente</th><th>Vendedor</th><th>UF</th><th>Segmento</th><th>Status</th><th>Também</th><th class="n">Última compra</th><th class="n">Dias sem comprar</th><th class="n">Data de inativação</th><th>Próxima mudança</th><th class="n">Vendas em 12 meses</th></tr></thead>
+        <thead><tr><th>Grupo de cliente</th><th>Vendedor</th><th>UF</th><th>Segmento</th><th>Status</th><th>Também</th><th class="n">Última compra</th><th class="n">Dias sem comprar</th><th class="n">Data de inativação</th><th>Próxima mudança</th><th class="n">Vendas em 12 meses</th><th>Inadimplente</th><th class="n">Valor vencido</th><th class="n">Pedidos pendentes</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -1073,6 +1074,7 @@ function draw() {
   if (p0.tema) cg.dataset.tema = p0.tema; else delete cg.dataset.tema;
   document.querySelectorAll('#tema button').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.tema || null) === (p0.tema || null))));
   const aba = p0.aba || 'pedidos';
+  drawAtualizacao();
   document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.aba === aba)));
   $('#historico').hidden = aba !== 'historico';
   $('#pedidos').hidden = aba !== 'pedidos';
@@ -1617,9 +1619,18 @@ function drawSaoJoao() {
   if ((p.aba || 'pedidos') === 'saojoao') $('#takeaway').textContent = pts.slice(0, 2).map(([b, t]) => b + t).join(' ');
 }
 
+// Data da base das carteiras e do histórico, logo abaixo do resumo
+function drawAtualizacao() {
+  const sd = dash.data('status');
+  const S = sd.status === 'ok' && sd.data && sd.data[0];
+  if (!S) return;
+  $('#atualizacao').textContent = (S.base ? `Base das carteiras atualizada em ${dBR(S.base)}. ` : '') + `Histórico de Pedidos até ${dBR(S.ref)}.`;
+}
+
 // Status Clientes: regras de StatusGruposClientes sobre o Histórico de Pedidos
-const ST_FILTROS = ['Ativo', 'Inativo', 'Inativam em até 30 dias', 'Ativo mês anterior', 'Inativariam no mês', 'Recuperado', 'Inativou no mês', 'Reativado', 'Novo', 'Nunca comprou'];
-const stTem = (r, f) => f === 'Inativam em até 30 dias' ? r.st === 'Ativo' && r.mudar != null && r.mudar <= 30 : r.st === f || (r.tags || []).includes(f);
+const ST_FILTROS = ['Ativo', 'Inativo', 'Inativam em até 30 dias', 'Ativo mês anterior', 'Inativariam no mês', 'Recuperado', 'Inativou no mês', 'Reativado', 'Novo', 'Nunca comprou',
+  'Inadimplente', 'Inativo com Inadimplência', 'Inativo com Inadimplência e Pedido', 'Inativo com Pedido', 'Inativo com Pedido no Mês'];
+const stTem = (r, f) => f === 'Inativam em até 30 dias' ? r.st === 'Ativo' && r.mudar != null && r.mudar <= 30 : f === 'Inadimplente' ? !!r.inad : r.st === f || (r.tags || []).includes(f);
 function drawStatus(scope) {
   const p = P();
   const sd = dash.data('status');
@@ -1631,11 +1642,13 @@ function drawStatus(scope) {
   const info = new Map(scope.map((r) => [r.cod_grupo + '|' + r.vendedor, r]));
   const rows = S.grupos.filter((r) => info.has(r.g + '|' + r.v)).map((r) => ({ ...r, i: info.get(r.g + '|' + r.v) }));
   const ini = S.ref.slice(0, 8) + '01';
-  $('#st-per').textContent = `Régua: até ${S.tol} dias sem compra, Ativo; acima disso, Inativo (tolerância padrão, igual para todos os segmentos). Compras pelo Histórico de Pedidos desde ${dBR(S.inicio)}, até ${dBR(S.ref)}; o mês de referência começa em ${dBR(ini)}. Clique em um indicador para listar os grupos.`;
+  $('#st-per').textContent = `Régua: até ${S.tol} dias sem compra, Ativo; acima disso, Inativo (tolerância padrão, igual para todos os segmentos). Compras pelo Histórico de Pedidos desde ${dBR(S.inicio)}, até ${dBR(S.ref)}; o mês de referência começa em ${dBR(ini)}. Inadimplência (título vencido em aberto) e pedidos pendentes são a posição da base das carteiras${S.base ? ' de ' + dBR(S.base) : ''}. Clique em um indicador para listar os grupos.`;
   const cnt = (f) => rows.filter((r) => stTem(r, f));
   const soma = (xs) => d3.sum(xs, (r) => r.v12);
   const ina = cnt('Inativo'), atv = cnt('Ativo'), r30 = cnt('Inativam em até 30 dias'), inm = cnt('Inativariam no mês'), rec = cnt('Recuperado'), inat = cnt('Inativou no mês'), reat = cnt('Reativado'), nov = cnt('Novo'), nun = cnt('Nunca comprou');
   const unicos = (xs) => new Set(xs.map((r) => r.g)).size;
+  const inad = cnt('Inadimplente'), iin = cnt('Inativo com Inadimplência'), iped = cnt('Inativo com Pedido'), iip = cnt('Inativo com Inadimplência e Pedido');
+  const venc = (xs) => d3.sum(xs, (r) => r.venc || 0), pend = (xs) => d3.sum(xs, (r) => r.pend || 0);
   const tiles = [
     ['Ativo', 'Ativos', atv, `compraram nos últimos ${S.tol} dias`, 's-ativo'],
     ['Inativo', 'Clientes inativos', ina, `${BRLc.format(soma(ina))} comprados por eles em 12 meses`, 's-inativo'],
@@ -1645,6 +1658,9 @@ function drawStatus(scope) {
     ['Reativado', 'Reativados', reat, 'voltaram a comprar no mês', 's-bom'],
     ['Novo', 'Novos', nov, 'primeira compra no mês', 's-bom'],
     ['Nunca comprou', 'Nunca compraram', nun, `sem compra desde ${dBR(S.inicio)}`, 's-neutro'],
+    ['Inadimplente', 'Inadimplentes', inad, `${BRLc.format(venc(inad))} vencidos em aberto`, 's-inativo'],
+    ['Inativo com Inadimplência', 'Inativos com inadimplência', iin, `${BRLc.format(venc(iin))} vencidos · ${INT.format(unicos(iip))} também com pedido`, 's-inativo'],
+    ['Inativo com Pedido', 'Inativos com pedido', iped, `${BRLc.format(pend(iped))} em pedidos pendentes`, 's-risco'],
   ];
   $('#st-tiles').replaceChildren(...tiles.map(([k, lbl, xs, hint, cls]) => {
     const b = el('button', 'tile ' + cls + (sts === k ? ' on' : '')); b.type = 'button'; b.dataset.sts = k;
@@ -1679,13 +1695,14 @@ function drawStatus(scope) {
     if (r.st === 'Ativo') { prox = r.mudar <= 0 ? 'último dia como ativo' : `inativa em ${INT.format(r.mudar)} dia${r.mudar === 1 ? '' : 's'}`; cls = r.mudar <= 30 ? 'down' : null; }
     else if (r.st === 'Inativo') prox = `inativo há ${INT.format(-r.mudar)} dias`;
     tr.append(el('td', null, r.i.grupo), el('td', null, r.v), el('td', null, r.i.uf || ''), el('td', null, r.i.segmento || ''), s1, el('td', null, tags.join(', ')),
-      el('td', 'n', r.ult ? dBR(r.ult) : '—'), el('td', 'n', r.dias != null ? INT.format(r.dias) : '—'), el('td', 'n', r.inat ? dBR(r.inat) : '—'), el('td', cls, prox), el('td', 'n', BRL.format(r.v12)));
+      el('td', 'n', r.ult ? dBR(r.ult) : '—'), el('td', 'n', r.dias != null ? INT.format(r.dias) : '—'), el('td', 'n', r.inat ? dBR(r.inat) : '—'), el('td', cls, prox), el('td', 'n', BRL.format(r.v12)),
+      el('td', r.inad ? 'down' : null, r.inad ? 'Sim' : 'Não'), el('td', 'n', r.venc ? BRL.format(r.venc) : '—'), el('td', 'n', r.pend ? BRL.format(r.pend) : '—'));
     return tr;
   }));
   if ((p.aba || 'pedidos') === 'historico') {
     const base = unicos(atv) + unicos(ina);
     $('#takeaway').textContent = rows.length
-      ? `${INT.format(unicos(ina))} grupos de clientes inativos (${base ? PCT.format(unicos(ina) / base) : '—'} dos que já compraram), que somaram ${BRL.format(soma(ina))} em 12 meses. ${INT.format(unicos(r30))} ativos inativam nos próximos 30 dias se não comprarem; neste mês, ${INT.format(unicos(inat))} inativaram, ${INT.format(unicos(rec))} foram recuperados a tempo e ${INT.format(unicos(reat))} voltaram a comprar.`
+      ? `${INT.format(unicos(ina))} grupos de clientes inativos (${base ? PCT.format(unicos(ina) / base) : '—'} dos que já compraram), que somaram ${BRL.format(soma(ina))} em 12 meses. ${INT.format(unicos(r30))} ativos inativam nos próximos 30 dias se não comprarem; neste mês, ${INT.format(unicos(inat))} inativaram, ${INT.format(unicos(rec))} foram recuperados a tempo e ${INT.format(unicos(reat))} voltaram a comprar.` + (inad.length ? ` ${INT.format(unicos(inad))} grupos estão inadimplentes (${BRL.format(venc(inad))} vencidos), ${INT.format(unicos(iin))} deles inativos.` : '')
       : 'Nenhum grupo de clientes com esses filtros.';
   }
 }
