@@ -56,7 +56,7 @@ Inadimplente, Valor Vencido e Total Pedidos Pendentes vêm da base das carteiras
 
 ## Painel individual por vendedor
 
-`python gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta]` gera um HTML só com a carteira do vendedor (Pedidos do mês, Promoções do mês, Status Clientes, OrthoCare e Comparativo YoY), sem dados de outras carteiras. `python gerar_painel_vendedor.py --boinas [pasta]` gera um para cada RCA ativo do time BOINAS AZUIS e para os RCAs da lista EXTRAS (hoje, BEHIKES - RCA SAMUEL).
+`python gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta]` gera um HTML só com a carteira do vendedor (Pedidos do mês, Promoções do mês, Status Clientes, OrthoCare e Comparativo YoY), sem dados de outras carteiras. `python gerar_painel_vendedor.py --boinas [pasta]` gera um para cada RCA ativo do time BOINAS AZUIS e para os RCAs da lista EXTRAS (hoje, BEHIKES - RCA SAMUEL, THIAGO e TARCISIO).
 
 ## Escala de Valor
 

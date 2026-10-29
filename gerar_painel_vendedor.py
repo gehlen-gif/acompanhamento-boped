@@ -86,7 +86,7 @@ def main(vendedor, destino=None):
 
 
 # RCAs de outros times que também recebem o painel individual
-EXTRAS = ['BEHIKES - RCA SAMUEL']
+EXTRAS = ['BEHIKES - RCA SAMUEL', 'BEHIKES - RCA THIAGO', 'BEHIKES - RCA TARCISIO']
 
 
 def rcas_boinas():
