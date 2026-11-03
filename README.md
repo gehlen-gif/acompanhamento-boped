@@ -42,6 +42,12 @@ Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` 
 
 `atualizar_ortho.py` roda dentro de `atualizar_tudo.py` e gera `dados/ortho.json` com a linha ORTHO (subgrupos pela planilha de correlação) em todo o histórico, por grupo de clientes e vendedor. A aba mostra vendas no ano contra o ano anterior, peso nas vendas, grupos comprando (últimos 90 dias), que pararam e que nunca compraram, vendas por mês, subgrupos e o mix sugerido por faixa de pedido (R$ 1.000, 3.000, 5.000 e +10.000), montado a partir dos pedidos de OrthoCare (grupo + dia) do tamanho de cada faixa dentro dos filtros.
 
+## Novembro de 2026: promoções, YoY e ordenação
+
+- Mês sem promoções: `python3 atualizar_tudo.py <Histórico.xlsx> sem` zera `promocoes.json` e `promo_potencial.json`, e a aba Promoções mostra só o aviso "Busque oportunidades no painel Comparativo YoY até que tenhamos as promoções do mês".
+- Comparativo YoY: com um grupo de clientes filtrado, o quadro "Subgrupos nunca comprados" lista, por linha, os subgrupos de Home, Health, Beauty e Orthocare (peças não entram) que o grupo nunca comprou em todo o histórico. O catálogo são os subgrupos dessas linhas vendidos para as carteiras nos últimos 12 meses (`catalogo` e `compras` na primeira linha de `dados/yoy.json`).
+- Pedidos do mês: em Meta do mês por time e líder e em Cobertura por vendedor, clicar no título de uma coluna ordena do maior para o menor; clicar de novo inverte.
+
 ## Status Clientes
 
 A antiga aba Histórico de vendas agora se chama Status Clientes. `atualizar_status.py` roda dentro de `atualizar_tudo.py` e gera `dados/status.json` pelas regras de StatusGruposClientes: até 90 dias sem compra, Ativo; acima, Inativo (a tolerância por segmento pode ser preenchida em `TOLERANCIA_SEGMENTO`), mais Novo, Reativado, Inativou no mês, Ativo mês anterior, Inativariam no mês, Recuperado e Nunca comprou, com a data de inativação, os dias até mudar de status e a evolução dos últimos 13 meses. A data do pedido faz o papel do faturamento.
@@ -59,5 +65,7 @@ Inadimplente, Valor Vencido e Total Pedidos Pendentes vêm da base das carteiras
 `python gerar_painel_vendedor.py "BOINAS - RCA PALOMA" [pasta]` gera um HTML só com a carteira do vendedor (Pedidos do mês, Promoções do mês, Status Clientes, OrthoCare e Comparativo YoY), sem dados de outras carteiras. `python gerar_painel_vendedor.py --boinas [pasta]` gera um para cada RCA ativo do time BOINAS AZUIS e para os RCAs da lista EXTRAS (hoje, BEHIKES - RCA SAMUEL, THIAGO e TARCISIO).
 
 ## Escala de Valor
+
+Aba inativa desde 03/11/2026 (escondida no painel e sem cálculo; para voltar, tire a regra `#tab-btn-escala, #escala` do CSS de `painel_fonte.html` e a linha comentada `drawEscala` em `draw()`).
 
 Aba construída sobre `dados/yoy.json` (acumulado do ano contra o mesmo período do ano anterior). Selecione grupos de clientes (ou use todos os do filtro) e o painel agrupa os subgrupos em clusters: Âncora (80% do valor, crescendo ou estável), Âncora em queda, Giro (80% das unidades, pouco valor), Em ascensão (≥0,2% do valor e +20%), Em queda (≥0,2% do valor no ano anterior e −20%) e Cauda. O mix sugerido e a contagem de grupos que ainda não compram cada subgrupo são recalculados a cada grupo adicionado. O campo "Comparar um grupo com a seleção" põe um grupo de cliente frente ao conjunto selecionado (que passa a excluí-lo) e lista os subgrupos que ele não compra ou compra pouco, com o potencial estimado: a diferença entre o peso do subgrupo no mix da referência e no mix do cliente, aplicada ao tamanho de compra atual do cliente. A linha de produto de cada subgrupo vem de `dados/base/correlacao_item_subgrupo_linha.csv`.

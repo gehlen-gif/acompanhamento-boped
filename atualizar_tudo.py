@@ -2,7 +2,7 @@
 
 Se o arquivo tiver anos anteriores, gera também o comparativo YoY (atualizar_yoy.py).
 
-Uso: python3 atualizar_tudo.py <Histórico de Pedidos.xlsx> [promocoes.json]
+Uso: python3 atualizar_tudo.py <Histórico de Pedidos.xlsx> [promocoes.json | sem]
 
 As carteiras (que grupo de clientes e que cliente pertence a cada vendedor, nome,
 time, UF, segmento e status) vêm da base validada em dados/base/. O histórico
@@ -88,7 +88,11 @@ def main(hist_xlsx, promos_json=None):
     atualizar_saojoao.main(hist)
     import atualizar_status
     atualizar_status.main(hist, data_ref)
-    if promos_json:
+    if promos_json == 'sem':
+        # mês sem promoções: a aba mostra só o aviso para buscar oportunidades no Comparativo YoY
+        for f in ('promocoes.json', 'promo_potencial.json'):
+            (DADOS / f).write_text('[]', encoding='utf-8')
+    elif promos_json:
         atualizar_promocoes.main(h, promos_json)
     atualizar_pedidos.build_html(data_ref)
 

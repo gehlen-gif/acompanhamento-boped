@@ -54,7 +54,8 @@ def carregar(vendedor):
             sel = [r for r in linhas if r.get(campo) == vendedor]
             if id_ == 'yoy' and linhas and sel:
                 # metadados do período ficam na primeira linha
-                sel[0] = {**sel[0], **{k: linhas[0][k] for k in ('ref', 'ref_ant', 'linhas') if k in linhas[0]}}
+                sel[0] = {**sel[0], **{k: linhas[0][k] for k in ('ref', 'ref_ant', 'linhas', 'catalogo', 'inicio') if k in linhas[0]},
+                          'compras': {k: v for k, v in linhas[0].get('compras', {}).items() if k.endswith('|' + vendedor)}}
             linhas = sel
         dados[id_] = linhas
     return dados

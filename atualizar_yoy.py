@@ -20,6 +20,9 @@ PALAVRAS_LINHA = [('PEÇA', r'^(PC |PEÇA|PECA)'), ('ORTHO', r'ESTABILIZADOR|ORT
                   ('HEALTH', r'MONITOR|COMPRESSOR|BOMBA|AIR TUBE|ALMOFADA'), ('HOME', r'^D\d+')]
 
 
+LINHAS_CATALOGO = ('HOME', 'HEALTH', 'BEAUTY', 'ORTHO')
+
+
 def linha_por_subgrupo(h):
     """Linha de produto (HEALTH, HOME, ORTHO, BEAUTY, PEÇA) de cada subgrupo: a linha que mais vende nele,
     pelos itens da planilha de correlação; sem correspondência, por palavra-chave do subgrupo."""
@@ -85,7 +88,19 @@ def main(h, data_ref):
         for c in ('a1', 'a0', 'm1', 'm0', 'q1', 'q0'):
             if o[c] == 0:
                 del o[c]
-    out[0]['linhas'] = linha_por_subgrupo(h)
+    linhas = linha_por_subgrupo(h)
+    out[0]['linhas'] = linhas
+    # Lista de subgrupos nunca comprados (aba Comparativo YoY, com um grupo filtrado): catálogo = subgrupos das
+    # linhas HOME, HEALTH, BEAUTY e ORTHO (peças não entram) vendidos para as carteiras nos últimos 12 meses;
+    # compras = índices desse catálogo que cada grupo de clientes já comprou em todo o histórico.
+    pos = h[h['vt'] > 0]
+    cat = pos[(pos['Data'] > ref - pd.DateOffset(years=1)) & pos['subgrupo'].map(linhas).isin(LINHAS_CATALOGO)]
+    cg = cat.groupby('subgrupo').agg(n=('cod_grupo', 'nunique'), v=('vt', 'sum')).sort_values(['n', 'v'], ascending=False)
+    out[0]['catalogo'] = [{'s': s_, 'l': linhas[s_], 'n': int(r.n), 'v': round(float(r.v), 2)} for s_, r in cg.iterrows()]
+    ci = {s_: i for i, s_ in enumerate(cg.index)}
+    ja = pos[pos['subgrupo'].isin(ci)].groupby(['cod_grupo', 'vendedor'])['subgrupo'].unique()
+    out[0]['inicio'] = h['Data'].min().strftime('%Y-%m-%d')
+    out[0]['compras'] = {f'{g}|{v}': sorted(ci[x] for x in xs) for (g, v), xs in ja.items()}
     out[0]['ref'] = data_ref
     out[0]['ref_ant'] = ref_ant.strftime('%Y-%m-%d')
     (DADOS / 'yoy.json').write_text(json.dumps(out, ensure_ascii=False, separators=(',', ':'), allow_nan=False), encoding='utf-8')

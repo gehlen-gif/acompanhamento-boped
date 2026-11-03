@@ -23,6 +23,11 @@
 .cg .bar .val { text-align: right; min-width: 6.5rem; }
 .cg .scroll { max-height: 34rem; overflow: auto; }
 .cg table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); }
+.cg th[data-ord]::after { content: ' ↕'; opacity: .35; }
+.cg th.ord-desc::after { content: ' ▼'; opacity: 1; } .cg th.ord-asc::after { content: ' ▲'; opacity: 1; }
+#tab-btn-escala, #escala { display: none !important; }
+.cg .aviso { border-left: 4px solid var(--color-warn); }
+.cg .aviso p { margin: 0; font-size: var(--cds-font-size-heading); }
 .cg th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); border-bottom: 1px solid var(--color-border-line); padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; white-space: nowrap; }
 .cg td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
 .cg td.n, .cg th.n { text-align: right; white-space: nowrap; }
@@ -323,7 +328,7 @@
       <p class="note" id="meta-note"></p>
       <div class="scroll">
         <table id="tab-meta" data-source="meta">
-          <thead><tr><th>Time / líder</th><th class="n">Vendedores</th><th class="n">Meta</th><th class="n">Realizado</th><th>Atingido</th><th class="n">Falta</th><th class="n">Projeção do mês</th></tr></thead>
+          <thead><tr><th data-ord="nome" data-tipo="t">Time / líder</th><th class="n" data-ord="n">Vendedores</th><th class="n" data-ord="m">Meta</th><th class="n" data-ord="real">Realizado</th><th data-ord="ating">Atingido</th><th class="n" data-ord="falta">Falta</th><th class="n" data-ord="proj">Projeção do mês</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -331,10 +336,10 @@
 
     <section class="card" id="cobertura">
       <h2>Cobertura por vendedor</h2>
-      <p class="note">Quantos grupos de clientes da carteira de cada vendedor já colocaram pedido no mês e quanto da meta já foi atingido. Mix é quantos subgrupos de itens diferentes o vendedor vendeu no mês (devolução não conta). Clique em um vendedor para filtrar.</p>
+      <p class="note">Quantos grupos de clientes da carteira de cada vendedor já colocaram pedido no mês e quanto da meta já foi atingido. Mix é quantos subgrupos de itens diferentes o vendedor vendeu no mês (devolução não conta). Clique em um vendedor para filtrar; clique no título de uma coluna para ordenar do maior para o menor e de novo para inverter.</p>
       <div class="scroll">
         <table id="tab-cob" data-source="pedidos">
-          <thead><tr><th>Vendedor</th><th>Time</th><th class="n">Grupos de clientes</th><th class="n">Com pedido</th><th class="n">Sem pedido</th><th>Cobertura</th><th class="n">Itens</th><th class="n" title="Subgrupos de itens diferentes vendidos pelo vendedor no mês">Mix</th><th class="n">Valor (- canc.)</th><th class="n">Meta</th><th>Atingido</th><th class="n">Falta</th></tr></thead>
+          <thead><tr><th data-ord="v" data-tipo="t">Vendedor</th><th data-ord="time" data-tipo="t">Time</th><th class="n" data-ord="tot">Grupos de clientes</th><th class="n" data-ord="c">Com pedido</th><th class="n" data-ord="s">Sem pedido</th><th data-ord="cov">Cobertura</th><th class="n" data-ord="it">Itens</th><th class="n" data-ord="mix" title="Subgrupos de itens diferentes vendidos pelo vendedor no mês">Mix</th><th class="n" data-ord="val">Valor (- canc.)</th><th class="n" data-ord="meta">Meta</th><th data-ord="ating">Atingido</th><th class="n" data-ord="falta">Falta</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -375,6 +380,10 @@
   </div>
 
   <div class="pane" id="promocoes">
+    <section class="card aviso" id="promo-aviso" hidden>
+      <p>Busque oportunidades no painel Comparativo YoY até que tenhamos as promoções do mês.</p>
+      <div><button type="button" id="promo-ir-yoy">Abrir Comparativo YoY</button></div>
+    </section>
     <section class="kpis" id="ind-promo" data-source="promo_potencial">
       <div class="kpi"><span class="note">Itens em promoção</span><span class="v dash-skeleton" id="pr-itens" data-source="promocoes">—</span><span class="sub">Preços válidos de 01 a 31/10/2026</span></div>
       <div class="kpi"><span class="note">Grupos de clientes que já compraram os itens</span><span class="v dash-skeleton" id="pr-grupos">—</span><span class="sub" id="pr-grupos-s"></span></div>
@@ -408,7 +417,7 @@
     </section>
 
     <section class="card" id="itens-promo">
-      <h2>Promoções ativas em outubro</h2>
+      <h2>Promoções ativas no mês</h2>
       <p class="note">Frete CIF. Preços válidos de 01 a 31/10/2026. Linha ORTHO: todos os itens com o melhor preço de tabela, em todos os segmentos menos Farma, exceto pagamento iniciando em 90 dias.</p>
       <div class="scroll">
         <table id="tab-promos" data-source="promocoes" data-row-key="id">
@@ -499,6 +508,17 @@
       <div class="scroll">
         <table id="tab-ysubs" data-source="yoy">
           <thead><tr><th>Subgrupo</th><th class="n y0">Ano anterior</th><th class="n y1">Ano atual</th><th class="n">Variação</th><th class="n">%</th><th class="n">Qtd. ano anterior</th><th class="n">Qtd. ano atual</th><th class="n">Grupos que compraram</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card" id="y-nunca" hidden>
+      <h2 id="y-nunca-title">Subgrupos nunca comprados</h2>
+      <p class="note" id="y-nunca-note"></p>
+      <div class="tiles" id="y-nunca-linhas" style="margin-top:var(--cds-gap-sm)"></div>
+      <div class="scroll">
+        <table id="tab-ynunca" data-source="yoy">
+          <thead><tr><th>Linha</th><th>Subgrupo</th><th class="n">Grupos de clientes que compraram em 12 meses</th><th class="n">Vendas em 12 meses</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -1019,6 +1039,27 @@ $('#tab-ysubs tbody').addEventListener('click', (e) => {
 });
 document.querySelectorAll('#tema button').forEach((b) => b.addEventListener('click', () => set({ tema: b.dataset.tema || null })));
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { set({ aba: b.dataset.aba }); dash.setLink(b.dataset.aba); }));
+$('#promo-ir-yoy').addEventListener('click', () => set({ aba: 'yoy' }));
+// Ordenação pelos títulos de Meta do mês por time e líder e de Cobertura por vendedor:
+// o 1º clique ordena do maior para o menor (texto: A a Z), o 2º inverte; vale uma coluna por vez
+const ORD = { meta: { k: null, dir: -1 }, cob: { k: null, dir: -1 } };
+function ordenar(qual, th) {
+  const o = ORD[qual], k = th.dataset.ord, texto = th.dataset.tipo === 't';
+  if (o.k === k) o.dir = -o.dir; else { o.k = k; o.dir = texto ? 1 : -1; }
+  draw();
+}
+const cmpOrd = (o) => (a, b) => {
+  const x = a[o.k], y = b[o.k];
+  if (x == null || y == null) return (x == null) - (y == null);
+  return (typeof x === 'string' ? x.localeCompare(y, 'pt-BR') : x - y) * o.dir;
+};
+const marcaOrd = (tab, o) => document.querySelectorAll(tab + ' th[data-ord]').forEach((th) => {
+  th.classList.toggle('ord-desc', th.dataset.ord === o.k && o.dir < 0);
+  th.classList.toggle('ord-asc', th.dataset.ord === o.k && o.dir > 0);
+  th.setAttribute('aria-sort', th.dataset.ord === o.k ? (o.dir < 0 ? 'descending' : 'ascending') : 'none');
+});
+$('#tab-meta thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('meta', th); });
+$('#tab-cob thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('cob', th); });
 $('#tab-cob tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
   if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
@@ -1073,6 +1114,8 @@ function draw() {
   const cg = document.querySelector('.cg');
   if (p0.tema) cg.dataset.tema = p0.tema; else delete cg.dataset.tema;
   document.querySelectorAll('#tema button').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.tema || null) === (p0.tema || null))));
+  // Escala de Valor está inativa: um link antigo para ela abre Pedidos do mês
+  if (p0.aba === 'escala') { set({ aba: null }); return; }
   const aba = p0.aba || 'pedidos';
   drawAtualizacao();
   document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.aba === aba)));
@@ -1227,7 +1270,7 @@ function draw() {
   drawPedidos(rows);
   drawPromo(rows);
   drawYoy(rows, all);
-  drawEscala(rows, all);
+  // drawEscala(rows, all); — aba Escala de Valor inativa
   drawOrtho(rows, all);
   drawSaoJoao();
   drawStatus(rows);
@@ -1243,6 +1286,7 @@ const O_FAIXAS = [
   { nome: 'Mix de +R$ 10.000', alvo: 10000, lo: 7500, hi: Infinity, max: 14 },
 ];
 const O_DIAS = 90;
+const MES_NOME = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 const MES_AB = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const oFaixa = (v) => (v < 2000 ? O_FAIXAS[0] : v < 4000 ? O_FAIXAS[1] : v < 7500 ? O_FAIXAS[2] : O_FAIXAS[3]);
 const med = (xs, f) => { const v = xs.map(f).sort((a, b) => a - b); const n = v.length; return n ? (n % 2 ? v[(n - 1) / 2] : (v[n / 2 - 1] + v[n / 2]) / 2) : 0; };
@@ -1763,7 +1807,7 @@ function drawPedidos(scope) {
   $('#p-itens').textContent = INT.format(uniqSum(scoped, 'qt_itens_pedido')); $('#p-itens-s').textContent = 'Líquido de cancelamentos';
   if ((p.aba || 'pedidos') === 'pedidos') {
     $('#takeaway').textContent = scoped.length
-      ? `Pedidos de outubro até ${refTxt}: ${INT.format(com.length)} de ${INT.format(scoped.length)} grupos de clientes já compraram (${PCT.format(com.length / n)}), somando ${BRL.format(uniqSum(scoped, 'valor_pedidos'))}. ${INT.format(sem.length)} ainda não colocaram pedido.`
+      ? `Pedidos de ${MES_NOME[+ref.slice(5, 7) - 1]} até ${refTxt}: ${INT.format(com.length)} de ${INT.format(scoped.length)} grupos de clientes já compraram (${PCT.format(com.length / n)}), somando ${BRL.format(uniqSum(scoped, 'valor_pedidos'))}. ${INT.format(sem.length)} ainda não colocaram pedido.`
       : 'Nenhum grupo de clientes com esses filtros.';
   }
 
@@ -1787,30 +1831,38 @@ function drawPedidos(scope) {
   $('#meta-note').innerHTML = '';
   $('#meta-note').append(`Pedidos até ${refTxt}: ${du.passados} de ${du.total} dias úteis do mês (${PCT.format(ritmo)}). A marca `, el('span', 'legend-pace'),
     ` na barra mostra onde o time deveria estar nesse ritmo. Projeção = realizado ÷ dias úteis passados × dias úteis do mês. Só entram vendedores do time com meta maior que zero.`);
-  const linha = (cls, nome, rs) => {
+  const calc = (nome, rs) => {
     const m = d3.sum(rs, (r) => r.meta), real = d3.sum(rs, (r) => realV.get(r.vendedor) || 0);
+    return { nome, rs, n: rs.filter((r) => r.meta > 0).length, m, real, ating: m > 0 ? real / m : 0, falta: Math.max(m - real, 0), proj: du.passados ? real / du.passados * du.total : null };
+  };
+  const linha = (cls, o) => {
     const tr = el('tr', cls);
-    tr.append(el('td', null, nome), el('td', 'n', INT.format(rs.filter((r) => r.meta > 0).length)), el('td', 'n', BRL.format(m)), el('td', 'n', BRL.format(real)),
-      metaCell(real, m, ritmo), el('td', 'n', BRL.format(Math.max(m - real, 0))), el('td', 'n', du.passados ? BRL.format(real / du.passados * du.total) : '—'));
+    tr.append(el('td', null, o.nome), el('td', 'n', INT.format(o.n)), el('td', 'n', BRL.format(o.m)), el('td', 'n', BRL.format(o.real)),
+      metaCell(o.real, o.m, ritmo), el('td', 'n', BRL.format(o.falta)), el('td', 'n', o.proj != null ? BRL.format(o.proj) : '—'));
     return tr;
   };
   const comMeta = metas.filter((r) => r.meta > 0);
   const trs = [];
-  d3.groups(comMeta, (r) => r.time_macro).map(([t, rs]) => ({ t, rs, m: d3.sum(rs, (r) => r.meta) })).sort((a, b) => b.m - a.m).forEach(({ t, rs }) => {
-    const tr = linha('macro', t, rs); tr.dataset.macro = t; trs.push(tr);
-    const lids = d3.groups(rs, (r) => r.lider);
-    if (lids.length > 1 || lids[0][0] !== 'Sem líder') {
-      lids.sort((a, b) => (a[0] === 'Sem líder') - (b[0] === 'Sem líder') || d3.sum(b[1], (r) => r.meta) - d3.sum(a[1], (r) => r.meta))
-        .forEach(([l, ls]) => trs.push(linha('lider', l === 'Sem líder' ? 'Sem líder (direto)' : l, ls)));
+  const om = ORD.meta, porOrd = om.k ? cmpOrd(om) : null;
+  marcaOrd('#tab-meta', om);
+  const macros = d3.groups(comMeta, (r) => r.time_macro).map(([t, rs]) => calc(t, rs));
+  macros.sort(porOrd || ((a, b) => b.m - a.m)).forEach((mo) => {
+    const tr = linha('macro', mo); tr.dataset.macro = mo.nome; trs.push(tr);
+    const lids = d3.groups(mo.rs, (r) => r.lider).map(([l, ls]) => ({ ...calc(l === 'Sem líder' ? 'Sem líder (direto)' : l, ls), sem: l === 'Sem líder' }));
+    if (lids.length > 1 || !lids[0].sem) {
+      lids.sort(porOrd || ((a, b) => a.sem - b.sem || b.m - a.m)).forEach((lo) => trs.push(linha('lider', lo)));
     }
   });
-  if (comMeta.length) trs.push(linha('total', 'Total', comMeta));
+  if (comMeta.length) trs.push(linha('total', calc('Total', comMeta)));
   $('#tab-meta tbody').replaceChildren(...trs);
 
   const byV = d3.groups(scoped, (r) => r.vendedor).map(([v, rs]) => {
     const c = rs.filter((r) => r.situacao_mes === 'Com pedido').length;
-    return { v, time: rs[0].time, tot: rs.length, c, s: rs.filter((r) => r.situacao_mes === 'Sem pedido').length, it: uniqSum(rs, 'qt_itens_pedido'), mix: new Set(rs.flatMap((r) => r.subs_mes || [])).size, val: uniqSum(rs, 'valor_pedidos') };
-  }).sort((a, b) => b.val - a.val);
+    const mt = metaV.get(v), meta = mt && mt.meta > 0 ? mt.meta : null, real = realV.get(v) || 0;
+    return { v, time: rs[0].time, tot: rs.length, c, s: rs.filter((r) => r.situacao_mes === 'Sem pedido').length, it: uniqSum(rs, 'qt_itens_pedido'), mix: new Set(rs.flatMap((r) => r.subs_mes || [])).size, val: uniqSum(rs, 'valor_pedidos'),
+      cov: c / rs.length, meta, ating: meta ? real / meta : null, falta: meta ? Math.max(meta - real, 0) : null };
+  }).sort(ORD.cob.k ? cmpOrd(ORD.cob) : ((a, b) => b.val - a.val));
+  marcaOrd('#tab-cob', ORD.cob);
   $('#tab-cob tbody').replaceChildren(...byV.map((o) => {
     const tr = el('tr'); tr.dataset.v = o.v;
     if (p.vendedor === o.v) tr.className = 'on';
@@ -1984,6 +2036,28 @@ function drawYoy(scope, allGrupos) {
       el('td', 'n', q('q0')), el('td', 'n', q('q1')), el('td', 'n', INT.format(new Set(o.xs.filter((r) => r.a1 > 0).map(gk)).size)));
     return tr;
   }));
+  // Subgrupos nunca comprados pelo grupo filtrado (linhas Home, Health, Beauty e Orthocare; peças não entram)
+  const cat = head.catalogo || [];
+  $('#y-nunca').hidden = !p.ygrupo || !cat.length;
+  if (p.ygrupo && cat.length) {
+    const ja = new Set();
+    Object.entries(head.compras || {}).forEach(([k, xs]) => { if (k.split('|')[0] === p.ygrupo) xs.forEach((i) => ja.add(i)); });
+    const LIN = [['HOME', 'Home'], ['HEALTH', 'Health'], ['BEAUTY', 'Beauty'], ['ORTHO', 'Orthocare']];
+    const ordem = new Map(LIN.map(([l], i) => [l, i]));
+    const nunca = cat.map((c, i) => ({ ...c, i })).filter((c) => !ja.has(c.i)).sort((a, b) => ordem.get(a.l) - ordem.get(b.l) || b.n - a.n || b.v - a.v);
+    $('#y-nunca-title').textContent = `Subgrupos nunca comprados por ${gName(p.ygrupo)}`;
+    $('#y-nunca-note').textContent = `${INT.format(nunca.length)} de ${INT.format(cat.length)} subgrupos das linhas Home, Health, Beauty e Orthocare nunca foram comprados por este grupo de clientes, considerando todo o histórico${head.inicio ? ' desde ' + dBR(head.inicio) : ''}. Peças não entram. O catálogo são os subgrupos dessas linhas vendidos para as carteiras do time nos últimos 12 meses; a lista começa pelos mais comprados pelos outros grupos de clientes.`;
+    $('#y-nunca-linhas').replaceChildren(...LIN.map(([l, nomeL]) => {
+      const tot = cat.filter((c) => c.l === l).length, nn = nunca.filter((c) => c.l === l).length;
+      const b = el('div', 'tile s-neutro'); b.append(el('span', 'lbl', nomeL), el('span', 'big', INT.format(nn)), el('span', 'hint', `de ${INT.format(tot)} subgrupos nunca comprados`));
+      return b;
+    }));
+    const nomeLinha = new Map(LIN);
+    $('#tab-ynunca tbody').replaceChildren(...nunca.map((c) => {
+      const tr = el('tr'); tr.append(el('td', null, nomeLinha.get(c.l)), el('td', null, c.s), el('td', 'n', INT.format(c.n)), el('td', 'n', BRL.format(c.v)));
+      return tr;
+    }));
+  }
   $('#regra-yoy').textContent = `Fonte: Histórico de Pedidos (Valor Total, líquido de cancelamentos e devoluções). As vendas de ${ano0} são atribuídas pela carteira atual: cada cliente vai para o grupo de clientes e o vendedor de hoje, então vendedores que herdaram clientes aparecem com o histórico deles. Clientes fora das carteiras do time não entram. "Novo no ano": grupo sem compra no mesmo período de ${ano0}. "Sem compra no ano": comprou em ${ano0} e ainda não comprou em ${ano1}.`;
   if ((p.aba || 'pedidos') === 'yoy') {
     const g1 = gUp[0], g2 = gDn[0], s1 = sUp[0], s2 = sDn[0];
@@ -2359,6 +2433,15 @@ function drawPromo(scope) {
   const prOk = pr.status === 'ok', ok = pp.status === 'ok';
   document.querySelectorAll('#ind-promo .dash-skeleton').forEach((e) => { if ((ok && prOk) || pp.status === 'error') e.classList.remove('dash-skeleton'); });
   const promos = prOk ? pr.data : [];
+  // sem promoções no mês: só o aviso
+  const semPromo = prOk && !promos.length;
+  $('#promo-aviso').hidden = !semPromo;
+  ['#ind-promo', '#potencial', '#itens-promo', '#regra-promo'].forEach((x) => { $(x).hidden = semPromo; });
+  if (semPromo) {
+    $('#foco').hidden = true;
+    if ((p.aba || 'pedidos') === 'promocoes') $('#takeaway').textContent = 'Não há promoções ativas no momento. Busque oportunidades no painel Comparativo YoY até que tenhamos as promoções do mês.';
+    return;
+  }
   const linhas = Array.from(new Set(promos.map((r) => r.linha)));
   fillSelect($('#f-plinha'), 'Todas', linhas, p.plinha);
   const sel = $('#f-pitem');
