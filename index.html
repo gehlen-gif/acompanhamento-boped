@@ -567,7 +567,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       <p class="note" id="y-ts-note"></p>
       <div class="scroll">
         <table id="tab-ysubs" data-source="yoy">
-          <thead><tr><th data-ord="k" data-tipo="t">Subgrupo</th><th class="n y0" data-ord="a0">Ano anterior</th><th class="n y1" data-ord="a1">Ano atual</th><th class="n" data-ord="d">Variação</th><th class="n" data-ord="pct">%</th><th class="n" data-ord="q0">Qtd. ano anterior</th><th class="n" data-ord="q1">Qtd. ano atual</th><th class="n" data-ord="ng">Grupos que compraram</th></tr></thead>
+          <thead><tr><th data-ord="k" data-tipo="t">Subgrupo</th><th class="n y0" data-ord="a0">Ano anterior</th><th class="n y1" data-ord="a1">Ano atual</th><th class="n" data-ord="d">Variação</th><th class="n" data-ord="pct">% R$</th><th class="n" data-ord="q0">Qtd. ano anterior</th><th class="n" data-ord="q1">Qtd. ano atual</th><th class="n" data-ord="pq">% Qt.</th><th class="n" data-ord="ng">Grupos que compraram</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -2174,7 +2174,7 @@ function drawYoy(scope, allGrupos) {
       el('td', null, top ? `${top.k} (${SBRL(top.d)})` : '—'));
     return tr;
   }));
-  const sAll = sub.map((o) => ({ ...o, pct: o.a0 ? o.d / Math.abs(o.a0) : null, q0: d3.sum(o.xs, (r) => r.q0 || 0), q1: d3.sum(o.xs, (r) => r.q1 || 0), ng: new Set(o.xs.filter((r) => r.a1 > 0).map(gk)).size }))
+  const sAll = sub.map((o) => ({ ...o, pct: o.a0 ? o.d / Math.abs(o.a0) : null, q0: d3.sum(o.xs, (r) => r.q0 || 0), q1: d3.sum(o.xs, (r) => r.q1 || 0), ng: new Set(o.xs.filter((r) => r.a1 > 0).map(gk)).size })).map((o) => ({ ...o, pq: per !== 'mtd' && o.q0 ? (o.q1 - o.q0) / Math.abs(o.q0) : null }))
     .sort(ORD.ysub.k ? cmpOrd(ORD.ysub) : ((a, b) => Math.abs(b.d) - Math.abs(a.d)));
   marcaOrd('#tab-ysubs', ORD.ysub);
   $('#y-ts-note').textContent = `${INT.format(sAll.length)} subgrupos${sTxt}, ${ORD.ysub.k ? 'na ordem da coluna escolhida' : 'do maior impacto para o menor'}. Peças e acessórios estão somados em "PEÇAS E ACESSÓRIOS".${per === 'mtd' ? ' Quantidades só no acumulado do ano.' : ''} Clique em um subgrupo para ver os grupos de clientes; clique no título de uma coluna para ordenar do maior para o menor e de novo para inverter.`;
@@ -2182,7 +2182,7 @@ function drawYoy(scope, allGrupos) {
     const tr = el('tr'); tr.dataset.s = o.k; if (p.ysub === o.k) tr.className = 'on';
     const q = (f) => (per !== 'mtd' ? INT.format(d3.sum(o.xs, (r) => r[f])) : '—');
     tr.append(el('td', null, o.k), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.d), SBRL(o.d)), el('td', 'n ' + sinal(o.d), pctTxt(o.a0, o.a1)),
-      el('td', 'n', q('q0')), el('td', 'n', q('q1')), el('td', 'n', INT.format(o.ng)));
+      el('td', 'n', q('q0')), el('td', 'n', q('q1')), el('td', 'n ' + (per !== 'mtd' ? sinal(o.q1 - o.q0) : ''), per !== 'mtd' ? pctTxt(o.q0, o.q1) : '—'), el('td', 'n', INT.format(o.ng)));
     return tr;
   }));
   // Subgrupos nunca comprados pelo grupo de clientes escolhido (campo "Grupo de cliente", clique na tabela ou uma busca
