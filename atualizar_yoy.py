@@ -17,7 +17,12 @@ DADOS = HERE / 'dados'
 
 CORRELACAO = HERE / 'dados' / 'base' / 'correlacao_item_subgrupo_linha.csv'
 PALAVRAS_LINHA = [('PEÇA', r'^(PC |PEÇA|PECA)'), ('ORTHO', r'ESTABILIZADOR|ORTESE|TALA|TIPOIA|PALMILHA|JOELHEIRA|CINTA|COLAR|SUPORTE DE OMBRO|TENNIS ELBOW'),
-                  ('HEALTH', r'MONITOR|COMPRESSOR|BOMBA|AIR TUBE|ALMOFADA'), ('HOME', r'^D\d+')]
+                  ('HEALTH', r'MONITOR')]
+# Peças e acessórios, que vencem a planilha de correlação: subgrupo com nome de peça ("PC ...", "PEÇA ...", só o
+# modelo como "D60" ou "D10 POP", ou com código entre parênteses como "ASPIRAMED (AMED)") ou cujos itens são, na
+# maior parte do valor, peças de reposição (kit, filtro, capa, roda, assento, válvula, fonte, reservatório...)
+PECA_SUBGRUPO = r'^(PC |PEÇA|PECA)|^D\d+( POP)?$|\([A-Z]{2,6}\)$|^SEM SUBFAMILIA$|^-$|^\(sem subgrupo\)$'
+PECA_ITEM = r'^(?:KIT |REPARO|KIT REPARO|VALVULA|VÁLVULA|CAPA |FILTRO|FONTE |DIAFRAG|RODA |RODIZIO|RODÍZIO|ASSENTO|ENCOSTO|RESERVAT|COMADRE|ACESS|BOMBA A VACUO|PEÇA|PECA|PC |CABO |CARREGADOR|BATERIA|MANGUEIRA|MASCARA|MÁSCARA|BOCAL|PONTEIRA|APOIO|BRAÇO|BRACO|PEDAL|ALMOFADA DE|CONTROLE|MOTOR )'
 
 
 LINHAS_CATALOGO = ('HOME', 'HEALTH', 'BEAUTY', 'ORTHO')
@@ -51,6 +56,11 @@ def linha_por_subgrupo(h):
     for s in x['sub'].unique():
         if s not in out:
             out[s] = next((l for l, pat in PALAVRAS_LINHA if re.search(pat, s)), 'Sem linha')
+    x['peca'] = x['Item'].astype(str).str.upper().str.strip().str.contains(PECA_ITEM, regex=True)
+    pv = x[x['vt'] > 0].groupby('sub').apply(lambda d: d.loc[d['peca'], 'vt'].sum() / d['vt'].sum() if d['vt'].sum() else 0)
+    for s in out:
+        if re.search(PECA_SUBGRUPO, s) or pv.get(s, 0) >= 0.5:
+            out[s] = 'PEÇA'
     return out
 
 

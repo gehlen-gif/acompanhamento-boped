@@ -518,7 +518,7 @@
       <p class="note" id="y-ts-note"></p>
       <div class="scroll">
         <table id="tab-ysubs" data-source="yoy">
-          <thead><tr><th>Subgrupo</th><th class="n y0">Ano anterior</th><th class="n y1">Ano atual</th><th class="n">Variação</th><th class="n">%</th><th class="n">Qtd. ano anterior</th><th class="n">Qtd. ano atual</th><th class="n">Grupos que compraram</th></tr></thead>
+          <thead><tr><th data-ord="k" data-tipo="t">Subgrupo</th><th class="n y0" data-ord="a0">Ano anterior</th><th class="n y1" data-ord="a1">Ano atual</th><th class="n" data-ord="d">Variação</th><th class="n" data-ord="pct">%</th><th class="n" data-ord="q0">Qtd. ano anterior</th><th class="n" data-ord="q1">Qtd. ano atual</th><th class="n" data-ord="ng">Grupos que compraram</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -1050,7 +1050,7 @@ document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('cli
 $('#promo-ir-yoy').addEventListener('click', () => set({ aba: 'yoy' }));
 // Ordenação pelos títulos de Meta do mês por time e líder e de Cobertura por vendedor:
 // o 1º clique ordena do maior para o menor (texto: A a Z), o 2º inverte; vale uma coluna por vez
-const ORD = { meta: { k: null, dir: -1 }, cob: { k: null, dir: -1 } };
+const ORD = { meta: { k: null, dir: -1 }, cob: { k: null, dir: -1 }, ysub: { k: null, dir: -1 } };
 function ordenar(qual, th) {
   const o = ORD[qual], k = th.dataset.ord, texto = th.dataset.tipo === 't';
   if (o.k === k) o.dir = -o.dir; else { o.k = k; o.dir = texto ? 1 : -1; }
@@ -1067,6 +1067,7 @@ const marcaOrd = (tab, o) => document.querySelectorAll(tab + ' th[data-ord]').fo
   th.setAttribute('aria-sort', th.dataset.ord === o.k ? (o.dir < 0 ? 'descending' : 'ascending') : 'none');
 });
 $('#tab-meta thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('meta', th); });
+$('#tab-ysubs thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('ysub', th); });
 $('#tab-cob thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('cob', th); });
 $('#tab-cob tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
@@ -2044,7 +2045,9 @@ function drawYoy(scope, allGrupos) {
 
   const nome = new Map(allGrupos.map((r) => [r.cod_grupo + '|' + r.vendedor, r]));
   const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));
-  const rows = (pr ? linhasPeriodo(pr) : y.data).filter((r) => inScope.has(r.g + '|' + r.v)).map((r) => ({ g: r.g, v: r.v, s: r.s, a0: r[k0] || 0, a1: r[k1] || 0, q0: per !== 'mtd' ? r.q0 || 0 : null, q1: per !== 'mtd' ? r.q1 || 0 : null }))
+  // peças e acessórios (linha PEÇA) entram juntos numa linha só
+  const LY = head.linhas || {};
+  const rows = (pr ? linhasPeriodo(pr) : y.data).filter((r) => inScope.has(r.g + '|' + r.v)).map((r) => ({ g: r.g, v: r.v, s: LY[r.s] === 'PEÇA' ? 'PEÇAS E ACESSÓRIOS' : r.s, a0: r[k0] || 0, a1: r[k1] || 0, q0: per !== 'mtd' ? r.q0 || 0 : null, q1: per !== 'mtd' ? r.q1 || 0 : null }))
     .filter((r) => Math.abs(r.a0) >= 0.005 || Math.abs(r.a1) >= 0.005);
   // listas de opções
   const subs = Array.from(new Set(rows.map((r) => r.s))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
@@ -2122,13 +2125,15 @@ function drawYoy(scope, allGrupos) {
       el('td', null, top ? `${top.k} (${SBRL(top.d)})` : '—'));
     return tr;
   }));
-  const sAll = sub.slice().sort((a, b) => Math.abs(b.d) - Math.abs(a.d));
-  $('#y-ts-note').textContent = `${INT.format(sAll.length)} subgrupos${sTxt}, do maior impacto para o menor.${per === 'mtd' ? ' Quantidades só no acumulado do ano.' : ''} Clique em um subgrupo para ver os grupos de clientes.`;
+  const sAll = sub.map((o) => ({ ...o, pct: o.a0 ? o.d / Math.abs(o.a0) : null, q0: d3.sum(o.xs, (r) => r.q0 || 0), q1: d3.sum(o.xs, (r) => r.q1 || 0), ng: new Set(o.xs.filter((r) => r.a1 > 0).map(gk)).size }))
+    .sort(ORD.ysub.k ? cmpOrd(ORD.ysub) : ((a, b) => Math.abs(b.d) - Math.abs(a.d)));
+  marcaOrd('#tab-ysubs', ORD.ysub);
+  $('#y-ts-note').textContent = `${INT.format(sAll.length)} subgrupos${sTxt}, ${ORD.ysub.k ? 'na ordem da coluna escolhida' : 'do maior impacto para o menor'}. Peças e acessórios estão somados em "PEÇAS E ACESSÓRIOS".${per === 'mtd' ? ' Quantidades só no acumulado do ano.' : ''} Clique em um subgrupo para ver os grupos de clientes; clique no título de uma coluna para ordenar do maior para o menor e de novo para inverter.`;
   $('#tab-ysubs tbody').replaceChildren(...sAll.map((o) => {
     const tr = el('tr'); tr.dataset.s = o.k; if (p.ysub === o.k) tr.className = 'on';
     const q = (f) => (per !== 'mtd' ? INT.format(d3.sum(o.xs, (r) => r[f])) : '—');
     tr.append(el('td', null, o.k), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.d), SBRL(o.d)), el('td', 'n ' + sinal(o.d), pctTxt(o.a0, o.a1)),
-      el('td', 'n', q('q0')), el('td', 'n', q('q1')), el('td', 'n', INT.format(new Set(o.xs.filter((r) => r.a1 > 0).map(gk)).size)));
+      el('td', 'n', q('q0')), el('td', 'n', q('q1')), el('td', 'n', INT.format(o.ng)));
     return tr;
   }));
   // Subgrupos nunca comprados pelo grupo de clientes escolhido (campo "Grupo de cliente", clique na tabela ou uma busca
