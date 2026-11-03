@@ -82,6 +82,8 @@ def main(hist_xlsx, promos_json=None):
         atualizar_yoy.main(hist, data_ref)
     import atualizar_ortho
     atualizar_ortho.main(hist, data_ref)
+    import atualizar_diario
+    atualizar_diario.main(hist, data_ref)
     import atualizar_contas
     atualizar_contas.main(hist)
     import atualizar_saojoao

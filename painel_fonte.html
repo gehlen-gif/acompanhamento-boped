@@ -185,6 +185,9 @@
     <label>UF<select id="f-uf"></select></label>
     <label>Segmento<select id="f-seg"></select></label>
     <label>Status no cadastro<select id="f-status"></select></label>
+    <label>De<input id="f-de" type="date"></label>
+    <label>Até<input id="f-ate" type="date"></label>
+    <button id="f-mesatual" type="button" title="Volta para o padrão de cada aba">Mês atual</button>
     <label>Situação no mês<select id="f-mes"></select></label>
     <label>Buscar grupo<input id="f-q" type="search" placeholder="Nome ou código"></label>
     <label>Linha da promoção<select id="f-plinha"></select></label>
@@ -533,7 +536,7 @@
     </section>
 
     <section class="kpis" id="ind-ortho" data-source="ortho">
-      <div class="kpi"><span class="note">OrthoCare no ano</span><span class="v dash-skeleton" id="o-ano">—</span><span class="sub" id="o-ano-s"></span></div>
+      <div class="kpi"><span class="note" id="o-ano-l">OrthoCare no ano</span><span class="v dash-skeleton" id="o-ano">—</span><span class="sub" id="o-ano-s"></span></div>
       <div class="kpi"><span class="note">OrthoCare no mês</span><span class="v dash-skeleton" id="o-mes">—</span><span class="sub" id="o-mes-s"></span></div>
       <div class="kpi"><span class="note">Peso nas vendas do ano</span><span class="v dash-skeleton" id="o-part">—</span><span class="sub" id="o-part-s"></span></div>
       <div class="kpi"><span class="note">Grupos comprando</span><span class="v dash-skeleton" id="o-comp">—</span><span class="sub" id="o-comp-s"></span></div>
@@ -903,10 +906,13 @@ const PSITS = ['Potencial', 'Comprou recentemente', 'Já paga o preço da promo'
 defaults();
 $('#f-reset').addEventListener('click', () => {
   dash.resetParams();
-  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null, ealvo: null, ecomptodos: null, osit: null, sjuf: null, sts: null });
+  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null, ealvo: null, ecomptodos: null, osit: null, sjuf: null, sts: null, de: null, ate: null });
   defaults();
 });
 $('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
+$('#f-de').addEventListener('change', (e) => set({ de: e.target.value || null }));
+$('#f-ate').addEventListener('change', (e) => set({ ate: e.target.value || null }));
+$('#f-mesatual').addEventListener('click', () => set({ de: null, ate: null }));
 $('#f-plinha').addEventListener('change', (e) => set({ plinha: e.target.value || null, pitem: null }));
 $('#f-pitem').addEventListener('change', (e) => set({ pitem: e.target.value || null }));
 $('#f-psit').addEventListener('change', (e) => set({ psit: e.target.value || null }));
@@ -1017,7 +1023,7 @@ $('#tab-ovend tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
   if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
 });
-document.querySelectorAll('#y-per-btn button').forEach((b) => b.addEventListener('click', () => set({ yper: b.dataset.per === 'ytd' ? null : b.dataset.per })));
+document.querySelectorAll('#y-per-btn button').forEach((b) => b.addEventListener('click', () => set({ yper: b.dataset.per === 'ytd' ? null : b.dataset.per, de: null, ate: null })));
 $('#f-ysub').addEventListener('change', (e) => set({ ysub: e.target.value || null }));
 $('#f-ygrupo').addEventListener('change', (e) => {
   const v = normNome(e.target.value);
@@ -1134,6 +1140,17 @@ function draw() {
   $('#f-q').closest('label').firstChild.textContent = aba === 'contas' ? 'Buscar conta' : 'Buscar grupo';
   ['#f-ygrupo', '#f-ysub'].forEach((x) => { $(x).closest('label').hidden = aba !== 'yoy'; });
   $('#f-mes').closest('label').hidden = aba !== 'pedidos';
+  // período De / Até: Pedidos do mês, Comparativo YoY e OrthoCare
+  const comPer = ['pedidos', 'yoy', 'ortho'].includes(aba) && !!diario();
+  ['#f-de', '#f-ate'].forEach((x) => { $(x).closest('label').hidden = !comPer; });
+  $('#f-mesatual').hidden = !comPer || (!p0.de && !p0.ate);
+  if (comPer) {
+    const D = diario();
+    ['#f-de', '#f-ate'].forEach((x) => { $(x).min = D.ini; $(x).max = D.fim; });
+    const pr = periodo(p0);
+    if (document.activeElement !== $('#f-de')) $('#f-de').value = pr ? pr.de : '';
+    if (document.activeElement !== $('#f-ate')) $('#f-ate').value = pr ? pr.ate : '';
+  }
   ['#f-plinha', '#f-pitem', '#f-psit', '#f-pgrupo', '#f-psub'].forEach((s) => { $(s).closest('label').hidden = aba !== 'promocoes'; });
   $('#f-top').closest('label').hidden = aba === 'pedidos' || aba === 'contas' || aba === 'escala';
   const g = dash.data('grupos');
@@ -1326,6 +1343,17 @@ function drawOrtho(scope, allGrupos) {
 
   const gk = (r) => r.cod_grupo + '|' + r.vendedor;
   const ortho = new Map(O.grupos.map((r, i) => [r.g + '|' + r.v, { ...r, i }]));
+  // período De / Até: "OrthoCare no ano" e o comparativo passam a ser o intervalo contra o mesmo intervalo do ano anterior
+  const pr = periodo(p);
+  const yL = ((dash.data('yoy').data || []).find((r) => r.linhas) || {}).linhas || {};
+  if (pr) {
+    const ort = (m, key) => { const o = m.get(key); let t = 0; if (o) o.s.forEach((x, sn) => { if (yL[sn] === 'ORTHO') t += x.v; }); return t; };
+    const m1 = somaPeriodo(pr.de, pr.ate), m0 = somaPeriodo(pr.de0, pr.ate0);
+    ortho.forEach((o, key) => { o.a1 = ort(m1, key); o.a0 = ort(m0, key); });
+  }
+  $('#o-ano-l').textContent = pr ? `OrthoCare de ${perTxt(pr)}` : 'OrthoCare no ano';
+  document.querySelectorAll('#ortho th.y0').forEach((t) => { if (pr) t.textContent = `${dBR(pr.de0)} a ${dBR(pr.ate0)}`; });
+  document.querySelectorAll('#ortho th.y1').forEach((t) => { if (pr) t.textContent = perTxt(pr); });
   const linhas = scope.map((r) => { const o = ortho.get(gk(r)); const s = !o || !o.u ? 'nunca' : o.u >= corte ? 'compram' : 'pararam'; return { r, o, s }; });
   const comp = linhas.filter((x) => x.s === 'compram'), par = linhas.filter((x) => x.s === 'pararam'), nun = linhas.filter((x) => x.s === 'nunca');
   const buy = linhas.filter((x) => x.o);
@@ -1335,7 +1363,7 @@ function drawOrtho(scope, allGrupos) {
   const a1 = sum(buy, 'a1'), a0 = sum(buy, 'a0'), m = sum(buy, 'm'), fat = d3.sum(scope, (r) => r.faturamento);
   $('#o-per').textContent = `Vendas da linha ORTHO (OrthoCare) desde ${dBR(O.inicio)}, primeira venda no histórico, até ${dBR(ref)}. "Comprando" é quem comprou OrthoCare nos últimos ${O_DIAS} dias (desde ${dBR(corte)}); "Pararam" já compraram, mas não desde então.`;
   $('#o-ano').textContent = BRLc.format(a1); $('#o-ano').title = BRL.format(a1);
-  $('#o-ano-s').textContent = `${pctTxt(a0, a1)} sobre ${BRL.format(a0)} no mesmo período de ${ano0}`;
+  $('#o-ano-s').textContent = `${pctTxt(a0, a1)} sobre ${BRL.format(a0)} no mesmo período de ${pr ? pr.ate0.slice(0, 4) : ano0}`;
   $('#o-mes').textContent = BRLc.format(m); $('#o-mes').title = BRL.format(m);
   $('#o-mes-s').textContent = `${INT.format(buy.filter((x) => x.o.m > 0).length)} grupos compraram no mês`;
   $('#o-part').textContent = fat > 0 ? PCT.format(a1 / fat) : '—';
@@ -1407,7 +1435,7 @@ function drawOrtho(scope, allGrupos) {
   const yd = y.status === 'ok' ? y.data : [];
   const L = (yd.find((r) => r.linhas) || {}).linhas || {};
   const keys = new Set(scope.map(gk));
-  const ys = yd.filter((r) => L[r.s] === 'ORTHO' && keys.has(r.g + '|' + r.v));
+  const ys = (pr ? linhasPeriodo(pr) : yd).filter((r) => L[r.s] === 'ORTHO' && keys.has(r.g + '|' + r.v));
   const pen = new Map(); cestas.forEach((c) => c[2].forEach(([s]) => pen.set(O.subs[s], (pen.get(O.subs[s]) || 0) + 1)));
   const subs = d3.groups(ys, (r) => r.s).map(([k, xs]) => ({ k, a0: d3.sum(xs, (r) => r.a0 || 0), a1: d3.sum(xs, (r) => r.a1 || 0), q1: d3.sum(xs, (r) => r.q1 || 0), g: new Set(xs.filter((r) => (r.a1 || 0) > 0).map((r) => r.g + '|' + r.v)).size }))
     .filter((o) => o.a0 || o.a1).sort((a, b) => b.a1 - a.a1);
@@ -1473,7 +1501,7 @@ function drawOrtho(scope, allGrupos) {
   if ((p.aba || 'pedidos') === 'ortho') {
     const s1 = subs[0];
     $('#takeaway').textContent = scope.length
-      ? `OrthoCare vendeu ${BRL.format(a1)} no ano (${pctTxt(a0, a1)} sobre ${ano0}), ${fat > 0 ? PCT.format(a1 / fat) : '—'} das vendas. ${INT.format(comp.length)} de ${INT.format(scope.length)} grupos de clientes compram; ${INT.format(par.length)} pararam e ${INT.format(nun.length)} nunca compraram.` + (s1 ? ` Subgrupo que mais vende: ${s1.k} (${BRL.format(s1.a1)}).` : '')
+      ? `OrthoCare vendeu ${BRL.format(a1)} ${pr ? 'de ' + perTxt(pr) : 'no ano'} (${pctTxt(a0, a1)} sobre ${pr ? 'o mesmo intervalo de ' + ano0 : ano0}), ${fat > 0 ? PCT.format(a1 / fat) : '—'} das vendas. ${INT.format(comp.length)} de ${INT.format(scope.length)} grupos de clientes compram; ${INT.format(par.length)} pararam e ${INT.format(nun.length)} nunca compraram.` + (s1 ? ` Subgrupo que mais vende: ${s1.k} (${BRL.format(s1.a1)}).` : '')
       : 'Nenhum grupo de clientes com esses filtros.';
   }
 }
@@ -1663,6 +1691,54 @@ function drawSaoJoao() {
   if ((p.aba || 'pedidos') === 'saojoao') $('#takeaway').textContent = pts.slice(0, 2).map(([b, t]) => b + t).join(' ');
 }
 
+// Período "De / Até" (params de, ate). Sem eles, cada aba fica como antes: Pedidos no mês atual, YoY e OrthoCare no
+// acumulado do ano. Com eles, os valores saem da base diária (grupo de clientes, vendedor, subgrupo e dia) e o YoY
+// compara com o mesmo intervalo do ano anterior.
+let DIA = null;
+function diario() {
+  const dd = dash.data('diario');
+  if (dd.status !== 'ok' || !dd.data || !dd.data.length) return null;
+  if (!DIA || DIA.src !== dd.data[0]) DIA = { src: dd.data[0], ...dd.data[0], t0: Date.parse(dd.data[0].ini + 'T00:00:00Z'), cache: new Map() };
+  return DIA;
+}
+const isoDia = (n) => new Date(DIA.t0 + n * 864e5).toISOString().slice(0, 10);
+const diaN = (iso) => Math.round((Date.parse(iso + 'T00:00:00Z') - DIA.t0) / 864e5);
+const anoAntes = (iso) => { const y = +iso.slice(0, 4) - 1, md = iso.slice(5); return md === '02-29' ? y + '-02-28' : y + '-' + md; };
+function periodo(p) {
+  if (!p.de && !p.ate) return null;
+  const D = diario();
+  if (!D) return null;
+  let de = p.de || D.ini, ate = p.ate || D.fim;
+  if (de > ate) [de, ate] = [ate, de];
+  return { de, ate, de0: anoAntes(de), ate0: anoAntes(ate) };
+}
+// soma por "cod_grupo|vendedor" -> { v, q, s: Map(subgrupo -> { v, q }) } no intervalo
+function somaPeriodo(de, ate) {
+  const D = diario(), k = de + '|' + ate;
+  if (D.cache.has(k)) return D.cache.get(k);
+  const a = diaN(de), b = diaN(ate), out = new Map();
+  for (const [g, si, d, v, q] of D.r) {
+    if (d < a || d > b) continue;
+    const key = D.gs[g];
+    let o = out.get(key); if (!o) { o = { v: 0, q: 0, s: new Map() }; out.set(key, o); }
+    o.v += v; o.q += q;
+    const sn = D.subs[si], x = o.s.get(sn) || { v: 0, q: 0 }; x.v += v; x.q += q; o.s.set(sn, x);
+  }
+  D.cache.set(k, out);
+  return out;
+}
+// linhas no formato do YoY (g, v, s, a0, a1, q0, q1) para o intervalo e o mesmo intervalo do ano anterior
+function linhasPeriodo(pr) {
+  const m1 = somaPeriodo(pr.de, pr.ate), m0 = somaPeriodo(pr.de0, pr.ate0), out = new Map();
+  [[m0, 'a0', 'q0'], [m1, 'a1', 'q1']].forEach(([m, ka, kq]) => m.forEach((o, key) => o.s.forEach((x, sn) => {
+    const k = key + '|' + sn; let r = out.get(k);
+    if (!r) { const [g, v] = key.split('|'); r = { g, v, s: sn, a0: 0, a1: 0, q0: 0, q1: 0 }; out.set(k, r); }
+    r[ka] += x.v; r[kq] += x.q;
+  })));
+  return Array.from(out.values());
+}
+const perTxt = (pr) => `${dBR(pr.de)} a ${dBR(pr.ate)}`;
+
 // Data da base das carteiras e do histórico, logo abaixo do resumo
 function drawAtualizacao() {
   const sd = dash.data('status');
@@ -1790,6 +1866,16 @@ function drawPedidos(scope) {
   const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));
   const rows = d.data.map((r) => ({ ...r, valor_pedidos: Number(r.valor_pedidos), qt_itens_pedido: Number(r.qt_itens_pedido), faturamento_historico: Number(r.faturamento_historico), pedidos_pendentes: Number(r.pedidos_pendentes), mix_mes: Number(r.mix_mes || 0), mix_ano: Number(r.mix_ano || 0), mix_medio_ano: r.mix_medio_ano == null ? null : Number(r.mix_medio_ano) }))
     .filter((r) => inScope.has(r.cod_grupo + '|' + r.vendedor));
+  const pr = periodo(p);
+  if (pr) {
+    const m = somaPeriodo(pr.de, pr.ate);
+    rows.forEach((r) => {
+      const o = m.get(r.cod_grupo + '|' + r.vendedor), v = o ? Math.round(o.v * 100) / 100 : 0;
+      r.valor_pedidos = v; r.qt_itens_pedido = o ? o.q : 0; r.qt_itens_cancelados = 0;
+      r.subs_mes = o ? Array.from(o.s).filter(([, x]) => x.v > 0).map(([k]) => k) : []; r.mix_mes = r.subs_mes.length;
+      r.situacao_mes = v > 0.005 ? 'Com pedido' : v < -0.005 ? 'Cancelamento' : 'Sem pedido';
+    });
+  }
   const scoped = rows;
   const shown = scoped.filter((r) => !p.mes || r.situacao_mes === p.mes);
   const uniqSum = (rs, f) => { const seen = new Map(); rs.forEach((r) => seen.set(r.grupo_pedido, Number(r[f]))); return d3.sum(Array.from(seen.values()), (v) => v); };
@@ -1803,11 +1889,11 @@ function drawPedidos(scope) {
   $('#p-sem').textContent = INT.format(sem.length); $('#p-sem-s').textContent = PCT.format(sem.length / n) + ' dos grupos de clientes';
   $('#p-canc').textContent = INT.format(canc.length); $('#p-canc-s').textContent = BRL.format(uniqSum(canc, 'valor_pedidos'));
   $('#p-val').textContent = BRLc.format(uniqSum(scoped, 'valor_pedidos')); $('#p-val').title = BRL.format(uniqSum(scoped, 'valor_pedidos'));
-  $('#p-val-s').textContent = 'Pedidos até ' + refTxt;
+  $('#p-val-s').textContent = pr ? 'Pedidos de ' + perTxt(pr) : 'Pedidos até ' + refTxt;
   $('#p-itens').textContent = INT.format(uniqSum(scoped, 'qt_itens_pedido')); $('#p-itens-s').textContent = 'Líquido de cancelamentos';
   if ((p.aba || 'pedidos') === 'pedidos') {
     $('#takeaway').textContent = scoped.length
-      ? `Pedidos de ${MES_NOME[+ref.slice(5, 7) - 1]} até ${refTxt}: ${INT.format(com.length)} de ${INT.format(scoped.length)} grupos de clientes já compraram (${PCT.format(com.length / n)}), somando ${BRL.format(uniqSum(scoped, 'valor_pedidos'))}. ${INT.format(sem.length)} ainda não colocaram pedido.`
+      ? `${pr ? 'Pedidos de ' + perTxt(pr) : `Pedidos de ${MES_NOME[+ref.slice(5, 7) - 1]} até ${refTxt}`}: ${INT.format(com.length)} de ${INT.format(scoped.length)} grupos de clientes já compraram (${PCT.format(com.length / n)}), somando ${BRL.format(uniqSum(scoped, 'valor_pedidos'))}. ${INT.format(sem.length)} ainda não colocaram pedido.`
       : 'Nenhum grupo de clientes com esses filtros.';
   }
 
@@ -1816,20 +1902,25 @@ function drawPedidos(scope) {
   const metaOk = md.status === 'ok';
   if (metaOk || md.status === 'error') $('#p-meta').classList.remove('dash-skeleton');
   const vendOk = (r) => (!p.macro || r.time_macro === p.macro) && (!p.time || r.time === p.time) && (!p.vendedor || r.vendedor === p.vendedor);
-  const metas = metaOk ? md.data.map((r) => ({ ...r, meta: Number(r.meta) })).filter(vendOk) : [];
+  // a meta é do mês: com um período De / Até, ela só aparece se o período estiver dentro do mês atual
+  const metaVale = !pr || (pr.de.slice(0, 7) === ref.slice(0, 7) && pr.ate.slice(0, 7) === ref.slice(0, 7));
+  const metas = metaOk && metaVale ? md.data.map((r) => ({ ...r, meta: Number(r.meta) })).filter(vendOk) : [];
   const metaV = new Map(metas.map((r) => [r.vendedor, r]));
-  const realV = new Map(d3.groups(d.data, (r) => r.vendedor).map(([v, rs]) => [v, uniqSum(rs, 'valor_pedidos')]));
-  const du = diasUteis(ref);
+  const mPer = pr ? somaPeriodo(pr.de, pr.ate) : null;
+  const valorDe = (r) => (mPer ? ((mPer.get(r.cod_grupo + '|' + r.vendedor) || {}).v || 0) : Number(r.valor_pedidos));
+  const realV = new Map(d3.groups(d.data, (r) => r.vendedor).map(([v, rs]) => [v, d3.sum(Array.from(new Map(rs.map((r) => [r.grupo_pedido, valorDe(r)])).values()), (x) => x)]));
+  const du = diasUteis(pr ? pr.ate : ref);
   const ritmo = du.total ? du.passados / du.total : 0;
   const metaTot = d3.sum(metas, (r) => r.meta);
   const realTot = d3.sum(metas.filter((r) => r.meta > 0), (r) => realV.get(r.vendedor) || 0);
   if (metaTot > 0) {
     $('#p-meta').textContent = BRLc.format(metaTot); $('#p-meta').title = BRL.format(metaTot);
     $('#p-meta-s').textContent = `${PCT.format(realTot / metaTot)} atingido · esperado ${PCT.format(ritmo)}`;
-  } else { $('#p-meta').textContent = '—'; $('#p-meta-s').textContent = 'Sem meta para esses filtros'; }
+  } else { $('#p-meta').textContent = '—'; $('#p-meta-s').textContent = metaVale ? 'Sem meta para esses filtros' : 'A meta vale só para o mês atual'; }
   if ((p.aba || 'pedidos') === 'pedidos' && metaTot > 0 && scoped.length) $('#takeaway').textContent += ` Meta do mês: ${PCT.format(realTot / metaTot)} de ${BRL.format(metaTot)} atingido, com ${PCT.format(ritmo)} dos dias úteis já passados.`;
   $('#meta-note').innerHTML = '';
-  $('#meta-note').append(`Pedidos até ${refTxt}: ${du.passados} de ${du.total} dias úteis do mês (${PCT.format(ritmo)}). A marca `, el('span', 'legend-pace'),
+  if (!metaVale) { $('#meta-note').textContent = `A meta é do mês e só aparece quando o período De / Até está dentro de ${MES_NOME[+ref.slice(5, 7) - 1]}. Clique em "Mês atual" para voltar.`; }
+  else $('#meta-note').append(`Pedidos até ${pr ? dBR(pr.ate) : refTxt}: ${du.passados} de ${du.total} dias úteis do mês (${PCT.format(ritmo)}). A marca `, el('span', 'legend-pace'),
     ` na barra mostra onde o time deveria estar nesse ritmo. Projeção = realizado ÷ dias úteis passados × dias úteis do mês. Só entram vendedores do time com meta maior que zero.`);
   const calc = (nome, rs) => {
     const m = d3.sum(rs, (r) => r.meta), real = d3.sum(rs, (r) => realV.get(r.vendedor) || 0);
@@ -1933,24 +2024,26 @@ function drawYoy(scope, allGrupos) {
   const y = dash.data('yoy');
   const ok = y.status === 'ok';
   document.querySelectorAll('#ind-yoy .dash-skeleton').forEach((e) => { if (ok || y.status === 'error') e.classList.remove('dash-skeleton'); });
-  const per = p.yper === 'mtd' ? 'mtd' : 'ytd';
+  const pr = periodo(p);
+  const per = pr ? 'per' : p.yper === 'mtd' ? 'mtd' : 'ytd';
   document.querySelectorAll('#y-per-btn button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.per === per)));
   if (!ok || !y.data.length) return;
   const head = y.data.find((r) => r.ref) || {};
   const ref = head.ref || '', refA = head.ref_ant || '';
-  const ano1 = ref.slice(0, 4), ano0 = refA.slice(0, 4);
+  const ano1 = (pr ? pr.ate : ref).slice(0, 4), ano0 = (pr ? pr.ate0 : refA).slice(0, 4);
   const dm = (iso) => iso.slice(8, 10) + '/' + iso.slice(5, 7);
   const ini = per === 'ytd' ? '01/01' : '01/' + ref.slice(5, 7);
-  const k0 = per === 'ytd' ? 'a0' : 'm0', k1 = per === 'ytd' ? 'a1' : 'm1';
-  $('#y-per').textContent = `${ini} a ${dm(ref)}/${ano1} contra ${ini} a ${dm(refA)}/${ano0}, cortados no mesmo dia do calendário.`;
+  const k0 = per === 'mtd' ? 'm0' : 'a0', k1 = per === 'mtd' ? 'm1' : 'a1';
+  $('#y-per').textContent = pr ? `Período De / Até: ${perTxt(pr)} contra ${dBR(pr.de0)} a ${dBR(pr.ate0)}, o mesmo intervalo do ano anterior. Clique em "Mês atual" ou em um dos botões para voltar.`
+    : `${ini} a ${dm(ref)}/${ano1} contra ${ini} a ${dm(refA)}/${ano0}, cortados no mesmo dia do calendário.`;
   document.querySelectorAll('#yoy th.y0').forEach((t) => { t.textContent = ano0; });
   document.querySelectorAll('#yoy th.y1').forEach((t) => { t.textContent = ano1; });
   $('#y-l0').textContent = `Vendas ${ano0}`; $('#y-l1').textContent = `Vendas ${ano1}`;
 
   const nome = new Map(allGrupos.map((r) => [r.cod_grupo + '|' + r.vendedor, r]));
   const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));
-  const rows = y.data.filter((r) => inScope.has(r.g + '|' + r.v)).map((r) => ({ g: r.g, v: r.v, s: r.s, a0: r[k0] || 0, a1: r[k1] || 0, q0: per === 'ytd' ? r.q0 || 0 : null, q1: per === 'ytd' ? r.q1 || 0 : null }))
-    .filter((r) => r.a0 || r.a1);
+  const rows = (pr ? linhasPeriodo(pr) : y.data).filter((r) => inScope.has(r.g + '|' + r.v)).map((r) => ({ g: r.g, v: r.v, s: r.s, a0: r[k0] || 0, a1: r[k1] || 0, q0: per !== 'mtd' ? r.q0 || 0 : null, q1: per !== 'mtd' ? r.q1 || 0 : null }))
+    .filter((r) => Math.abs(r.a0) >= 0.005 || Math.abs(r.a1) >= 0.005);
   // listas de opções
   const subs = Array.from(new Set(rows.map((r) => r.s))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
   fillSelect($('#f-ysub'), 'Todos', subs, p.ysub);
@@ -2031,7 +2124,7 @@ function drawYoy(scope, allGrupos) {
   $('#y-ts-note').textContent = `${INT.format(sAll.length)} subgrupos${sTxt}, do maior impacto para o menor.${per === 'mtd' ? ' Quantidades só no acumulado do ano.' : ''} Clique em um subgrupo para ver os grupos de clientes.`;
   $('#tab-ysubs tbody').replaceChildren(...sAll.map((o) => {
     const tr = el('tr'); tr.dataset.s = o.k; if (p.ysub === o.k) tr.className = 'on';
-    const q = (f) => (per === 'ytd' ? INT.format(d3.sum(o.xs, (r) => r[f])) : '—');
+    const q = (f) => (per !== 'mtd' ? INT.format(d3.sum(o.xs, (r) => r[f])) : '—');
     tr.append(el('td', null, o.k), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.d), SBRL(o.d)), el('td', 'n ' + sinal(o.d), pctTxt(o.a0, o.a1)),
       el('td', 'n', q('q0')), el('td', 'n', q('q1')), el('td', 'n', INT.format(new Set(o.xs.filter((r) => r.a1 > 0).map(gk)).size)));
     return tr;
@@ -2062,7 +2155,7 @@ function drawYoy(scope, allGrupos) {
   if ((p.aba || 'pedidos') === 'yoy') {
     const g1 = gUp[0], g2 = gDn[0], s1 = sUp[0], s2 = sDn[0];
     $('#takeaway').textContent = both.length
-      ? `${per === 'ytd' ? 'No acumulado do ano' : 'No mês até o dia'}, as carteiras venderam ${BRL.format(tot1)} contra ${BRL.format(tot0)} em ${ano0} (${pctTxt(tot0, tot1)}).` +
+      ? `${per === 'per' ? 'De ' + perTxt(pr).replace(' a ', ' até ') : per === 'ytd' ? 'No acumulado do ano' : 'No mês até o dia'}, as carteiras venderam ${BRL.format(tot1)} contra ${BRL.format(tot0)} em ${ano0} (${pctTxt(tot0, tot1)}).` +
         (g1 ? ` Quem mais puxa para cima: ${g1.label} (${SBRL(g1.d)})` : '') + (g2 ? `; para baixo: ${g2.label} (${SBRL(g2.d)}).` : '.') +
         (s1 ? ` Subgrupo que mais cresce: ${s1.k} (${SBRL(s1.d)})` : '') + (s2 ? `; que mais cai: ${s2.k} (${SBRL(s2.d)}).` : '.')
       : 'Nenhuma venda com esses filtros.';

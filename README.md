@@ -42,6 +42,10 @@ Quando o Histórico de Pedidos traz também o ano anterior, `atualizar_tudo.py` 
 
 `atualizar_ortho.py` roda dentro de `atualizar_tudo.py` e gera `dados/ortho.json` com a linha ORTHO (subgrupos pela planilha de correlação) em todo o histórico, por grupo de clientes e vendedor. A aba mostra vendas no ano contra o ano anterior, peso nas vendas, grupos comprando (últimos 90 dias), que pararam e que nunca compraram, vendas por mês, subgrupos e o mix sugerido por faixa de pedido (R$ 1.000, 3.000, 5.000 e +10.000), montado a partir dos pedidos de OrthoCare (grupo + dia) do tamanho de cada faixa dentro dos filtros.
 
+## Filtro de período De / Até
+
+Nas abas Pedidos do mês, Comparativo YoY e OrthoCare há os campos De e Até. Vazios, cada aba fica no padrão (Pedidos no mês atual, YoY e OrthoCare no acumulado do ano). Preenchidos, os valores saem de `dados/diario.json` (gerado por `atualizar_diario.py` dentro de `atualizar_tudo.py`: vendas por grupo de clientes, vendedor, subgrupo e dia, desde o início do histórico) e o YoY e o OrthoCare comparam com o mesmo intervalo do ano anterior. A meta só aparece quando o período está dentro do mês atual. O botão "Mês atual" volta ao padrão. Status Clientes, Principais Contas e SÃO JOÃO não usam o período (são posição na data ou acumulado do ano).
+
 ## Novembro de 2026: promoções, YoY e ordenação
 
 - Mês sem promoções: `python3 atualizar_tudo.py <Histórico.xlsx> sem` zera `promocoes.json` e `promo_potencial.json`, e a aba Promoções mostra só o aviso "Busque oportunidades no painel Comparativo YoY até que tenhamos as promoções do mês".

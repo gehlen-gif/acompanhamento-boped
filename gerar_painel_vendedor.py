@@ -46,8 +46,18 @@ def status(vendedor):
              'mensal': s.get('mensal_v', {}).get(vendedor, []), 'grupos': [r for r in s['grupos'] if r['v'] == vendedor]}]
 
 
+def diario(vendedor):
+    """Base diária do filtro De / Até só com os grupos do vendedor (índices refeitos)."""
+    f = DADOS / 'diario.json'
+    if not f.exists():
+        return []
+    d = json.loads(f.read_text(encoding='utf-8'))[0]
+    idx = {i: n for n, i in enumerate(i for i, k in enumerate(d['gs']) if k.endswith('|' + vendedor))}
+    return [{**d, 'gs': [k for k in d['gs'] if k.endswith('|' + vendedor)], 'r': [[idx[r[0]]] + r[1:] for r in d['r'] if r[0] in idx]}]
+
+
 def carregar(vendedor):
-    dados = {'contas': [], 'saojoao': [], 'status': status(vendedor), 'ortho': ortho(vendedor)}
+    dados = {'contas': [], 'saojoao': [], 'status': status(vendedor), 'ortho': ortho(vendedor), 'diario': diario(vendedor)}
     for id_, f, campo in FONTES:
         linhas = json.loads((DADOS / f).read_text(encoding='utf-8')) if (DADOS / f).exists() else []
         if campo:
