@@ -131,6 +131,14 @@
 .cg .dt { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-fg); white-space: nowrap; }
 .cg .dt::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--dot); flex: none; }
 .cg .dt.d-red { --dot: #d93025; } .cg .dt.d-yellow { --dot: #f2b705; } .cg .dt.d-green { --dot: #1e9e5a; }
+.cg .nunca { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-sm); margin-top: var(--cds-gap-sm); }
+.cg .nunca .col { border: 1px solid var(--color-border-line); border-top: 4px solid var(--color-warn); border-radius: var(--cds-radius); padding: var(--cds-pad-md); min-width: 0; }
+.cg .nunca .col h3 { margin: 0; font-size: var(--cds-font-size-heading); display: flex; justify-content: space-between; gap: var(--cds-gap-sm); }
+.cg .nunca .col h3 b { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); line-height: 1; }
+.cg .nunca .col .hint { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 2px 0 var(--cds-gap-sm); }
+.cg .nunca ol { margin: 0; padding-left: 2.2em; max-height: 26rem; overflow: auto; font-size: var(--cds-font-size-body); }
+.cg .nunca li { padding: 2px 0; border-bottom: 1px solid var(--cds-chart-grid); }
+.cg .nunca li small { color: var(--color-fg-muted); margin-left: 6px; white-space: nowrap; }
 .cg .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--cds-gap-sm); }
 .cg .tile { display: grid; gap: 2px; text-align: left; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); background: var(--color-panel); cursor: pointer; border-left: 4px solid var(--tc); }
 .cg .tile.on { background: var(--cds-surface-popover); box-shadow: inset 0 0 0 1px var(--tc); }
@@ -518,13 +526,7 @@
     <section class="card" id="y-nunca" hidden>
       <h2 id="y-nunca-title">Subgrupos nunca comprados</h2>
       <p class="note" id="y-nunca-note"></p>
-      <div class="tiles" id="y-nunca-linhas" style="margin-top:var(--cds-gap-sm)"></div>
-      <div class="scroll">
-        <table id="tab-ynunca" data-source="yoy">
-          <thead><tr><th>Linha</th><th>Subgrupo</th><th class="n">Grupos de clientes que compraram em 12 meses</th><th class="n">Vendas em 12 meses</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+      <div class="nunca" id="y-nunca-linhas" data-source="yoy"></div>
     </section>
     <p class="note" id="regra-yoy"></p>
   </div>
@@ -2129,26 +2131,34 @@ function drawYoy(scope, allGrupos) {
       el('td', 'n', q('q0')), el('td', 'n', q('q1')), el('td', 'n', INT.format(new Set(o.xs.filter((r) => r.a1 > 0).map(gk)).size)));
     return tr;
   }));
-  // Subgrupos nunca comprados pelo grupo filtrado (linhas Home, Health, Beauty e Orthocare; peças não entram)
+  // Subgrupos nunca comprados pelo grupo de clientes escolhido (campo "Grupo de cliente", clique na tabela ou uma busca
+  // que deixe um só grupo): linhas Home, Health, Beauty e Orthocare, peças não entram
   const cat = head.catalogo || [];
-  $('#y-nunca').hidden = !p.ygrupo || !cat.length;
-  if (p.ygrupo && cat.length) {
+  const gruposNoFiltro = Array.from(new Set(scope.map((r) => String(r.cod_grupo))));
+  const gSel = p.ygrupo || (gruposNoFiltro.length === 1 ? gruposNoFiltro[0] : null);
+  $('#y-nunca').hidden = !cat.length;
+  if (cat.length && !gSel) {
+    $('#y-nunca-title').textContent = 'Subgrupos nunca comprados';
+    $('#y-nunca-note').textContent = 'Escolha um grupo de clientes no campo "Grupo de cliente" acima (ou clique em um grupo na tabela "Todos os grupos de clientes") para ver aqui, por linha, os subgrupos de Home, Health, Beauty e Orthocare que ele nunca comprou.';
+    $('#y-nunca-linhas').replaceChildren();
+  } else if (cat.length) {
     const ja = new Set();
-    Object.entries(head.compras || {}).forEach(([k, xs]) => { if (k.split('|')[0] === p.ygrupo) xs.forEach((i) => ja.add(i)); });
+    Object.entries(head.compras || {}).forEach(([k, xs]) => { if (k.split('|')[0] === gSel) xs.forEach((i) => ja.add(i)); });
     const LIN = [['HOME', 'Home'], ['HEALTH', 'Health'], ['BEAUTY', 'Beauty'], ['ORTHO', 'Orthocare']];
-    const ordem = new Map(LIN.map(([l], i) => [l, i]));
-    const nunca = cat.map((c, i) => ({ ...c, i })).filter((c) => !ja.has(c.i)).sort((a, b) => ordem.get(a.l) - ordem.get(b.l) || b.n - a.n || b.v - a.v);
-    $('#y-nunca-title').textContent = `Subgrupos nunca comprados por ${gName(p.ygrupo)}`;
-    $('#y-nunca-note').textContent = `${INT.format(nunca.length)} de ${INT.format(cat.length)} subgrupos das linhas Home, Health, Beauty e Orthocare nunca foram comprados por este grupo de clientes, considerando todo o histórico${head.inicio ? ' desde ' + dBR(head.inicio) : ''}. Peças não entram. O catálogo são os subgrupos dessas linhas vendidos para as carteiras do time nos últimos 12 meses; a lista começa pelos mais comprados pelos outros grupos de clientes.`;
+    const nunca = cat.map((c, i) => ({ ...c, i })).filter((c) => !ja.has(c.i));
+    $('#y-nunca-title').textContent = `Subgrupos nunca comprados por ${gName(gSel)}: ${INT.format(nunca.length)} de ${INT.format(cat.length)}`;
+    $('#y-nunca-note').textContent = `Subgrupos das linhas Home, Health, Beauty e Orthocare que este grupo de clientes nunca comprou em todo o histórico${head.inicio ? ' (desde ' + dBR(head.inicio) + ')' : ''}. Peças não entram. Entram os subgrupos dessas linhas vendidos para as carteiras do time nos últimos 12 meses. Em cada linha, a lista começa pelos subgrupos que mais grupos de clientes compram; o número ao lado é quantos grupos compraram em 12 meses.`;
     $('#y-nunca-linhas').replaceChildren(...LIN.map(([l, nomeL]) => {
-      const tot = cat.filter((c) => c.l === l).length, nn = nunca.filter((c) => c.l === l).length;
-      const b = el('div', 'tile s-neutro'); b.append(el('span', 'lbl', nomeL), el('span', 'big', INT.format(nn)), el('span', 'hint', `de ${INT.format(tot)} subgrupos nunca comprados`));
-      return b;
-    }));
-    const nomeLinha = new Map(LIN);
-    $('#tab-ynunca tbody').replaceChildren(...nunca.map((c) => {
-      const tr = el('tr'); tr.append(el('td', null, nomeLinha.get(c.l)), el('td', null, c.s), el('td', 'n', INT.format(c.n)), el('td', 'n', BRL.format(c.v)));
-      return tr;
+      const tot = cat.filter((c) => c.l === l).length, xs = nunca.filter((c) => c.l === l).sort((a, b) => b.n - a.n || b.v - a.v);
+      const col = el('div', 'col');
+      const h = el('h3'); h.append(el('span', null, nomeL), el('b', null, INT.format(xs.length)));
+      col.append(h, el('p', 'hint', xs.length ? `de ${INT.format(tot)} subgrupos da linha nunca comprados` : `já comprou todos os ${INT.format(tot)} subgrupos da linha`));
+      if (xs.length) {
+        const ol = el('ol');
+        xs.forEach((c) => { const li = el('li', null, c.s); li.title = `${INT.format(c.n)} grupos de clientes compraram em 12 meses, ${BRL.format(c.v)}`; li.append(el('small', null, INT.format(c.n) + ' grupos')); ol.append(li); });
+        col.append(ol);
+      }
+      return col;
     }));
   }
   $('#regra-yoy').textContent = `Fonte: Histórico de Pedidos (Valor Total, líquido de cancelamentos e devoluções). As vendas de ${ano0} são atribuídas pela carteira atual: cada cliente vai para o grupo de clientes e o vendedor de hoje, então vendedores que herdaram clientes aparecem com o histórico deles. Clientes fora das carteiras do time não entram. "Novo no ano": grupo sem compra no mesmo período de ${ano0}. "Sem compra no ano": comprou em ${ano0} e ainda não comprou em ${ano1}.`;
