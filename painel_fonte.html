@@ -749,6 +749,7 @@
   <section class="card">
     <h2 id="in-t">Grupos de clientes</h2>
     <p class="note" id="in-n"></p>
+    <div class="filters" id="in-exp"><span class="note" id="in-exp-n"></span><label>Atribuir a<select id="in-exp-v"></select></label><button type="button" id="in-exp-b">Exportar e atribuir</button><button type="button" id="in-exp-c">Limpar seleção</button></div>
     <div class="scroll tall">
       <table id="tab-in" data-source="inativos">
         <thead><tr><th data-ord="g" data-tipo="t">Grupo de cliente</th><th data-ord="sit" data-tipo="t">Situação</th><th data-ord="cid" data-tipo="t">Cidade / UF</th><th>Telefone</th><th data-ord="seg" data-tipo="t">Segmento</th><th data-ord="inadT" data-tipo="t">Inadimplente</th><th class="n" data-ord="venc">Valor vencido</th><th class="n" data-ord="ult" data-tipo="t">Último pedido</th><th class="n" data-ord="d">Dias</th><th class="n" data-ord="fat">Faturado (histórico)</th><th data-ord="v" data-tipo="t">Atendido por</th><th>5 principais subgrupos (qtd · valor)</th></tr></thead>
@@ -1034,6 +1035,8 @@ let inOpen = null;
 $('#tab-in tbody').addEventListener('click', (e) => {
   const t = e.target.closest('.tog'), n = e.target.closest('.in-nome');
   if (t) { inOpen = inOpen === t.dataset.cg ? null : t.dataset.cg; draw(); }
+  const c = e.target.closest('input.in-ck');
+  if (c) { if (c.checked && inSel.size >= 15) { c.checked = false; alert('Selecione no máximo 15 clientes por vez.'); return; } c.checked ? inSel.add(c.dataset.cg) : inSel.delete(c.dataset.cg); draw(); }
   if (n) { inEdit = inEdit === n.dataset.cg ? null : n.dataset.cg; draw(); const s = $('#tab-in select'); if (s) s.focus(); }
 });
 $('#in-a-k').addEventListener('click', (e) => { const b = e.target.closest('[data-ia]'); if (b) set({ ia: P().ia === b.dataset.ia ? null : b.dataset.ia }); });
@@ -1273,7 +1276,8 @@ function draw() {
 // Responsável pela reativação (escolhido ao clicar no nome do grupo): no painel online fica salvo para todos
 // (coleção "responsaveis"); no HTML e no GitHub Pages, só no navegador de quem escolheu.
 const LS_RESP = 'boped-inativos-responsavel';
-let resp = {}, respDb = null, inEdit = null;
+let resp = {}, respDb = null, inEdit = null, inAll = [];
+const inSel = new Set();
 try { resp = JSON.parse(localStorage.getItem(LS_RESP) || '{}') || {}; } catch (e) { resp = {}; }
 (async () => {
   try {
@@ -1284,6 +1288,24 @@ try { resp = JSON.parse(localStorage.getItem(LS_RESP) || '{}') || {}; } catch (e
     db.collection('responsaveis').onSnapshot((snap) => { const o = {}; snap.docs.forEach((d) => { if (d.exists) o[d.id] = d.data(); }); resp = o; draw(); }, () => { respDb = null; draw(); });
   } catch (e) { respDb = null; }
 })();
+// Exportar até 15 grupos selecionados (CSV) e atribuí-los ao responsável escolhido (Acompanhamento de Inativos)
+$('#in-exp-c').addEventListener('click', () => { inSel.clear(); draw(); });
+$('#in-exp-b').addEventListener('click', async () => {
+  const v = $('#in-exp-v').value, rs = inAll.filter((r) => inSel.has(r.cg));
+  if (!rs.length) return alert('Marque de 1 a 15 grupos na lista.');
+  if (!v) return alert('Escolha para quem os contatos serão atribuídos.');
+  const hj = new Date(), ate = new Date(hj.getTime() + 10 * 864e5), f = (x) => x.toLocaleDateString('pt-BR');
+  const q = (x) => '"' + String(x ?? '').replace(/"/g, '""') + '"', n2 = (x) => (x || 0).toFixed(2).replace('.', ',');
+  const lin = [['Cód. grupo', 'Grupo de cliente', 'Situação', 'Cidade', 'UF', 'Telefone', 'Segmento', 'Inadimplente', 'Valor vencido', 'Último pedido', 'Dias sem comprar', 'Faturado', 'Atendido por', '5 principais subgrupos', 'Responsável', 'Atribuído em', 'Fechar até']]
+    .concat(rs.map((r) => [r.cg, r.g, r.sit, r.cid, r.uf, r.tel, r.seg, r.inadT, n2(Math.max(0, r.venc)), dataBR(r.ult), r.d ?? '', n2(r.fat), r.v,
+      (r.sg || []).map((x) => `${x[0]} (${x[1]} un, ${BRL.format(x[2])})`).join('; '), v, f(hj), f(ate)]));
+  const csv = new Blob(['\ufeff' + lin.map((l) => l.map(q).join(';')).join('\r\n')], { type: 'text/csv' }), nome = `inativos_${v.replace(/[^\w]+/g, '_')}_${hj.toISOString().slice(0, 10)}.csv`;
+  let dl = null; try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+  if (dl) { try { await dl.save({ filename: nome, data: csv }); } catch (e) { /* recusado: a atribuição segue */ } }
+  else { const a = el('a'); a.href = URL.createObjectURL(csv); a.download = nome; document.body.append(a); a.click(); a.remove(); }
+  for (const r of rs) await salvarResp(r.cg, v);
+  inSel.clear(); draw();
+});
 async function salvarResp(cg, v) {
   // a data da atribuição só muda quando o responsável muda; o nome do grupo fica no registro
   const ant = resp[cg] || {}, r = (dash.data('inativos').data || []).find((x) => x.cg === cg) || {};
@@ -1307,6 +1329,9 @@ function drawInativos() {
   fillSelect($('#f-iseg'), 'Todos', uniq(all, 'seg'), p.iseg);
   fillSelect($('#f-iinad'), 'Todos', ['Sim', 'Não'], p.iinad);
   const REPS = d.data[0].reps || [];
+  inAll = all;
+  fillSelect($('#in-exp-v'), 'Escolha o responsável', REPS, $('#in-exp-v').value);
+  $('#in-exp-n').textContent = `${inSel.size} de 15 selecionados`;
   fillSelect($('#f-iresp'), 'Todos', ['Sem responsável', ...uniq(all.filter((r) => r.resp), 'resp')], p.iresp);
   const q = normNome(p.q || '');
   const base = all.filter((r) => (!p.is || r.sit === p.is) && (!p.iseg || r.seg === p.iseg) && (!p.iinad || r.inadT === p.iinad) && (!p.iresp || (p.iresp === 'Sem responsável' ? !r.resp : r.resp === p.iresp))
@@ -1335,7 +1360,8 @@ function drawInativos() {
   sel.slice(0, lim).forEach((r) => {
     const tr = el('tr');
     const g = el('td'), nb = el('button', 'in-nome'); nb.type = 'button'; nb.dataset.cg = r.cg; nb.title = 'Escolher o representante responsável'; nb.append(el('b', null, r.g));
-    g.append(nb, el('br'), el('small', 'note', `Cód. ${r.cg}`));
+    const ck = el('input', 'in-ck'); ck.type = 'checkbox'; ck.dataset.cg = r.cg; ck.checked = inSel.has(r.cg); ck.title = 'Selecionar para exportar (máx. 15)';
+    g.append(ck, ' ', nb, el('br'), el('small', 'note', `Cód. ${r.cg}`));
     if (r.cl) { const b = el('button', 'tog', ` · ${r.cl.length} clientes ${inOpen === r.cg ? '▴' : '▾'}`); b.type = 'button'; b.dataset.cg = r.cg; g.append(b); }
     if (inEdit === r.cg) {
       const sl = el('select'); sl.dataset.cg = r.cg;
