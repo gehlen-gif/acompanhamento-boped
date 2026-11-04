@@ -96,6 +96,9 @@ def main(hist_xlsx, promos_json=None):
             (DADOS / f).write_text('[]', encoding='utf-8')
     elif promos_json:
         atualizar_promocoes.main(h, promos_json)
+    # Clientes inativos: 5 principais subgrupos de cada grupo com o histórico do dia (todos os anos)
+    import atualizar_inativos
+    atualizar_inativos.subgrupos(hist)
     atualizar_pedidos.build_html(data_ref)
 
 
