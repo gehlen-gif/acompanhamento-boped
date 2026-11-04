@@ -49,6 +49,7 @@ Nas abas Pedidos do mês, Comparativo YoY e OrthoCare há os campos De e Até. V
 ## Novembro de 2026: promoções, YoY e ordenação
 
 - Mês sem promoções: `python3 atualizar_tudo.py <Histórico.xlsx> sem` zera `promocoes.json` e `promo_potencial.json`. O aviso que aparecia na aba Promoções foi removido em 04/11.
+- Filtro **Linha** (Home, Health, Beauty, OrthoCare), desde 04/11: em Pedidos do mês recalcula valores, itens, mix e situação só com os subgrupos da linha (pelo diário; a meta continua sendo do total), no Comparativo YoY mostra só os subgrupos da linha (peças saem) e em Promoções só os itens da linha (Beauty = Wellness).
 - Comparativo YoY: com um grupo de clientes filtrado, o quadro "Subgrupos nunca comprados" lista, por linha, os subgrupos de Home, Health, Beauty e Orthocare (peças não entram) que o grupo nunca comprou em todo o histórico. O catálogo são os subgrupos dessas linhas vendidos para as carteiras nos últimos 12 meses (`catalogo` e `compras` na primeira linha de `dados/yoy.json`).
 - Pedidos do mês: em Meta do mês por time e líder e em Cobertura por vendedor, clicar no título de uma coluna ordena do maior para o menor; clicar de novo inverte.
 

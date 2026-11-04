@@ -242,6 +242,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
     <label>UF<select id="f-uf"></select></label>
     <label>Segmento<select id="f-seg"></select></label>
     <label>Status no cadastro<select id="f-status"></select></label>
+    <label>Linha<select id="f-linha"></select></label>
     <label>De<input id="f-de" type="date"></label>
     <label>Até<input id="f-ate" type="date"></label>
     <button id="f-mesatual" type="button" title="Volta para o padrão de cada aba">Mês atual</button>
@@ -953,10 +954,11 @@ const PSITS = ['Potencial', 'Comprou recentemente', 'Já paga o preço da promo'
 defaults();
 $('#f-reset').addEventListener('click', () => {
   dash.resetParams();
-  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null, ealvo: null, ecomptodos: null, osit: null, sjuf: null, sts: null, de: null, ate: null });
+  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, esel: null, esub: null, ealvo: null, ecomptodos: null, osit: null, sjuf: null, sts: null, de: null, ate: null, linha: null });
   defaults();
 });
 $('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
+$('#f-linha').addEventListener('change', (e) => set({ linha: e.target.value || null }));
 $('#f-de').addEventListener('change', (e) => set({ de: e.target.value || null }));
 $('#f-ate').addEventListener('change', (e) => set({ ate: e.target.value || null }));
 $('#f-mesatual').addEventListener('click', () => set({ de: null, ate: null }));
@@ -1187,6 +1189,9 @@ function draw() {
   $('#f-q').closest('label').firstChild.textContent = aba === 'contas' ? 'Buscar conta' : 'Buscar grupo';
   ['#f-ygrupo', '#f-ysub'].forEach((x) => { $(x).closest('label').hidden = aba !== 'yoy'; });
   $('#f-mes').closest('label').hidden = aba !== 'pedidos';
+  // filtro de linha: Pedidos do mês, Promoções e Comparativo YoY
+  $('#f-linha').closest('label').hidden = !['pedidos', 'promocoes', 'yoy'].includes(aba);
+  fillSelect($('#f-linha'), 'Todas', Object.keys(LINHAS_F), p0.linha);
   // período De / Até: Pedidos do mês, Comparativo YoY e OrthoCare
   const comPer = ['pedidos', 'yoy', 'ortho'].includes(aba) && !!diario();
   ['#f-de', '#f-ate'].forEach((x) => { $(x).closest('label').hidden = !comPer; });
@@ -1760,12 +1765,13 @@ function periodo(p) {
   return { de, ate, de0: anoAntes(de), ate0: anoAntes(ate) };
 }
 // soma por "cod_grupo|vendedor" -> { v, q, s: Map(subgrupo -> { v, q }) } no intervalo
-function somaPeriodo(de, ate) {
-  const D = diario(), k = de + '|' + ate;
+function somaPeriodo(de, ate, lin) {
+  const D = diario(), k = de + '|' + ate + '|' + (lin || '');
   if (D.cache.has(k)) return D.cache.get(k);
-  const a = diaN(de), b = diaN(ate), out = new Map();
+  const a = diaN(de), b = diaN(ate), out = new Map(), LS = lin ? linhasSub() : null;
   for (const [g, si, d, v, q] of D.r) {
     if (d < a || d > b) continue;
+    if (LS && LS[D.subs[si]] !== lin) continue;
     const key = D.gs[g];
     let o = out.get(key); if (!o) { o = { v: 0, q: 0, s: new Map() }; out.set(key, o); }
     o.v += v; o.q += q;
@@ -1783,6 +1789,14 @@ function linhasPeriodo(pr) {
     r[ka] += x.v; r[kq] += x.q;
   })));
   return Array.from(out.values());
+}
+// Filtro de linha: Home, Health, Beauty e OrthoCare. A linha de cada subgrupo vem do YoY (peças ficam de fora).
+const LINHAS_F = { Home: 'HOME', Health: 'HEALTH', Beauty: 'BEAUTY', OrthoCare: 'ORTHO' };
+const linCod = (p) => LINHAS_F[p.linha] || null;
+function linhasSub() {
+  const y = dash.data('yoy');
+  if (y.status !== 'ok' || !y.data || !y.data.length) return {};
+  return (y.data.find((r) => r.ref) || {}).linhas || {};
 }
 const perTxt = (pr) => `${dBR(pr.de)} a ${dBR(pr.ate)}`;
 
@@ -1913,9 +1927,11 @@ function drawPedidos(scope) {
   const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));
   const rows = d.data.map((r) => ({ ...r, valor_pedidos: Number(r.valor_pedidos), qt_itens_pedido: Number(r.qt_itens_pedido), faturamento_historico: Number(r.faturamento_historico), pedidos_pendentes: Number(r.pedidos_pendentes), mix_mes: Number(r.mix_mes || 0), mix_ano: Number(r.mix_ano || 0), mix_medio_ano: r.mix_medio_ano == null ? null : Number(r.mix_medio_ano) }))
     .filter((r) => inScope.has(r.cod_grupo + '|' + r.vendedor));
-  const pr = periodo(p);
-  if (pr) {
-    const m = somaPeriodo(pr.de, pr.ate);
+  const pr = periodo(p), lin = linCod(p), ref0 = (d.data[0] || {}).data_ref;
+  // com uma linha escolhida, os valores do mês (ou do período) vêm do diário, só com os subgrupos da linha
+  const prL = pr || (lin && diario() && ref0 ? { de: ref0.slice(0, 8) + '01', ate: ref0 } : null);
+  if (prL) {
+    const m = somaPeriodo(prL.de, prL.ate, lin);
     rows.forEach((r) => {
       const o = m.get(r.cod_grupo + '|' + r.vendedor), v = o ? Math.round(o.v * 100) / 100 : 0;
       r.valor_pedidos = v; r.qt_itens_pedido = o ? o.q : 0; r.qt_itens_cancelados = 0;
@@ -1936,11 +1952,11 @@ function drawPedidos(scope) {
   $('#p-sem').textContent = INT.format(sem.length); $('#p-sem-s').textContent = PCT.format(sem.length / n) + ' dos grupos de clientes';
   $('#p-canc').textContent = INT.format(canc.length); $('#p-canc-s').textContent = BRL.format(uniqSum(canc, 'valor_pedidos'));
   $('#p-val').textContent = BRLc.format(uniqSum(scoped, 'valor_pedidos')); $('#p-val').title = BRL.format(uniqSum(scoped, 'valor_pedidos'));
-  $('#p-val-s').textContent = pr ? 'Pedidos de ' + perTxt(pr) : 'Pedidos até ' + refTxt;
+  $('#p-val-s').textContent = (pr ? 'Pedidos de ' + perTxt(pr) : 'Pedidos até ' + refTxt) + (lin ? ' · linha ' + p.linha : '');
   $('#p-itens').textContent = INT.format(uniqSum(scoped, 'qt_itens_pedido')); $('#p-itens-s').textContent = 'Líquido de cancelamentos';
   if ((p.aba || 'pedidos') === 'pedidos') {
     $('#takeaway').textContent = scoped.length
-      ? `${pr ? 'Pedidos de ' + perTxt(pr) : `Pedidos de ${MES_NOME[+ref.slice(5, 7) - 1]} até ${refTxt}`}: ${INT.format(com.length)} de ${INT.format(scoped.length)} grupos de clientes já compraram (${PCT.format(com.length / n)}), somando ${BRL.format(uniqSum(scoped, 'valor_pedidos'))}. ${INT.format(sem.length)} ainda não colocaram pedido.`
+      ? `${pr ? 'Pedidos de ' + perTxt(pr) : `Pedidos de ${MES_NOME[+ref.slice(5, 7) - 1]} até ${refTxt}`}${lin ? ', linha ' + p.linha : ''}: ${INT.format(com.length)} de ${INT.format(scoped.length)} grupos de clientes já compraram (${PCT.format(com.length / n)}), somando ${BRL.format(uniqSum(scoped, 'valor_pedidos'))}. ${INT.format(sem.length)} ainda não colocaram pedido.`
       : 'Nenhum grupo de clientes com esses filtros.';
   }
 
@@ -1968,7 +1984,7 @@ function drawPedidos(scope) {
   $('#meta-note').innerHTML = '';
   if (!metaVale) { $('#meta-note').textContent = `A meta é do mês e só aparece quando o período De / Até está dentro de ${MES_NOME[+ref.slice(5, 7) - 1]}. Clique em "Mês atual" para voltar.`; }
   else $('#meta-note').append(`Pedidos até ${pr ? dBR(pr.ate) : refTxt}: ${du.passados} de ${du.total} dias úteis do mês (${PCT.format(ritmo)}). A marca `, el('span', 'legend-pace'),
-    ` na barra mostra onde o time deveria estar nesse ritmo. Projeção = realizado ÷ dias úteis passados × dias úteis do mês. Só entram vendedores do time com meta maior que zero.`);
+    ` na barra mostra onde o time deveria estar nesse ritmo. Projeção = realizado ÷ dias úteis passados × dias úteis do mês. Só entram vendedores do time com meta maior que zero.` + (lin ? ` A meta não é dividida por linha: meta, atingido e projeção usam os pedidos de todas as linhas, mesmo com a linha ${p.linha} escolhida.` : ''));
   const calc = (nome, rs) => {
     const m = d3.sum(rs, (r) => r.meta), real = d3.sum(rs, (r) => realV.get(r.vendedor) || 0);
     return { nome, rs, n: rs.filter((r) => r.meta > 0).length, m, real, ating: m > 0 ? real / m : 0, falta: Math.max(m - real, 0), proj: du.passados ? real / du.passados * du.total : null };
@@ -2083,6 +2099,7 @@ function drawYoy(scope, allGrupos) {
   const k0 = per === 'mtd' ? 'm0' : 'a0', k1 = per === 'mtd' ? 'm1' : 'a1';
   $('#y-per').textContent = pr ? `Período De / Até: ${perTxt(pr)} contra ${dBR(pr.de0)} a ${dBR(pr.ate0)}, o mesmo intervalo do ano anterior. Clique em "Mês atual" ou em um dos botões para voltar.`
     : `${ini} a ${dm(ref)}/${ano1} contra ${ini} a ${dm(refA)}/${ano0}, cortados no mesmo dia do calendário.`;
+  if (linCod(p)) $('#y-per').textContent += ` Só a linha ${p.linha}; peças ficam de fora.`;
   document.querySelectorAll('#yoy th.y0').forEach((t) => { t.textContent = ano0; });
   document.querySelectorAll('#yoy th.y1').forEach((t) => { t.textContent = ano1; });
   $('#y-l0').textContent = `Vendas ${ano0}`; $('#y-l1').textContent = `Vendas ${ano1}`;
@@ -2090,8 +2107,8 @@ function drawYoy(scope, allGrupos) {
   const nome = new Map(allGrupos.map((r) => [r.cod_grupo + '|' + r.vendedor, r]));
   const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));
   // peças e acessórios (linha PEÇA) entram juntos numa linha só
-  const LY = head.linhas || {};
-  const rows = (pr ? linhasPeriodo(pr) : y.data).filter((r) => inScope.has(r.g + '|' + r.v)).map((r) => ({ g: r.g, v: r.v, s: LY[r.s] === 'PEÇA' ? 'PEÇAS E ACESSÓRIOS' : r.s, a0: r[k0] || 0, a1: r[k1] || 0, q0: per !== 'mtd' ? r.q0 || 0 : null, q1: per !== 'mtd' ? r.q1 || 0 : null }))
+  const LY = head.linhas || {}, linY = linCod(p);
+  const rows = (pr ? linhasPeriodo(pr) : y.data).filter((r) => inScope.has(r.g + '|' + r.v) && (!linY || LY[r.s] === linY)).map((r) => ({ g: r.g, v: r.v, s: LY[r.s] === 'PEÇA' ? 'PEÇAS E ACESSÓRIOS' : r.s, a0: r[k0] || 0, a1: r[k1] || 0, q0: per !== 'mtd' ? r.q0 || 0 : null, q1: per !== 'mtd' ? r.q1 || 0 : null }))
     .filter((r) => Math.abs(r.a0) >= 0.005 || Math.abs(r.a1) >= 0.005);
   // listas de opções
   const subs = Array.from(new Set(rows.map((r) => r.s))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
@@ -2194,10 +2211,10 @@ function drawYoy(scope, allGrupos) {
     const ja = new Set();
     Object.entries(head.compras || {}).forEach(([k, xs]) => { if (k.split('|')[0] === gSel) xs.forEach((i) => ja.add(i)); });
     const LIN = [['HOME', 'Home'], ['HEALTH', 'Health'], ['BEAUTY', 'Beauty'], ['ORTHO', 'Orthocare']];
-    const nunca = cat.map((c, i) => ({ ...c, i })).filter((c) => !ja.has(c.i));
-    $('#y-nunca-title').textContent = `Subgrupos nunca comprados por ${gName(gSel)}: ${INT.format(nunca.length)} de ${INT.format(cat.length)}`;
+    const nunca = cat.map((c, i) => ({ ...c, i })).filter((c) => !ja.has(c.i) && (!linY || c.l === linY));
+    $('#y-nunca-title').textContent = `Subgrupos nunca comprados por ${gName(gSel)}${linY ? ' na linha ' + p.linha : ''}: ${INT.format(nunca.length)} de ${INT.format(cat.filter((c) => !linY || c.l === linY).length)}`;
     $('#y-nunca-note').textContent = `Subgrupos das linhas Home, Health, Beauty e Orthocare que este grupo de clientes nunca comprou em todo o histórico${head.inicio ? ' (desde ' + dBR(head.inicio) + ')' : ''}. Peças não entram. Entram os subgrupos dessas linhas vendidos para as carteiras do time nos últimos 12 meses. Em cada linha, a lista começa pelos subgrupos que mais grupos de clientes compram; o número ao lado é quantos grupos compraram em 12 meses.`;
-    $('#y-nunca-linhas').replaceChildren(...LIN.map(([l, nomeL]) => {
+    $('#y-nunca-linhas').replaceChildren(...LIN.filter(([l]) => !linY || l === linY).map(([l, nomeL]) => {
       const tot = cat.filter((c) => c.l === l).length, xs = nunca.filter((c) => c.l === l).sort((a, b) => b.n - a.n || b.v - a.v);
       const col = el('div', 'col');
       const h = el('h3'); h.append(el('span', null, nomeL), el('b', null, INT.format(xs.length)));
@@ -2584,7 +2601,8 @@ function drawPromo(scope) {
   const pp = dash.data('promo_potencial');
   const prOk = pr.status === 'ok', ok = pp.status === 'ok';
   document.querySelectorAll('#ind-promo .dash-skeleton').forEach((e) => { if ((ok && prOk) || pp.status === 'error') e.classList.remove('dash-skeleton'); });
-  const promos = prOk ? pr.data : [];
+  const linP = { HOME: 'HOME', HEALTH: 'HEALTH', BEAUTY: 'WELLNESS', ORTHO: 'ORTHO' }[linCod(p)];
+  const promos = prOk ? pr.data.filter((r) => !linP || r.linha === linP) : [];
   const linhas = Array.from(new Set(promos.map((r) => r.linha)));
   fillSelect($('#f-plinha'), 'Todas', linhas, p.plinha);
   const sel = $('#f-pitem');
