@@ -9,7 +9,7 @@
 
 ## Atualização diária dos pedidos do mês
 1. `python3 atualizar_pedidos.py <arquivo com pedido.xlsx ou Histórico de Pedidos.xlsx> <AAAA-MM-DD>` (nesta pasta). Com o Histórico de Pedidos, usa os pedidos do mês e liga pelo código do cliente (mais preciso que o nome do grupo).
-   Gera dados/pedidos.json, dados/pedidos_resumo.json e painel_carteiras_<data>.html (HTML autônomo).
+   Gera dados/pedidos.json, dados/pedidos_resumo.json e painel_carteiras_<data>.html (HTML autônomo). Só a cópia do dia fica no repositório: as anteriores são apagadas (seguem no histórico do git), porque o GitHub Pages estourava o tempo de publicação com o site em 188 MB.
 2. Painel online: subir dados/pedidos.json como asset do artifact e atualizar `datasets/pedidos` (source.url, updated).
 - Cruzamento pelo nome do Grupo de Cliente (o arquivo de pedidos não traz código). Valor > 0 = Com pedido; < 0 = Cancelamento; 0/sem linha = Sem pedido.
 - Nomes repetidos em mais de uma carteira: marcados "compartilhado" e somados uma vez nos totais.

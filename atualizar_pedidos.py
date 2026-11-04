@@ -159,6 +159,10 @@ def build_html(data_ref):
     dest = HERE / f'painel_carteiras_{data_ref}.html'
     dest.write_text(html, encoding='utf-8')
     (HERE / 'index.html').write_text(html, encoding='utf-8')
+    # o GitHub Pages trava com muitas cópias de ~17 MB: só a do dia fica no site (as antigas seguem no histórico do git)
+    for velho in HERE.glob('painel_carteiras_20*.html'):
+        if velho != dest:
+            velho.unlink()
     # versão completa, com as abas de dados de clientes: só local e nos arquivos do projeto
     (HERE / 'privado').mkdir(exist_ok=True)
     completo = HERE / 'privado' / f'painel_carteiras_completo_{data_ref}.html'
