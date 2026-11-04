@@ -6,6 +6,19 @@
 .cg .lead { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); max-width: 70ch; }
 .cg .filters { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: end; }
 .cg .filters label { display: grid; gap: 2px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); min-width: 0; }
+.cg .filters .lbl { display: grid; gap: 2px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); min-width: 0; position: relative; }
+.cg .ms summary { list-style: none; cursor: pointer; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) 1.6em var(--cds-pad-xs) var(--cds-pad-sm); min-width: 7rem; max-width: 16rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; }
+.cg .ms summary::-webkit-details-marker { display: none; }
+.cg .ms summary::after { content: '▾'; position: absolute; right: 0.5em; top: 50%; transform: translateY(-50%); color: var(--color-fg-muted); }
+.cg .ms[open] summary { border-color: var(--color-fg-muted); }
+.cg .ms-pop { position: absolute; z-index: 30; top: 100%; left: 0; margin-top: 4px; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); box-shadow: 0 6px 20px rgba(0,0,0,.18); padding: 6px; min-width: 14rem; max-width: min(26rem, calc(100vw - 32px)); color: var(--color-fg); font-size: var(--cds-font-size-body); }
+.cg .ms-pop .ms-top { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
+.cg .ms-pop .ms-top input { flex: 1; min-width: 0; max-width: none; }
+.cg .ms-pop .ms-list { max-height: 18rem; overflow: auto; }
+.cg .filters .ms-pop label { display: flex; gap: 8px; align-items: flex-start; padding: 3px 4px; color: var(--color-fg); font-size: var(--cds-font-size-body); border-radius: var(--cds-radius); cursor: pointer; }
+.cg .filters .ms-pop label:hover { background: rgba(127,127,127,.12); }
+.cg .filters .ms-pop label[hidden] { display: none; }
+.cg .filters .ms-pop input[type=checkbox] { margin-top: 3px; }
 .cg .filters select, .cg .filters input { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); max-width: 16rem; }
 .cg button { font: inherit; color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; }
 .cg button:hover { border-color: var(--color-fg-muted); }
@@ -189,23 +202,21 @@
     <label>Time<select id="f-macro"></select></label>
     <label>Subtime<select id="f-time"></select></label>
     <label>Vendedor<select id="f-vend"></select></label>
-    <label>Situação do vendedor<select id="f-sit"></select></label>
-    <label>UF<select id="f-uf"></select></label>
-    <label>Segmento<select id="f-seg"></select></label>
-    <label>Status no cadastro<select id="f-status"></select></label>
+    <div class="lbl">UF<details class="ms" id="f-uf"><summary></summary><div class="ms-pop"></div></details></div>
+    <div class="lbl">Status no cadastro<details class="ms" id="f-status"><summary></summary><div class="ms-pop"></div></details></div>
     <label>Linha<select id="f-linha"></select></label>
     <label>De<input id="f-de" type="date"></label>
     <label>Até<input id="f-ate" type="date"></label>
     <button id="f-mesatual" type="button" title="Volta para o padrão de cada aba">Mês atual</button>
     <label>Situação no mês<select id="f-mes"></select></label>
     <label>Buscar grupo<input id="f-q" type="search" placeholder="Nome ou código"></label>
-    <label>Linha da promoção<select id="f-plinha"></select></label>
-    <label>Item em promoção<select id="f-pitem"></select></label>
+    <div class="lbl">Linha da promoção<details class="ms" id="f-plinha"><summary></summary><div class="ms-pop"></div></details></div>
+    <div class="lbl">Item em promoção<details class="ms" id="f-pitem"><summary></summary><div class="ms-pop"></div></details></div>
     <label>Situação na promoção<select id="f-psit"></select></label>
     <label>Grupo de cliente<input id="f-pgrupo" list="lista-grupos" placeholder="Digite o nome do grupo" autocomplete="off"></label>
-    <label>Subgrupo de item<select id="f-psub"></select></label>
+    <div class="lbl">Subgrupo de item<details class="ms" id="f-psub"><summary></summary><div class="ms-pop"></div></details></div>
     <label>Grupo de cliente<input id="f-ygrupo" list="lista-ygrupos" placeholder="Digite o nome do grupo" autocomplete="off"></label>
-    <label>Subgrupo de item<select id="f-ysub"></select></label>
+    <div class="lbl">Subgrupo de item<details class="ms" id="f-ysub"><summary></summary><div class="ms-pop"></div></details></div>
     <label>Região<select id="f-creg"></select></label>
     <label>UF da conta<select id="f-cuf"></select></label>
     <label>Time da conta<select id="f-ctime"></select></label>
@@ -879,11 +890,44 @@ const FILTERS = [
   ['f-macro', 'macro', 'Todos os times'],
   ['f-time', 'time', 'Todos os subtimes'],
   ['f-vend', 'vendedor', 'Todos os vendedores'],
-  ['f-sit', 'situacao', 'Ativos e inativos'],
-  ['f-uf', 'uf', 'Todas'],
-  ['f-seg', 'segmento', 'Todos'],
-  ['f-status', 'status', 'Todos'],
 ];
+// Filtros de múltipla escolha (UF, Status no cadastro, Linha/Item/Subgrupo da promoção, Subgrupo do YoY):
+// o parâmetro guarda os valores separados por ";"; vazio = todos
+const msVal = (v) => (v ? String(v).split(';').filter(Boolean) : []);
+const msHas = (v, x) => { const a = msVal(v); return !a.length || a.includes(x); };
+const msTxt = (v) => msVal(v).join(', ');
+const msTroca = (v, x) => { const a = msVal(v); const b = a.includes(x) ? a.filter((y) => y !== x) : [...a, x]; return b.length ? b.join(';') : null; };
+function fillMulti(box, all, values, current) {
+  const sel = msVal(current).filter((v) => values.includes(v));
+  const sum = box.querySelector('summary');
+  sum.textContent = !sel.length ? all : sel.length === 1 ? sel[0] : `${sel.length} selecionados`;
+  sum.title = sel.join('\n');
+  const pop = box.querySelector('.ms-pop'), key = values.join('\u0001');
+  if (box.dataset.key !== key) {
+    box.dataset.key = key;
+    const top = el('div', 'ms-top');
+    if (values.length > 10) { const q = el('input'); q.type = 'search'; q.placeholder = 'Procurar'; q.className = 'ms-q'; top.append(q); }
+    const clr = el('button', 'ms-clr', 'Limpar'); clr.type = 'button'; top.append(clr);
+    const list = el('div', 'ms-list');
+    list.append(...values.map((v) => { const l = el('label'); const c = el('input'); c.type = 'checkbox'; c.value = v; l.append(c, el('span', null, v)); return l; }));
+    pop.replaceChildren(top, list);
+  }
+  pop.querySelectorAll('.ms-list input').forEach((c) => { c.checked = sel.includes(c.value); });
+}
+const MS_PARAM = { 'f-uf': 'uf', 'f-status': 'status', 'f-plinha': 'plinha', 'f-pitem': 'pitem', 'f-psub': 'psub', 'f-ysub': 'ysub' };
+const msSet = (box, vs) => { const k = MS_PARAM[box.id], o = { [k]: vs.length ? vs.join(';') : null }; if (k === 'plinha') o.pitem = null; if (k === 'psub') o.psit = null; set(o); };
+$('#filtros').addEventListener('change', (e) => {
+  const box = e.target.closest('.ms');
+  if (!box || !e.target.matches('.ms-list input')) return;
+  msSet(box, Array.from(box.querySelectorAll('.ms-list input:checked')).map((c) => c.value));
+});
+$('#filtros').addEventListener('click', (e) => { const b = e.target.closest('.ms-clr'); if (b) msSet(b.closest('.ms'), []); });
+$('#filtros').addEventListener('input', (e) => {
+  if (!e.target.matches('.ms-q')) return;
+  const q = normNome(e.target.value);
+  e.target.closest('.ms').querySelectorAll('.ms-list label').forEach((l) => { l.hidden = !!q && !normNome(l.textContent).includes(q); });
+});
+document.addEventListener('click', (e) => document.querySelectorAll('.cg details.ms[open]').forEach((d) => { if (!d.contains(e.target)) d.open = false; }));
 const normNome = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
 const P = () => dash.params();
 const set = (o) => dash.setParams(o);
@@ -913,10 +957,7 @@ $('#f-linha').addEventListener('change', (e) => set({ linha: e.target.value || n
 $('#f-de').addEventListener('change', (e) => set({ de: e.target.value || null }));
 $('#f-ate').addEventListener('change', (e) => set({ ate: e.target.value || null }));
 $('#f-mesatual').addEventListener('click', () => set({ de: null, ate: null }));
-$('#f-plinha').addEventListener('change', (e) => set({ plinha: e.target.value || null, pitem: null }));
-$('#f-pitem').addEventListener('change', (e) => set({ pitem: e.target.value || null }));
 $('#f-psit').addEventListener('change', (e) => set({ psit: e.target.value || null }));
-$('#f-psub').addEventListener('change', (e) => set({ psub: e.target.value || null }));
 $('#f-pgrupo').addEventListener('change', (e) => {
   const v = normNome(e.target.value);
   const g = (dash.data('promo_potencial').data || []).find((r) => normNome(r.grupo) === v || r.cod_grupo === v);
@@ -1024,7 +1065,6 @@ $('#tab-ovend tbody').addEventListener('click', (e) => {
   if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
 });
 document.querySelectorAll('#y-per-btn button').forEach((b) => b.addEventListener('click', () => set({ yper: b.dataset.per === 'ytd' ? null : b.dataset.per, de: null, ate: null })));
-$('#f-ysub').addEventListener('change', (e) => set({ ysub: e.target.value || null }));
 $('#f-ygrupo').addEventListener('change', (e) => {
   const v = normNome(e.target.value);
   const g = (dash.data('grupos').data || []).find((r) => normNome(r.grupo) === v || String(r.cod_grupo) === v);
@@ -1041,7 +1081,7 @@ $('#tab-ygrupos tbody').addEventListener('click', (e) => {
 });
 $('#tab-ysubs tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-s]');
-  if (tr) { set({ ysub: P().ysub === tr.dataset.s ? null : tr.dataset.s }); $('#y-title').scrollIntoView({ block: 'nearest' }); }
+  if (tr) { set({ ysub: msTroca(P().ysub, tr.dataset.s) }); $('#y-title').scrollIntoView({ block: 'nearest' }); }
 });
 document.querySelectorAll('#tema button').forEach((b) => b.addEventListener('click', () => set({ tema: b.dataset.tema || null })));
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { set({ aba: b.dataset.aba }); dash.setLink(b.dataset.aba); }));
@@ -1096,7 +1136,7 @@ const uniq = (rows, f) => Array.from(new Set(rows.map((r) => r[f]))).sort((a, b)
 function barList(box, items, color, onPick, active) {
   const max = Math.max(1, ...items.map((d) => Math.abs(d.v)));
   box.replaceChildren(...items.map((d) => {
-    const row = el('div', 'bar' + (active === d.k ? ' on' : ''));
+    const row = el('div', 'bar' + ((Array.isArray(active) ? active.includes(d.k) : active === d.k) ? ' on' : ''));
     row.tabIndex = 0;
     row.append(el('span', 'lbl', d.k));
     const tr = el('div', 'track'); const f = el('div', 'fill');
@@ -1134,18 +1174,20 @@ function draw() {
   $('#saojoao').hidden = aba !== 'saojoao';
   $('#filtros').style.display = aba === 'saojoao' ? 'none' : '';
   $('#ortho').hidden = aba !== 'ortho';
-  ['#f-creg', '#f-cuf', '#f-ctime', '#f-cvend', '#f-csit'].forEach((x) => { $(x).closest('label').hidden = aba !== 'contas'; });
-  ['#f-macro', '#f-time', '#f-vend', '#f-sit', '#f-uf', '#f-seg', '#f-status'].forEach((x) => { $(x).closest('label').hidden = aba === 'contas'; });
+  ['#f-creg', '#f-cuf', '#f-ctime', '#f-cvend', '#f-csit'].forEach((x) => { $(x).closest('label, .lbl').hidden = aba !== 'contas'; });
+  ['#f-macro', '#f-time', '#f-vend', '#f-uf', '#f-status'].forEach((x) => { $(x).closest('label, .lbl').hidden = aba === 'contas'; });
+  // Buscar grupo não aparece no Comparativo YoY (lá a busca é pelo campo Grupo de cliente)
+  $('#f-q').closest('label, .lbl').hidden = aba === 'yoy';
   $('#f-q').placeholder = aba === 'contas' ? 'Conta, cidade, dono ou comprador' : 'Nome ou código';
   $('#f-q').closest('label').firstChild.textContent = aba === 'contas' ? 'Buscar conta' : 'Buscar grupo';
-  ['#f-ygrupo', '#f-ysub'].forEach((x) => { $(x).closest('label').hidden = aba !== 'yoy'; });
-  $('#f-mes').closest('label').hidden = aba !== 'pedidos';
+  ['#f-ygrupo', '#f-ysub'].forEach((x) => { $(x).closest('label, .lbl').hidden = aba !== 'yoy'; });
+  $('#f-mes').closest('label, .lbl').hidden = aba !== 'pedidos';
   // filtro de linha: Pedidos do mês, Promoções e Comparativo YoY
-  $('#f-linha').closest('label').hidden = !['pedidos', 'promocoes', 'yoy'].includes(aba);
+  $('#f-linha').closest('label, .lbl').hidden = !['pedidos', 'promocoes', 'yoy'].includes(aba);
   fillSelect($('#f-linha'), 'Todas', Object.keys(LINHAS_F), p0.linha);
   // período De / Até: Pedidos do mês, Comparativo YoY e OrthoCare
   const comPer = ['pedidos', 'yoy', 'ortho'].includes(aba) && !!diario();
-  ['#f-de', '#f-ate'].forEach((x) => { $(x).closest('label').hidden = !comPer; });
+  ['#f-de', '#f-ate'].forEach((x) => { $(x).closest('label, .lbl').hidden = !comPer; });
   $('#f-mesatual').hidden = !comPer || (!p0.de && !p0.ate);
   if (comPer) {
     const D = diario();
@@ -1154,8 +1196,8 @@ function draw() {
     if (document.activeElement !== $('#f-de')) $('#f-de').value = pr ? pr.de : '';
     if (document.activeElement !== $('#f-ate')) $('#f-ate').value = pr ? pr.ate : '';
   }
-  ['#f-plinha', '#f-pitem', '#f-psit', '#f-pgrupo', '#f-psub'].forEach((s) => { $(s).closest('label').hidden = aba !== 'promocoes'; });
-  $('#f-top').closest('label').hidden = aba === 'pedidos' || aba === 'contas' || aba === 'escala';
+  ['#f-plinha', '#f-pitem', '#f-psit', '#f-pgrupo', '#f-psub'].forEach((s) => { $(s).closest('label, .lbl').hidden = aba !== 'promocoes'; });
+  $('#f-top').closest('label, .lbl').hidden = aba === 'pedidos' || aba === 'contas' || aba === 'escala';
   const g = dash.data('grupos');
   const ok = g.status === 'ok';
   document.querySelectorAll('.cg .dash-skeleton').forEach((e) => { if (ok || g.status === 'error') e.classList.remove('dash-skeleton'); });
@@ -1168,20 +1210,17 @@ function draw() {
   fillSelect($('#f-macro'), 'Todos os times', MACROS.filter((m) => all.some((r) => r.time_macro === m)), p.macro);
   fillSelect($('#f-time'), 'Todos os subtimes', uniq(byMacro, 'time'), p.time);
   fillSelect($('#f-vend'), 'Todos os vendedores', uniq(byTime, 'vendedor'), p.vendedor);
-  fillSelect($('#f-sit'), 'Ativos e inativos', ['Ativo', 'Inativo'], p.situacao);
-  fillSelect($('#f-uf'), 'Todas', uniq(all, 'uf'), p.uf);
-  fillSelect($('#f-seg'), 'Todos', uniq(all, 'segmento'), p.segmento);
-  fillSelect($('#f-status'), 'Todos', uniq(all, 'status'), p.status);
+  fillMulti($('#f-uf'), 'Todas', uniq(all, 'uf'), p.uf);
+  fillMulti($('#f-status'), 'Todos', uniq(all, 'status'), p.status);
   const top = $('#f-top');
   if (!top.options.length) top.replaceChildren(...[10, 20, 50, 100, 500, 2000, 20000].map((n) => new Option(n >= 20000 ? 'Todos' : 'Top ' + n, n)));
   top.value = String(p.top || 50);
   if (document.activeElement !== $('#f-q')) $('#f-q').value = p.q || '';
 
-  const q = (p.q || '').toLowerCase();
+  // Situação do vendedor e Segmento saíram dos filtros (04/11); Buscar grupo não vale no YoY
+  const q = (aba === 'yoy' ? '' : p.q || '').toLowerCase();
   const base = all.filter((r) =>
-    (!p.situacao || r.situacao_vendedor === p.situacao) &&
-    (!p.uf || r.uf === p.uf) && (!p.segmento || r.segmento === p.segmento) &&
-    (!p.status || r.status === p.status) &&
+    msHas(p.uf, r.uf) && msHas(p.status, r.status) &&
     (!q || r.grupo.toLowerCase().includes(q) || r.cod_grupo.includes(q)));
   const rows = base.filter((r) => (!p.macro || r.time_macro === p.macro) && (!p.time || r.time === p.time) && (!p.vendedor || r.vendedor === p.vendedor));
 
@@ -2020,7 +2059,7 @@ function ybar(d, max) {
 function yList(box, items, onPick, active) {
   const max = Math.max(1, ...items.map((d) => Math.abs(d.d)));
   box.replaceChildren(...(items.length ? items.map((d) => {
-    const row = el('div', 'bar' + (active === d.k ? ' on' : ''));
+    const row = el('div', 'bar' + ((Array.isArray(active) ? active.includes(d.k) : active === d.k) ? ' on' : ''));
     row.tabIndex = 0;
     row.append(el('span', 'lbl', d.label));
     const tr = el('div', 'track'); const f = el('div', 'fill');
@@ -2063,17 +2102,17 @@ function drawYoy(scope, allGrupos) {
     .filter((r) => Math.abs(r.a0) >= 0.005 || Math.abs(r.a1) >= 0.005);
   // listas de opções
   const subs = Array.from(new Set(rows.map((r) => r.s))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-  fillSelect($('#f-ysub'), 'Todos', subs, p.ysub);
+  fillMulti($('#f-ysub'), 'Todos', subs, p.ysub);
   const gnames = Array.from(new Set(rows.map((r) => (nome.get(r.g + '|' + r.v) || {}).grupo).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
   const dl = $('#lista-ygrupos');
   if (dl.childElementCount !== gnames.length) dl.replaceChildren(...gnames.map((n) => new Option(n)));
   const gName = (g) => { const r = allGrupos.find((x) => String(x.cod_grupo) === g); return r ? r.grupo : g; };
   if (document.activeElement !== $('#f-ygrupo')) $('#f-ygrupo').value = p.ygrupo ? gName(p.ygrupo) : '';
 
-  const both = rows.filter((r) => (!p.ygrupo || r.g === p.ygrupo) && (!p.ysub || r.s === p.ysub));
-  const forGroups = rows.filter((r) => !p.ysub || r.s === p.ysub);
+  const both = rows.filter((r) => (!p.ygrupo || r.g === p.ygrupo) && msHas(p.ysub, r.s));
+  const forGroups = rows.filter((r) => msHas(p.ysub, r.s));
   const forSubs = rows.filter((r) => !p.ygrupo || r.g === p.ygrupo);
-  const sel = [p.ygrupo ? 'grupo ' + gName(p.ygrupo) : null, p.ysub ? 'subgrupo ' + p.ysub : null].filter(Boolean);
+  const sel = [p.ygrupo ? 'grupo ' + gName(p.ygrupo) : null, p.ysub ? (msVal(p.ysub).length > 1 ? 'subgrupos ' : 'subgrupo ') + msTxt(p.ysub) : null].filter(Boolean);
   $('#y-sel').hidden = !sel.length;
   $('#y-sel-txt').textContent = sel.length ? 'Seleção: ' + sel.join(' · ') + '.' : '';
   $('#y-title').textContent = sel.length ? 'Comparativo de ' + sel.join(' · ') : 'Mesmo período do ano anterior';
@@ -2108,16 +2147,16 @@ function drawYoy(scope, allGrupos) {
   const grp = agg(forGroups, gk).map((o) => { const n = nome.get(o.k) || {}; return { ...o, g: o.xs[0].g, v: o.xs[0].v, label: n.grupo || o.xs[0].g, sub: o.xs[0].v }; });
   const sub = agg(forSubs, (r) => r.s).map((o) => ({ ...o, label: o.k }));
   const pickG = (k) => { const g = k.split('|')[0]; set({ ygrupo: p.ygrupo === g ? null : g }); };
-  const pickS = (k) => set({ ysub: p.ysub === k ? null : k });
+  const pickS = (k) => set({ ysub: msTroca(p.ysub, k) });
   const gUp = grp.filter((o) => o.d > 0.5).sort((a, b) => b.d - a.d), gDn = grp.filter((o) => o.d < -0.5).sort((a, b) => a.d - b.d);
   const sUp = sub.filter((o) => o.d > 0.5).sort((a, b) => b.d - a.d), sDn = sub.filter((o) => o.d < -0.5).sort((a, b) => a.d - b.d);
   const actG = p.ygrupo ? (grp.find((o) => o.g === p.ygrupo) || {}).k : null;
   yList($('#y-gup'), gUp.slice(0, 12), pickG, actG);
   yList($('#y-gdn'), gDn.slice(0, 12), pickG, actG);
-  yList($('#y-sup'), sUp.slice(0, 12), pickS, p.ysub);
-  yList($('#y-sdn'), sDn.slice(0, 12), pickS, p.ysub);
+  yList($('#y-sup'), sUp.slice(0, 12), pickS, msVal(p.ysub));
+  yList($('#y-sdn'), sDn.slice(0, 12), pickS, msVal(p.ysub));
   const shareTxt = (xs, tot) => (xs.length ? `Os ${Math.min(12, xs.length)} maiores somam ${SBRL(d3.sum(xs.slice(0, 12), (o) => o.d))} de ${SBRL(tot)} no total de ${INT.format(xs.length)}.` : '');
-  const gTxt = p.ysub ? ` em ${p.ysub}` : '';
+  const gTxt = p.ysub ? ` em ${msTxt(p.ysub)}` : '';
   const sTxt = p.ygrupo ? ` em ${gName(p.ygrupo)}` : '';
   $('#y-gup-note').textContent = `Maior ganho em R$${gTxt}. ${shareTxt(gUp, d3.sum(gUp, (o) => o.d))} Clique para ver os subgrupos do grupo.`;
   $('#y-gdn-note').textContent = `Maior perda em R$${gTxt}. ${shareTxt(gDn, d3.sum(gDn, (o) => o.d))} Clique para ver os subgrupos do grupo.`;
@@ -2142,7 +2181,7 @@ function drawYoy(scope, allGrupos) {
   marcaOrd('#tab-ysubs', ORD.ysub);
   $('#y-ts-note').textContent = `${INT.format(sAll.length)} subgrupos${sTxt}, ${ORD.ysub.k ? 'na ordem da coluna escolhida' : 'do maior impacto para o menor'}. Peças e acessórios estão somados em "PEÇAS E ACESSÓRIOS".${per === 'mtd' ? ' Quantidades só no acumulado do ano.' : ''} Clique em um subgrupo para ver os grupos de clientes; clique no título de uma coluna para ordenar do maior para o menor e de novo para inverter.`;
   $('#tab-ysubs tbody').replaceChildren(...sAll.map((o) => {
-    const tr = el('tr'); tr.dataset.s = o.k; if (p.ysub === o.k) tr.className = 'on';
+    const tr = el('tr'); tr.dataset.s = o.k; if (msVal(p.ysub).includes(o.k)) tr.className = 'on';
     const q = (f) => (per !== 'mtd' ? INT.format(d3.sum(o.xs, (r) => r[f])) : '—');
     tr.append(el('td', null, o.k), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.d), SBRL(o.d)), el('td', 'n ' + sinal(o.d), pctTxt(o.a0, o.a1)),
       el('td', 'n', q('q0')), el('td', 'n', q('q1')), el('td', 'n ' + (per !== 'mtd' ? sinal(o.q1 - o.q0) : ''), per !== 'mtd' ? pctTxt(o.q0, o.q1) : '—'), el('td', 'n', INT.format(o.ng)));
@@ -2374,7 +2413,7 @@ let eLabels = new Map();
 function shareList(box, items, fmt, onPick, active) {
   const max = Math.max(1e-9, ...items.map((d) => d.v));
   box.replaceChildren(...(items.length ? items.map((d) => {
-    const row = el('div', 'bar' + (active === d.k ? ' on' : '')); row.tabIndex = 0;
+    const row = el('div', 'bar' + ((Array.isArray(active) ? active.includes(d.k) : active === d.k) ? ' on' : '')); row.tabIndex = 0;
     row.append(el('span', 'lbl', d.k));
     const tr = el('div', 'track'); const f = el('div', 'fill'); f.style.width = (d.v / max * 100) + '%'; f.style.background = CL_COR[d.cl] || 'var(--reg-sudeste)';
     tr.append(f); row.append(tr, el('span', 'val', fmt(d)));
@@ -2555,15 +2594,13 @@ function drawPromo(scope) {
   const linP = { HOME: 'HOME', HEALTH: 'HEALTH', BEAUTY: 'WELLNESS', ORTHO: 'ORTHO' }[linCod(p)];
   const promos = prOk ? pr.data.filter((r) => !linP || r.linha === linP) : [];
   const linhas = Array.from(new Set(promos.map((r) => r.linha)));
-  fillSelect($('#f-plinha'), 'Todas', linhas, p.plinha);
-  const sel = $('#f-pitem');
-  const pitems = promos.filter((r) => !p.plinha || r.linha === p.plinha);
+  fillMulti($('#f-plinha'), 'Todas', linhas, p.plinha);
+  const pitems = promos.filter((r) => msHas(p.plinha, r.linha));
   const inames = Array.from(new Set(pitems.map((r) => r.item)));
-  sel.replaceChildren(new Option('Todos', ''), ...inames.map((n) => new Option(n, n)));
-  sel.value = p.pitem && inames.includes(p.pitem) ? p.pitem : '';
+  fillMulti($('#f-pitem'), 'Todos', inames, p.pitem);
   fillSelect($('#f-psit'), 'Todas', PSITS, p.psit);
 
-  const shownPromos = promos.filter((r) => (!p.plinha || r.linha === p.plinha) && (!p.pitem || r.item === p.pitem));
+  const shownPromos = promos.filter((r) => msHas(p.plinha, r.linha) && msHas(p.pitem, r.item));
   $('#tab-promos tbody').replaceChildren(...shownPromos.map((r) => {
     const tr = el('tr'); tr.dataset.key = enc(r.id);
     tr.append(el('td', null, r.linha), el('td', null, r.subgrupo), el('td', null, r.item), el('td', null, r.codigo), el('td', null, r.cond_pagamento), el('td', null, r.segmento),
@@ -2576,13 +2613,13 @@ function drawPromo(scope) {
   const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));
   const ids = new Set(shownPromos.map((r) => r.item));
   const scoped0 = pp.data.filter((r) => inScope.has(r.cod_grupo + '|' + r.vendedor) && ids.has(r.item_promo));
-  fillSelect($('#f-psub'), 'Todos', Array.from(new Set(promos.map((r) => r.subgrupo))).sort((a, b) => a.localeCompare(b, 'pt-BR')), p.psub);
+  fillMulti($('#f-psub'), 'Todos', Array.from(new Set(promos.map((r) => r.subgrupo))).sort((a, b) => a.localeCompare(b, 'pt-BR')), p.psub);
   const dl = $('#lista-grupos');
   const gnames = Array.from(new Set(scoped0.map((r) => r.grupo))).sort((a, b) => a.localeCompare(b, 'pt-BR'));
   if (dl.dataset.n !== String(gnames.length)) { dl.replaceChildren(...gnames.map((g) => new Option(g))); dl.dataset.n = String(gnames.length); }
   const gsel = p.pgrupo ? scoped0.find((r) => r.cod_grupo === p.pgrupo) : null;
   if (document.activeElement !== $('#f-pgrupo')) $('#f-pgrupo').value = gsel ? gsel.grupo : '';
-  const base = scoped0.filter((r) => (!p.pgrupo || r.cod_grupo === p.pgrupo) && (!p.psub || r.subgrupo === p.psub));
+  const base = scoped0.filter((r) => (!p.pgrupo || r.cod_grupo === p.pgrupo) && msHas(p.psub, r.subgrupo));
   const rows = base.filter((r) => !p.psit || r.situacao_promo === p.psit);
   drawFoco(p, base, gsel);
   const grupos = new Set(base.map((r) => r.cod_grupo + '|' + r.vendedor));
@@ -2640,10 +2677,10 @@ function drawFoco(p, rows, gsel) {
   const word = mode === 'grupo' ? ['item', 'itens'] : ['grupo de clientes', 'grupos de clientes'];
   const vend = Array.from(new Set(rows.map((r) => r.vendedor))).join(' / ');
   if (mode === 'grupo') {
-    $('#foco-title').textContent = (gsel ? gsel.grupo : p.pgrupo) + (p.psub ? ' · ' + p.psub : '');
+    $('#foco-title').textContent = (gsel ? gsel.grupo : p.pgrupo) + (p.psub ? ' · ' + msTxt(p.psub) : '');
     $('#foco-note').textContent = `${vend}. ${INT.format(rows.length)} ${rows.length === 1 ? 'item' : 'itens'} em promoção que este grupo de clientes já comprou, em ${INT.format(new Set(rows.map((r) => r.subgrupo)).size)} subgrupos. Clique em uma situação para filtrar a tabela abaixo.`;
   } else {
-    $('#foco-title').textContent = 'Subgrupo ' + p.psub;
+    $('#foco-title').textContent = (msVal(p.psub).length > 1 ? 'Subgrupos ' : 'Subgrupo ') + msTxt(p.psub);
     $('#foco-note').textContent = `${INT.format(unit(rows))} grupos de clientes já compraram itens deste subgrupo, somando ${INT.format(d3.sum(rows, (r) => r.qtd_historica))} unidades no histórico. Clique em uma situação para filtrar a tabela abaixo.`;
   }
   $('#foco-tiles').replaceChildren(...SIT.map(([s, c, hint]) => {
