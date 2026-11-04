@@ -58,6 +58,9 @@ def diario(vendedor):
 
 def carregar(vendedor):
     dados = {'contas': [], 'saojoao': [], 'status': status(vendedor), 'ortho': ortho(vendedor), 'diario': diario(vendedor)}
+    # Clientes inativos: os do vendedor e, nas UFs de atuação dele, os de fora do BOPED (nunca de outro vendedor do time)
+    import atualizar_inativos
+    dados['inativos'] = atualizar_inativos.do_vendedor(vendedor)
     for id_, f, campo in FONTES:
         linhas = json.loads((DADOS / f).read_text(encoding='utf-8')) if (DADOS / f).exists() else []
         if campo:

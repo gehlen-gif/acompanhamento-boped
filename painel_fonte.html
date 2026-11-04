@@ -166,6 +166,8 @@
 .cg td.link { cursor: pointer; text-decoration: underline; text-decoration-color: var(--color-border-line); text-underline-offset: 3px; }
 .cg td.link:hover { text-decoration-color: var(--color-fg); }
 .cg .picked { display: flex; gap: var(--cds-gap-sm); flex-wrap: wrap; }
+.cg #tab-in tr.sub td { background: var(--cds-surface-popover); font-size: 11px; }
+.cg #tab-in tr[data-cl] { cursor: pointer; }
 </style>
 
 <div class="cg">
@@ -174,7 +176,6 @@
       <h1>Carteiras por grupo de cliente</h1>
       <p class="lead" id="takeaway"></p>
       <p class="note" id="atualizacao"></p>
-      <p class="note" id="link-inativos" hidden><a href="inativos.html">Painel de clientes inativos</a> · <a href="inativos/">por vendedor</a></p>
     </div>
     <div class="seg" id="tema" role="group" aria-label="Tema">
       <button type="button" data-tema="">Automático</button>
@@ -191,6 +192,7 @@
     <button type="button" role="tab" id="tab-btn-ortho" data-aba="ortho">OrthoCare</button>
     <button type="button" role="tab" id="tab-btn-saojoao" data-aba="saojoao">SÃO JOÃO</button>
     <button type="button" role="tab" id="tab-btn-contas" data-aba="contas">Principais Contas</button>
+    <button type="button" role="tab" id="tab-btn-inativos" data-aba="inativos">Clientes inativos</button>
   </nav>
 
   <section class="filters" id="filtros" aria-label="Filtros">
@@ -219,6 +221,10 @@
     <label>Situação da conta<select id="f-csit"></select></label>
     <datalist id="lista-grupos"></datalist>
     <datalist id="lista-ygrupos"></datalist>
+    <label>Situação<select id="f-is"></select></label>
+    <label>Atendido por<select id="f-iv"></select></label>
+    <label>Segmento<select id="f-iseg"></select></label>
+    <label>Inadimplente<select id="f-iinad"></select></label>
     <label>Mostrar<select id="f-top"></select></label>
     <button id="f-reset" type="button">Limpar filtros</button>
   </section>
@@ -729,6 +735,24 @@
     <p class="note" id="regra-sj"></p>
   </div>
 
+  <div class="pane" id="inativos">
+  <section class="kpis" id="in-k"></section>
+  <div class="grid">
+    <section class="card"><h2>Por UF</h2><p class="note">Faturamento histórico dos grupos. Clique para filtrar.</p><div class="bars scroll" id="in-uf"></div></section>
+    <section class="card"><h2>Por quem atende hoje</h2><p class="note">Faturamento histórico dos grupos. Clique para filtrar.</p><div class="bars scroll" id="in-v"></div></section>
+  </div>
+  <section class="card">
+    <h2 id="in-t">Grupos de clientes</h2>
+    <p class="note" id="in-n"></p>
+    <div class="scroll tall">
+      <table id="tab-in" data-source="inativos">
+        <thead><tr><th data-ord="g" data-tipo="t">Grupo de cliente</th><th data-ord="sit" data-tipo="t">Situação</th><th data-ord="cid" data-tipo="t">Cidade / UF</th><th>Telefone / e-mail</th><th data-ord="seg" data-tipo="t">Segmento</th><th data-ord="inadT" data-tipo="t">Inadimplente</th><th class="n" data-ord="venc">Valor vencido</th><th class="n" data-ord="ult" data-tipo="t">Último pedido</th><th class="n" data-ord="d">Dias</th><th class="n" data-ord="fat">Faturado (histórico)</th><th class="n" data-ord="pend">Pedidos pendentes</th><th data-ord="v" data-tipo="t">Atendido por</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+  </div>
+
   <div class="pane" id="contas">
     <section class="kpis" id="ind-contas" data-source="contas">
       <div class="kpi"><span class="note">Principais contas</span><span class="v dash-skeleton" id="c-n">—</span><span class="sub" id="c-n-s"></span></div>
@@ -968,7 +992,7 @@ document.querySelectorAll('#tema button').forEach((b) => b.addEventListener('cli
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { set({ aba: b.dataset.aba }); dash.setLink(b.dataset.aba); }));
 // Ordenação pelos títulos de Meta do mês por time e líder e de Cobertura por vendedor:
 // o 1º clique ordena do maior para o menor (texto: A a Z), o 2º inverte; vale uma coluna por vez
-const ORD = { meta: { k: null, dir: -1 }, cob: { k: null, dir: -1 }, ysub: { k: null, dir: -1 } };
+const ORD = { meta: { k: null, dir: -1 }, cob: { k: null, dir: -1 }, ysub: { k: null, dir: -1 }, inat: { k: 'fat', dir: -1 } };
 function ordenar(qual, th) {
   const o = ORD[qual], k = th.dataset.ord, texto = th.dataset.tipo === 't';
   if (o.k === k) o.dir = -o.dir; else { o.k = k; o.dir = texto ? 1 : -1; }
@@ -987,12 +1011,17 @@ const marcaOrd = (tab, o) => document.querySelectorAll(tab + ' th[data-ord]').fo
 $('#tab-meta thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('meta', th); });
 $('#tab-ysubs thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('ysub', th); });
 $('#tab-cob thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('cob', th); });
+// Clientes inativos: filtros próprios, ordenação pelos títulos e clique no grupo abre os clientes
+['is', 'iv', 'iseg', 'iinad'].forEach((k) => $('#f-' + k).addEventListener('change', (e) => set({ [k]: e.target.value || null })));
+$('#tab-in thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('inat', th); });
+let inOpen = null;
+$('#tab-in tbody').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-cl]'); if (tr) { inOpen = inOpen === tr.dataset.cg ? null : tr.dataset.cg; draw(); } });
 $('#tab-cob tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
   if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
 });
 const named = location.hash.slice(1);
-if (['pedidos', 'historico', 'promocoes', 'yoy', 'ortho', 'escala', 'saojoao', 'contas'].includes(named)) set({ aba: named });
+if (['pedidos', 'historico', 'promocoes', 'yoy', 'ortho', 'escala', 'saojoao', 'contas', 'inativos'].includes(named)) set({ aba: named });
 $('#det-close').addEventListener('click', () => { openKey = null; draw(); });
 document.querySelectorAll('#tab-grupos th').forEach((th) => th.addEventListener('click', () => {
   const f = th.dataset.field;
@@ -1051,11 +1080,13 @@ function draw() {
   $('#promocoes').hidden = aba !== 'promocoes';
   $('#yoy').hidden = aba !== 'yoy';
   $('#contas').hidden = aba !== 'contas';
+  $('#inativos').hidden = aba !== 'inativos';
+  ['#f-is', '#f-iv', '#f-iseg', '#f-iinad'].forEach((x) => { $(x).closest('label').hidden = aba !== 'inativos'; });
   $('#saojoao').hidden = aba !== 'saojoao';
   $('#filtros').style.display = aba === 'saojoao' ? 'none' : '';
   $('#ortho').hidden = aba !== 'ortho';
   ['#f-creg', '#f-cuf', '#f-ctime', '#f-cvend', '#f-csit'].forEach((x) => { $(x).closest('label, .lbl').hidden = aba !== 'contas'; });
-  ['#f-macro', '#f-time', '#f-vend', '#f-uf', '#f-status'].forEach((x) => { $(x).closest('label, .lbl').hidden = aba === 'contas'; });
+  ['#f-macro', '#f-time', '#f-vend', '#f-uf', '#f-status'].forEach((x) => { $(x).closest('label, .lbl').hidden = aba === 'contas' || (aba === 'inativos' && x !== '#f-uf'); });
   // Buscar grupo não aparece no Comparativo YoY (lá a busca é pelo campo Grupo de cliente)
   $('#f-q').closest('label, .lbl').hidden = aba === 'yoy';
   $('#f-q').placeholder = aba === 'contas' ? 'Conta, cidade, dono ou comprador' : 'Nome ou código';
@@ -1213,6 +1244,69 @@ function draw() {
   drawSaoJoao();
   drawStatus(rows);
   drawContas();
+  drawInativos();
+}
+
+// Clientes inativos e a inativar no mês (dados/inativos.json, de atualizar_inativos.py)
+function drawInativos() {
+  const p = P(), d = dash.data('inativos');
+  if (d.status !== 'ok' || !d.data.length) { $('#in-n').textContent = 'Sem dados de clientes inativos.'; return; }
+  const ref = d.data[0].ref || '', R = new Date(ref + 'T00:00');
+  const all = d.data.map((r) => ({ ...r, sit: r.s === 'I' ? 'Inativo' : 'A inativar no mês', inadT: r.inad ? 'Sim' : 'Não', vs: r.vs || [], venc: r.venc || 0, pend: r.pend || 0,
+    d: r.ult ? Math.round((R - new Date(r.ult + 'T00:00')) / 864e5) : null }));
+  fillSelect($('#f-is'), 'Todas', ['Inativo', 'A inativar no mês'], p.is);
+  fillSelect($('#f-iv'), 'Todos', uniq(all, 'v'), p.iv);
+  fillSelect($('#f-iseg'), 'Todos', uniq(all, 'seg'), p.iseg);
+  fillSelect($('#f-iinad'), 'Todos', ['Sim', 'Não'], p.iinad);
+  const q = normNome(p.q || '');
+  const base = all.filter((r) => (!p.is || r.sit === p.is) && (!p.iseg || r.seg === p.iseg) && (!p.iinad || r.inadT === p.iinad)
+    && (!q || normNome([r.g, r.cg, r.cid, r.v, ...(r.cl || []).map((c) => c[0] + ' ' + c[1])].join(' ')).includes(q)));
+  const sel = base.filter((r) => msHas(p.uf, r.uf) && (!p.iv || r.v === p.iv));
+  const agg = (rs, f) => d3.groups(rs, f).map(([k, x]) => ({ k, v: d3.sum(x, (r) => r.fat), n: x.length })).sort((a, b) => b.v - a.v);
+  barList($('#in-uf'), agg(base.filter((r) => !p.iv || r.v === p.iv), (r) => r.uf), 'var(--c1)', (k) => set({ uf: msTroca(p.uf, k) }), msVal(p.uf));
+  barList($('#in-v'), agg(base.filter((r) => msHas(p.uf, r.uf)), (r) => r.v).slice(0, 60), 'var(--c2)', (k) => set({ iv: p.iv === k ? null : k }), p.iv);
+  const inad = sel.filter((r) => r.inad), ai = sel.filter((r) => r.s === 'A'), fat = d3.sum(sel, (r) => r.fat);
+  const deve = d3.sum(inad, (r) => Math.max(0, r.venc));
+  $('#in-k').replaceChildren(...[
+    ['Grupos de clientes', INT.format(sel.length), INT.format(d3.sum(sel, (r) => (r.cl ? r.cl.length : 1))) + ' clientes'],
+    ['Inativos', INT.format(sel.length - ai.length), 'mais de 90 dias sem comprar'],
+    ['A inativar no mês', INT.format(ai.length), 'completam 90 dias sem comprar no mês'],
+    ['Faturado (histórico)', BRLc.format(fat), 'soma dos grupos'],
+    ['Inadimplentes', INT.format(inad.length), 'devem ' + BRLc.format(deve) + ' vencidos'],
+    ['Com pedido pendente', INT.format(sel.filter((r) => r.pend > 0).length), BRLc.format(d3.sum(sel, (r) => r.pend))],
+  ].map(([a, b, c]) => { const k = el('div', 'kpi'); k.append(el('span', 'note', a), el('span', 'v', b), el('span', 'sub', c)); return k; }));
+  const o = ORD.inat;
+  sel.sort(cmpOrd(o)); marcaOrd('#tab-in', o);
+  const lim = p.top || 50;
+  $('#in-t').textContent = `Grupos de clientes (${INT.format(sel.length)})`;
+  $('#in-n').textContent = `Base de ${dataBR(ref)}. ${sel.length > lim ? `Mostrando ${INT.format(lim)}; use Mostrar para ver mais. ` : ''}Clique num grupo com vários clientes para ver cada um. Contato e cidade são do cliente com maior faturamento; valores são a soma do grupo. Dias = desde o último pedido. Vendedor fora do time BOPED aparece como INTERNO.`;
+  const td = (t, c) => el('td', c, t);
+  const trs = [];
+  sel.slice(0, lim).forEach((r) => {
+    const tr = el('tr'); tr.dataset.cg = r.cg; if (r.cl) tr.dataset.cl = '1';
+    const g = el('td'); g.append(el('b', null, r.g), el('br'), el('small', 'note', `Cód. ${r.cg}` + (r.cl ? ` · ${r.cl.length} clientes ${inOpen === r.cg ? '▴' : '▾'}` : '')));
+    const s = el('td'); s.append(el('span', 'pill ' + (r.s === 'I' ? 'bad' : 'warn'), r.s === 'I' ? 'Inativo' : 'A inativar'));
+    if (r.inat) s.append(el('br'), el('small', 'note', (r.s === 'I' ? 'desde ' : 'em ') + dataBR(r.inat)));
+    const tel = el('td');
+    if (r.tel) { const a = el('a', null, r.tel); a.href = 'tel:+55' + r.tel.replace(/\D/g, ''); tel.append(a); } else tel.append('—');
+    if (r.em) tel.append(el('br'), el('small', 'note', r.em));
+    const inadC = el('td'); inadC.append(el('span', 'pill ' + (r.inad ? 'bad' : 'ok'), r.inadT));
+    const ped = td(dataBR(r.ult), 'n'); if (r.ped) ped.append(el('br'), el('small', 'note', 'aberto ' + dataBR(r.ped)));
+    const v = td(r.v); if (r.vs.length) v.append(el('br'), el('small', 'note', 'também: ' + r.vs.join(', ')));
+    tr.append(g, s, td(`${r.cid} / ${r.uf}`), tel, td(r.seg), inadC, td(r.venc > 0 ? BRL2.format(r.venc) : '—', 'n'), ped,
+      td(r.d == null ? '—' : INT.format(r.d), 'n'), td(BRL2.format(r.fat), 'n'), td(r.pend ? BRL2.format(r.pend) : '—', 'n'), v);
+    trs.push(tr);
+    if (inOpen === r.cg && r.cl) r.cl.forEach((c) => {
+      const t = el('tr', 'sub');
+      t.append(td(`${c[1]} · Cód. ${c[0]}`), td(''), td(`${c[2]} / ${c[3]}`), td(c[4] || '—'), td(''), td(''), td(c[6] > 0 ? BRL2.format(c[6]) : '—', 'n'),
+        td(dataBR(c[7]), 'n'), td(''), td(BRL2.format(c[5]), 'n'), td(''), td(c[8]));
+      trs.push(t);
+    });
+  });
+  $('#tab-in tbody').replaceChildren(...trs);
+  if ((p.aba || 'pedidos') === 'inativos') $('#takeaway').textContent = sel.length
+    ? `${INT.format(sel.length)} grupos de clientes inativos ou a inativar no mês, com ${BRL.format(fat)} de faturamento histórico. ${INT.format(ai.length)} inativam ainda este mês e ${INT.format(inad.length)} estão inadimplentes.`
+    : 'Nenhum grupo de clientes inativo com esses filtros.';
 }
 
 
@@ -2394,7 +2488,5 @@ function drawFoco(p, rows, gsel) {
       ...top.map((o) => { const b = el('button', null, `${o.g} · ${INT.format(o.q)} un.`); b.type = 'button'; b.dataset.pick = 'grupo'; b.dataset.v = o.k; b.title = 'Ver todos os subgrupos deste grupo de clientes'; return b; }));
   }
 }
-// link para o painel de clientes inativos: só no site publicado (GitHub Pages), onde os arquivos existem
-if (/github\.io$/.test(location.hostname)) $('#link-inativos').hidden = false;
 dash.onData(draw);
 </script>
