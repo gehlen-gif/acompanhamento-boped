@@ -751,7 +751,18 @@
     <p class="note" id="in-n"></p>
     <div class="scroll tall">
       <table id="tab-in" data-source="inativos">
-        <thead><tr><th data-ord="g" data-tipo="t">Grupo de cliente</th><th data-ord="sit" data-tipo="t">Situação</th><th data-ord="cid" data-tipo="t">Cidade / UF</th><th>Telefone</th><th data-ord="seg" data-tipo="t">Segmento</th><th data-ord="inadT" data-tipo="t">Inadimplente</th><th class="n" data-ord="venc">Valor vencido</th><th class="n" data-ord="ult" data-tipo="t">Último pedido</th><th class="n" data-ord="d">Dias</th><th class="n" data-ord="fat">Faturado (histórico)</th><th>5 principais subgrupos (qtd · valor)</th><th data-ord="v" data-tipo="t">Atendido por</th></tr></thead>
+        <thead><tr><th data-ord="g" data-tipo="t">Grupo de cliente</th><th data-ord="sit" data-tipo="t">Situação</th><th data-ord="cid" data-tipo="t">Cidade / UF</th><th>Telefone</th><th data-ord="seg" data-tipo="t">Segmento</th><th data-ord="inadT" data-tipo="t">Inadimplente</th><th class="n" data-ord="venc">Valor vencido</th><th class="n" data-ord="ult" data-tipo="t">Último pedido</th><th class="n" data-ord="d">Dias</th><th class="n" data-ord="fat">Faturado (histórico)</th><th data-ord="v" data-tipo="t">Atendido por</th><th>5 principais subgrupos (qtd · valor)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card" id="in-acomp">
+    <h2>Acompanhamento de Inativos</h2>
+    <p class="note" id="in-a-n"></p>
+    <div class="tiles" id="in-a-k"></div>
+    <div class="scroll">
+      <table id="tab-ia">
+        <thead><tr><th>Grupo de cliente</th><th>Responsável</th><th class="n">Atribuído em</th><th class="n">Fechar até</th><th class="n">Dias</th><th>Status</th><th class="n">Venda após a atribuição</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -1025,6 +1036,7 @@ $('#tab-in tbody').addEventListener('click', (e) => {
   if (t) { inOpen = inOpen === t.dataset.cg ? null : t.dataset.cg; draw(); }
   if (n) { inEdit = inEdit === n.dataset.cg ? null : n.dataset.cg; draw(); const s = $('#tab-in select'); if (s) s.focus(); }
 });
+$('#in-a-k').addEventListener('click', (e) => { const b = e.target.closest('[data-ia]'); if (b) set({ ia: P().ia === b.dataset.ia ? null : b.dataset.ia }); });
 $('#tab-in tbody').addEventListener('change', (e) => { if (e.target.matches('select[data-cg]')) { inEdit = null; salvarResp(e.target.dataset.cg, e.target.value); } });
 $('#tab-cob tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
@@ -1273,7 +1285,9 @@ try { resp = JSON.parse(localStorage.getItem(LS_RESP) || '{}') || {}; } catch (e
   } catch (e) { respDb = null; }
 })();
 async function salvarResp(cg, v) {
-  const novo = { v: v || '', em: new Date().toISOString() };
+  // a data da atribuição só muda quando o responsável muda; o nome do grupo fica no registro
+  const ant = resp[cg] || {}, r = (dash.data('inativos').data || []).find((x) => x.cg === cg) || {};
+  const novo = { v: v || '', em: ant.v === v && ant.em ? ant.em : new Date().toISOString(), g: r.g || ant.g || cg };
   if (respDb) {
     try { await respDb.doc('responsaveis/' + cg).set(novo); return; } catch (e) { alert('Não foi possível salvar para todos (' + (e && e.code || 'erro') + '). A escolha ficou salva só neste navegador.'); }
   }
@@ -1338,16 +1352,45 @@ function drawInativos() {
     if (r.sg) r.sg.forEach((x, i) => { if (i) sg.append(el('br')); sg.append(`${x[0]} · ${INT.format(x[1])} · ${BRL.format(x[2])}`); }); else sg.append(el('span', 'note', 'sem itens no histórico'));
     const v = td(r.v); if (r.vs.length) v.append(el('br'), el('small', 'note', 'também: ' + r.vs.join(', ')));
     tr.append(g, s, td(`${r.cid} / ${r.uf}`), tel, td(r.seg), inadC, td(r.venc > 0 ? BRL2.format(r.venc) : '—', 'n'), ped,
-      td(r.d == null ? '—' : INT.format(r.d), 'n'), td(BRL2.format(r.fat), 'n'), sg, v);
+      td(r.d == null ? '—' : INT.format(r.d), 'n'), td(BRL2.format(r.fat), 'n'), v, sg);
     trs.push(tr);
     if (inOpen === r.cg && r.cl) r.cl.forEach((c) => {
       const t = el('tr', 'sub');
       t.append(td(`${c[1]} · Cód. ${c[0]}`), td(''), td(`${c[2]} / ${c[3]}`), td(c[4] || '—'), td(''), td(''), td(c[6] > 0 ? BRL2.format(c[6]) : '—', 'n'),
-        td(dataBR(c[7]), 'n'), td(''), td(BRL2.format(c[5]), 'n'), td(''), td(c[8]));
+        td(dataBR(c[7]), 'n'), td(''), td(BRL2.format(c[5]), 'n'), td(c[8]), td(''));
       trs.push(t);
     });
   });
   $('#tab-in tbody').replaceChildren(...trs);
+  // Acompanhamento de Inativos: cada atribuição tem 10 dias para virar venda
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const byCg = new Map(all.map((r) => [r.cg, r])), hfim = d.data[0].hfim || ref;
+  const ST = [['Convertido', 's-bom'], ['Em aberto', 's-ativo'], ['Buscar fechamento', 's-risco'], ['Fechar urgente', 's-inativo'], ['Prazo vencido', 's-neutro']];
+  const regs = Object.entries(resp).filter(([, x]) => x && x.v && (!p.iresp || p.iresp === x.v)).map(([cg, x]) => {
+    const r = byCg.get(cg), em = (x.em || '').slice(0, 10), t0 = new Date(em + 'T00:00');
+    const dias = Math.max(1, Math.floor((hoje - t0) / 864e5)), ate = new Date(t0.getTime() + 10 * 864e5);
+    const venda = r ? d3.sum((r.pd || []).filter((z) => z[0] >= em), (z) => z[1]) : 0;
+    const st = venda > 0 || !r ? 'Convertido' : dias <= 3 ? 'Em aberto' : dias <= 7 ? 'Buscar fechamento' : dias <= 10 ? 'Fechar urgente' : 'Prazo vencido';
+    return { cg, g: r ? r.g : x.g || cg, v: x.v, em, ate: ate.toISOString().slice(0, 10), dias, venda, st, fora: !r };
+  });
+  $('#in-a-k').replaceChildren(...ST.map(([k, c]) => {
+    const rs = regs.filter((r) => r.st === k), b = el('button', 'tile ' + c + (p.ia === k ? ' on' : ''));
+    b.type = 'button'; b.dataset.ia = k;
+    b.append(el('span', 'big', INT.format(rs.length)), el('span', 'lbl', k), el('span', 'hint',
+      k === 'Convertido' ? `${regs.length ? PCT.format(rs.length / regs.length) : '—'} das atribuições · ${BRL.format(d3.sum(rs, (r) => r.venda))}`
+        : { 'Em aberto': '1 a 3 dias', 'Buscar fechamento': '4 a 7 dias', 'Fechar urgente': '8 a 10 dias', 'Prazo vencido': 'mais de 10 dias sem venda' }[k]));
+    return b;
+  }));
+  const ordem = ST.map((x) => x[0]);
+  const lista = regs.filter((r) => !p.ia || r.st === p.ia).sort((a, b) => ordem.indexOf(b.st) - ordem.indexOf(a.st) || a.ate.localeCompare(b.ate));
+  const cor = { 'Convertido': 'ok', 'Em aberto': 'ok', 'Buscar fechamento': 'warn', 'Fechar urgente': 'bad', 'Prazo vencido': 'bad' };
+  $('#tab-ia tbody').replaceChildren(...(lista.length ? lista.map((r) => {
+    const tr = el('tr'), s = el('td');
+    s.append(el('span', 'pill ' + cor[r.st], r.st)); if (r.fora) s.append(el('br'), el('small', 'note', 'saiu da lista de inativos'));
+    tr.append(td(r.g), td(r.v), td(dataBR(r.em), 'n'), td(dataBR(r.ate), 'n'), td(INT.format(r.dias), 'n'), s, td(r.venda > 0 ? BRL2.format(r.venda) : '—', 'n'));
+    return tr;
+  }) : [(() => { const tr = el('tr'), c = td('Nenhuma atribuição ainda. Clique no nome de um grupo na lista acima para escolher o responsável.', 'note'); c.colSpan = 7; tr.append(c); return tr; })()]));
+  $('#in-a-n').textContent = `${INT.format(regs.length)} atribuições. Prazo de 10 dias a partir da atribuição: 1 a 3 dias em aberto (verde), 4 a 7 buscar fechamento (laranja), 8 a 10 fechar urgente (vermelho). Convertido = pedido do grupo depois da atribuição (pedidos até ${dataBR(hfim)}) ou grupo que saiu da lista de inativos. ${respDb ? 'Atribuições salvas para todos.' : 'Atribuições salvas neste navegador.'} Clique num quadro para filtrar.`;
   if ((p.aba || 'pedidos') === 'inativos') $('#takeaway').textContent = sel.length
     ? `${INT.format(sel.length)} grupos de clientes inativos ou a inativar no mês, com ${BRL.format(fat)} de faturamento histórico. ${INT.format(ai.length)} inativam ainda este mês e ${INT.format(inad.length)} estão inadimplentes.`
     : 'Nenhum grupo de clientes inativo com esses filtros.';

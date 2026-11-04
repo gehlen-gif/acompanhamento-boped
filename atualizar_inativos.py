@@ -159,12 +159,22 @@ def subgrupos(hist):
     a = h.groupby(['cg', 'sub']).agg(q=('q', 'sum'), v=('vt', 'sum')).reset_index()
     a = a[a.v > 0].sort_values(['cg', 'v'], ascending=[True, False])
     top = {g: [[r.sub, int(round(r.q)), round(float(r.v), 2)] for r in d.head(5).itertuples()] for g, d in a.groupby('cg')}
+    # pedidos dos últimos 45 dias do histórico, por dia: [data, valor] (Acompanhamento de Inativos: venda após a atribuição)
+    rec = h[h['Data'] >= h['Data'].max() - pd.Timedelta(days=45)].groupby(['cg', h['Data'].dt.strftime('%Y-%m-%d')]).vt.sum()
+    rec = rec[rec > 0]
+    pdia = {}
+    for (g, dia), v in rec.items():
+        pdia.setdefault(g, []).append([dia, round(float(v), 2)])
     for r in out:
         r.pop('sg', None)
+        r.pop('pd', None)
         if r['cg'] in top:
             r['sg'] = top[r['cg']]
+        if r['cg'] in pdia:
+            r['pd'] = pdia[r['cg']]
     if out:
         out[0]['hist'] = f"{hist['Data'].min():%d/%m/%Y} a {hist['Data'].max():%d/%m/%Y}"
+        out[0]['hfim'] = f"{hist['Data'].max():%Y-%m-%d}"
     gravar(out)
     print(f'inativos: subgrupos para {sum("sg" in r for r in out)} de {len(out)} grupos')
 
@@ -215,7 +225,7 @@ def do_vendedor(vendedor, linhas=None):
     boped = lambda x: not fora(x)
     sel = [so_dele(r, vendedor) if any(boped(x) and x != vendedor for x in [r['v']] + r.get('vs', [])) else r for r in sel]
     if sel and linhas and 'ref' in linhas[0]:
-        sel[0] = {**sel[0], **{k: linhas[0][k] for k in ('ref', 'reps', 'hist') if k in linhas[0]}}
+        sel[0] = {**sel[0], **{k: linhas[0][k] for k in ('ref', 'reps', 'hist', 'hfim') if k in linhas[0]}}
     return sel
 
 
