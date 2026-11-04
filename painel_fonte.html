@@ -179,6 +179,7 @@
       <h1>Carteiras por grupo de cliente</h1>
       <p class="lead" id="takeaway"></p>
       <p class="note" id="atualizacao"></p>
+      <p class="note" id="link-inativos" hidden><a href="inativos.html">Painel de clientes inativos</a> · <a href="inativos/">por vendedor</a></p>
     </div>
     <div class="seg" id="tema" role="group" aria-label="Tema">
       <button type="button" data-tema="">Automático</button>
@@ -2703,5 +2704,7 @@ function drawFoco(p, rows, gsel) {
       ...top.map((o) => { const b = el('button', null, `${o.g} · ${INT.format(o.q)} un.`); b.type = 'button'; b.dataset.pick = 'grupo'; b.dataset.v = o.k; b.title = 'Ver todos os subgrupos deste grupo de clientes'; return b; }));
   }
 }
+// link para o painel de clientes inativos: só no site publicado (GitHub Pages), onde os arquivos existem
+if (/github\.io$/.test(location.hostname)) $('#link-inativos').hidden = false;
 dash.onData(draw);
 </script>

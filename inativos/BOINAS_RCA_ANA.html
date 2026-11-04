@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clientes inativos · BOINAS - RCA ANA</title>
+<style>
+:root{--color-fg:#1d2330;--color-fg-muted:#5d6577;--color-bg:#f6f7f9;--color-panel:#ffffff;--color-border-line:#e1e4ea;--color-ok:#1f7a4d;--color-warn:#a1620a;--color-bad:#b3261e;
+--surface:#eef1f6;--grid:#edf0f4;--c1:#2f5fd0;--c2:#13856f;
+--sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--serif:Georgia,"Times New Roman",serif;--r:8px;color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--color-fg:#e7eaf0;--color-fg-muted:#a0a8b8;--color-bg:#14171d;--color-panel:#1c2028;--color-border-line:#2e3440;--color-ok:#5cc58f;--color-warn:#e3a547;--color-bad:#f07b72;--surface:#262b35;--grid:#272c36;--c1:#7aa0f5;--c2:#4fc3a6;color-scheme:dark}}
+:root[data-theme="dark"]{--color-fg:#e7eaf0;--color-fg-muted:#a0a8b8;--color-bg:#14171d;--color-panel:#1c2028;--color-border-line:#2e3440;--color-ok:#5cc58f;--color-warn:#e3a547;--color-bad:#f07b72;--surface:#262b35;--grid:#272c36;--c1:#7aa0f5;--c2:#4fc3a6;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--sans);font-variant-numeric:tabular-nums}
+main{max-width:1400px;margin:0 auto;padding:24px 16px 40px;display:grid;gap:24px}
+h1{font-family:var(--serif);font-weight:400;font-size:26px;margin:0;text-wrap:balance}
+h2{font-size:16px;font-weight:600;margin:0}
+.note{color:var(--color-fg-muted);font-size:12px;margin:0}
+.lead{margin:4px 0 0;color:var(--color-fg-muted);max-width:80ch}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.filters label,.lbl{display:grid;gap:2px;font-size:12px;color:var(--color-fg-muted);min-width:0;position:relative}
+select,input,button{font:inherit;color:var(--color-fg);background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--r);padding:4px 8px;max-width:16rem}
+input[type=search]{width:16rem;max-width:100%}
+button{cursor:pointer}button:hover{border-color:var(--color-fg-muted)}
+.ms summary{list-style:none;cursor:pointer;background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--r);padding:4px 1.6em 4px 8px;min-width:7rem;max-width:16rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;color:var(--color-fg);font-size:14px}
+.ms summary::-webkit-details-marker{display:none}
+.ms summary::after{content:'▾';position:absolute;right:.5em;top:50%;transform:translateY(-50%);color:var(--color-fg-muted)}
+.ms-pop{position:absolute;z-index:30;top:100%;left:0;margin-top:4px;background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--r);box-shadow:0 6px 20px rgba(0,0,0,.18);padding:6px;min-width:14rem;max-width:min(26rem,calc(100vw - 32px));max-height:20rem;overflow:auto}
+.ms-pop label{display:flex;gap:8px;align-items:center;padding:3px 4px;color:var(--color-fg);font-size:14px;border-radius:var(--r);cursor:pointer}
+.ms-pop label:hover{background:var(--surface)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:16px}
+.kpi{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--r);padding:12px 16px;display:grid;gap:4px}
+.kpi .v{font-family:var(--serif);font-size:26px}
+.kpi .s{font-size:12px;color:var(--color-fg-muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:16px}
+.card{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--r);padding:16px;display:grid;gap:8px;align-content:start;min-width:0}
+.bars{display:grid;gap:4px}
+.bar{display:grid;grid-template-columns:minmax(0,13rem) 1fr auto;gap:8px;align-items:center;font-size:12px;cursor:pointer;border-radius:var(--r);padding:2px 4px}
+.bar:hover,.bar.on{background:var(--surface)}
+.bar .l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .tr{height:14px;background:var(--grid);border-radius:4px;overflow:hidden}
+.bar .tr,.bar .f{display:block}
+.bar .f{height:100%;border-radius:4px;background:var(--c1)}
+.bar .f.b{background:var(--color-bad)}
+.bar .val{text-align:right;min-width:7rem}
+.scroll{max-height:40rem;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--color-border-line);text-align:left;vertical-align:top}
+th{position:sticky;top:0;background:var(--color-panel);font-weight:600;white-space:nowrap;cursor:pointer;z-index:1}
+th.n,td.n{text-align:right}
+th::after{content:' ↕';opacity:.35}th.desc::after{content:' ▼';opacity:1}th.asc::after{content:' ▲';opacity:1}
+tr.g:hover td{background:var(--surface)}
+td .m{color:var(--color-fg-muted)}
+td .em{word-break:break-all;display:inline-block;max-width:13rem}
+.pill{display:inline-block;border-radius:999px;padding:1px 8px;font-size:11px;white-space:nowrap;border:1px solid currentColor}
+.pill.bad{color:var(--color-bad)}.pill.warn{color:var(--color-warn)}.pill.ok{color:var(--color-ok)}.pill.mut{color:var(--color-fg-muted)}
+.mine td:first-child{box-shadow:inset 3px 0 0 var(--c1)}
+.tog{cursor:pointer;color:var(--c1);font-size:11px;border:0;background:none;padding:0}
+tr.sub td{background:var(--surface);font-size:11px}
+a{color:var(--c1)}
+@media (max-width:700px){.bar{grid-template-columns:minmax(0,7rem) 1fr auto}.bar .val{min-width:5rem}}
+</style></head><body><main id="app"></main>
+<script>
+const DATA=[{"cg":"1055909","g":"AMAZON SERVICOS DE VAREJO DO BRASILLTDA.","s":"Inativo","seg":"LOJISTA ON","uf":"RJ","cid":"Belford Roxo","tel":"(11) 4130-2000","em":"amzbr-tax-compliance@amazon.com","v":"TURBON - KA ROBERTA","t":"TURBON","vs":[],"fat":81613.14,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-05-25","ped":null,"inat":"2026-08-23","cl":[]},{"cg":"1066523","g":"GRUPO MED LAGOS","s":"Inativo","seg":"LOJISTA OFF NÃO CIRÚ","uf":"RJ","cid":"Araruama","tel":"(22) 97400-2089","em":"loja@medlagos.com.br","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":68004.48,"inad":"Sim","venc":12541.62,"pend":0.0,"ult":"2026-06-25","ped":null,"inat":"2026-09-23","cl":[{"c":"1065060","n":"MED LAGOS MATERIAIS HOSPITALARES LTDA","uf":"RJ","cid":"Araruama","tel":"(22) 97400-2089","fat":64471.41,"venc":11032.2,"ult":"2026-06-25","v":"BOINAS - RCA ANA"},{"c":"1015976","n":"MED LAGOS CIRURGICA IMPORTACAOE EXPORTACAO LTDA","uf":"RJ","cid":"Araruama","tel":"(21) 98959-0666","fat":3533.07,"venc":1509.42,"ult":"2026-06-25","v":"BOINAS - RCA ANA"}]},{"cg":"1007578","g":"DENTAL CARRERA COMERCIO E REPRESENTACOESEIRELI","s":"A inativar no mês","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio Das Ostras","tel":"(22) 2777-5133","em":"dentalcarrera@yahoo.com.br","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":67260.25,"inad":"Sim","venc":11702.61,"pend":0.0,"ult":"2026-08-25","ped":null,"inat":"2026-11-23","cl":[]},{"cg":"1017632","g":"GRUPO SOARES & MARINS","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Iguaba Grande","tel":"(22) 99202-0404","em":"","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":51730.17,"inad":"Não","venc":0.0,"pend":913.2,"ult":"2026-07-24","ped":"2026-06-17","inat":"2026-10-22","cl":[{"c":"1010678","n":"SOARES & MARINS PAES PRODUTOS HOSPITALARES LTDA","uf":"RJ","cid":"Iguaba Grande","tel":"(22) 99202-0404","fat":33485.87,"venc":0.0,"ult":"2026-07-24","v":"BOINAS - RCA ANA"},{"c":"1017630","n":"SOARES & MARINS.PAES LTDAALDEIAMED PRODUTOS HOSPITALARES","uf":"RJ","cid":"São Pedro Da Aldeia","tel":"(22) 99202-0404","fat":18244.3,"venc":0.0,"ult":"2026-07-24","v":"BOINAS - RCA ANA"}]},{"cg":"1019986","g":"GRUPO PERES DE FARIA FARMACIA","s":"A inativar no mês","seg":"FARMA INDEPENDENTE","uf":"RJ","cid":"Saquarema","tel":"(22) 99797-9759","em":"bacaxaeconomica@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":18266.98,"inad":"Não","venc":0.0,"pend":954.58,"ult":"2026-08-27","ped":"2026-08-20","inat":"2026-11-25","cl":[]},{"cg":"1009476","g":"VIVER BEM HOSPITALAR DE ITABORAI LTDA","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Itaboraí","tel":"(21) 2082-0221","em":"vb.hospitalar@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":17282.06,"inad":"Sim","venc":420.14,"pend":0.0,"ult":"2026-06-17","ped":null,"inat":"2026-09-15","cl":[]},{"cg":"1068913","g":"VM3 COMERCIO E IMPORTACAO LTDA","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 98734-8434","em":"vm3brindes@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":16171.51,"inad":"Não","venc":0.0,"pend":132.0,"ult":"2026-06-26","ped":"2026-05-25","inat":"2026-09-24","cl":[]},{"cg":"1036472","g":"PAIXAO ORTOMEDICAL LTDA","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Nova Iguaçu","tel":"(21) 2767-7919","em":"paixaoortomedical@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":14882.28,"inad":"Não","venc":0.0,"pend":935.54,"ult":"2026-07-23","ped":"2026-07-17","inat":"2026-10-21","cl":[]},{"cg":"1014980","g":"GRUPO ORTHOLOC","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 2567-0191","em":"escritorio@ortholoc.com.br","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":14782.23,"inad":"Não","venc":0.0,"pend":1401.16,"ult":"2026-06-30","ped":"2026-06-26","inat":"2026-09-28","cl":[{"c":"1006798","n":"ORTHOLOC COMERCIO E ALUGUEL DE MATERIAISMEDICOS HOSPITALARES LTDA","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 2567-0191","fat":8227.44,"venc":0.0,"ult":"2026-06-30","v":"BOINAS - RCA ANA"},{"c":"1006785","n":"COPA - LOC COMERCIO E ALUGUEL DE MATERIAIS MEDICOS HOSPITALARES LTDA","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 2236-4274","fat":4816.86,"venc":0.0,"ult":"2026-06-30","v":"BOINAS - RCA ANA"},{"c":"1008628","n":"ORTHOLOC COMERCIO E ALUGUEL DE MATERIAISMEDICOS HOSPITALARES LTDA","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 2567-0191","fat":1737.93,"venc":0.0,"ult":"2026-06-30","v":"BOINAS - RCA ANA"}]},{"cg":"1043781","g":"VIVER BEM HOSPITALAR DE RIO BONITO LTDAVIVER BEM HOSPITALAR","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio Bonito","tel":"(21) 9705-7404","em":"marilenefarma02@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":13061.89,"inad":"Não","venc":0.0,"pend":528.44,"ult":"2026-06-17","ped":"2026-05-22","inat":"2026-09-15","cl":[]},{"cg":"1017158","g":"R2 RIO PRODUTOS HOSPITALARES LTDADOC DOC MATERIAL HOSPITALAR","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Niterói","tel":"(21) 2610-1393","em":"financeiro@docdoc.med.br","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":7324.6,"inad":"Sim","venc":7607.52,"pend":0.0,"ult":"2026-03-20","ped":null,"inat":"2026-06-18","cl":[]},{"cg":"1007533","g":"ORTHOCAMPOS ARTIGOS MEDICOS E ORTOPEDICOS LTDA","s":"A inativar no mês","seg":"COMPRADOR OCASIONAL","uf":"RJ","cid":"Campos Dos Goytacazes","tel":"(22) 2724-7068","em":"diogochagastinoco@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":6420.65,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-08-20","ped":null,"inat":"2026-11-18","cl":[]},{"cg":"1007972","g":"AME COMERCIO E LOCACAO DE MATERIAL MEDICO E HOSPITALAR LTDA","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 2234-3434","em":"cobranca.ame@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":6356.23,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-06-30","ped":null,"inat":"2026-09-28","cl":[]},{"cg":"1007881","g":"ORTOPEDIA SAO JOSE LTDA","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Campos Dos Goytacazes","tel":"(22) 99864-6056","em":"luana.ortopediasaojose@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":6226.36,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-07-30","ped":null,"inat":"2026-10-28","cl":[]},{"cg":"1073561","g":"53.927.819 GABRIEL FERREIRA LEAL","s":"Inativo","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Nova Iguaçu","tel":"(21) 8764-4464","em":"gabrieldelucasmusic@gmail.com","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":6015.0,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-06-22","ped":null,"inat":"2026-09-20","cl":[]},{"cg":"1072498","g":"DR CONSULTA CENTRO MEDICOLTDA","s":"A inativar no mês","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Rio De Janeiro","tel":"(11) 4118-1316","em":"juridico@drconsulta.com","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":5805.65,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-08-10","ped":null,"inat":"2026-11-08","cl":[]},{"cg":"1071579","g":"MATERIAL MEDICO HOSPITALAR 7 DE SETEMBRO LIMITADA","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio De Janeiro","tel":"(24) 3346-4777","em":"lj.centro@tecnomedi.com.br","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":4699.01,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-05-27","ped":null,"inat":"2026-08-25","cl":[]},{"cg":"1009184","g":"CIRURGICA TELES LTDA","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Niterói","tel":"(21) 3714-0995","em":"cirurgicateles@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":4396.43,"inad":"Não","venc":0.0,"pend":398.0,"ult":"2026-06-30","ped":"2026-06-30","inat":"2026-09-28","cl":[]},{"cg":"1075158","g":"SOLAR CUIDADOS E SERVICOS EM SAUDE LTDA.","s":"Inativo","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 99684-2440","em":"compras@solarcuidados.com.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":4395.6,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-07-21","ped":null,"inat":"2026-10-19","cl":[]},{"cg":"1038288","g":"SUTURA MEDICA COMERCIO DE MATERIALHOSPITALAR LTDA","s":"A inativar no mês","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 9994-4228","em":"andrecarvalho@suturamedica.com.br","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":4212.8,"inad":"Não","venc":0.0,"pend":708.82,"ult":"2026-08-14","ped":"2026-08-05","inat":"2026-11-12","cl":[]},{"cg":"1072219","g":"FUNDACAO EDUCACIONAL ROSEMARPIMENTEL","s":"A inativar no mês","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Volta Redonda","tel":"(24) 3345-1707","em":"islamartins@ugb.edu.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":4016.12,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-08-17","ped":null,"inat":"2026-11-15","cl":[]},{"cg":"1009686","g":"CHRISMEDICAL COMERCIO DE ARTIGOS MEDICOSEIRELI","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 99998-5202","em":"contato@chrismedical.com.br","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":3425.13,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-01-27","ped":null,"inat":"2026-04-27","cl":[]},{"cg":"1009523","g":"PORTO FARMA FARMACIA E PERFUMARIA LTDA","s":"Inativo","seg":"FARMA INDEPENDENTE","uf":"RJ","cid":"Macaé","tel":"(22) 99290-3390","em":"porto-farma@hotmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":3198.7,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-05-07","ped":null,"inat":"2026-08-05","cl":[]},{"cg":"1036372","g":"JPMED MATERIAL MEDICO LTDAJPMED MATERIAL MEDICO LTDA","s":"A inativar no mês","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 6474-4414","em":"jpmedmaterial@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":3167.02,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-08-24","ped":null,"inat":"2026-11-22","cl":[]},{"cg":"1070630","g":"COMPANHIA INDUSTRIAL DE METAIS E PLASTI LTDA","s":"Inativo","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Barra Do Piraí","tel":"(21) 99430-0836","em":"stephane.mendes@cimep.com.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":2084.31,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-05-11","ped":null,"inat":"2026-08-09","cl":[]},{"cg":"1071494","g":"REDE DOR SAO LUIZ S.A","s":"Inativo","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 99744-2875","em":"simone.couto@idor.org","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":2072.0,"inad":"Sim","venc":2072.0,"pend":0.0,"ult":"2026-05-19","ped":null,"inat":"2026-08-17","cl":[]},{"cg":"1055034","g":"GRUPO MJR","s":"Inativo","seg":"LOJ. LICITAÇÃO","uf":"RJ","cid":"Piraí","tel":"(22) 2537-0144","em":"serra_araras@yahoo.com.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":1834.38,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-01-22","ped":null,"inat":"2026-04-22","cl":[]},{"cg":"1074957","g":"50.460.723 MARIA APARECIDA GABRIEL FERNANDES","s":"Inativo","seg":"GARANTIA/ASSISTÊNCIA","uf":"RJ","cid":"Niterói","tel":"(21) 99644-9872","em":"eds.clira@gmail.com","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":1749.0,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-07-17","ped":null,"inat":"2026-10-15","cl":[]},{"cg":"1039465","g":"SANTA CASA DE MISERICÓRDIA DE RESENDE","s":"Inativo","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Resende","tel":"(80) 0310-0002","em":"lu-1351770737396266@alias.integracommerce.com.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":1738.9,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-02-20","ped":null,"inat":"2026-05-21","cl":[]},{"cg":"1019495","g":"INSTITUTO CIRURGICO GABRIEL DE LUCENALTDAHOSPITAL QUALI IPANEMA","s":"Inativo","seg":"HOSPITAIS/CLINICAS","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 3257-1350","em":"engenharia.hqi@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":1587.3,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-04-28","ped":null,"inat":"2026-07-27","cl":[]},{"cg":"1008730","g":"KR CORREA COMERCIO","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio Bonito","tel":"(21) 99469-4209","em":"soshospitalar2@gmail.com","v":"BOINAS - RCA ANA","t":"BOINAS AZUIS","vs":[],"fat":1382.83,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-06-30","ped":null,"inat":"2026-09-28","cl":[]},{"cg":"1073788","g":"PROVINCIA FRANCISCANA DA IMACULADA CONC BRASIL","s":"Inativo","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 98420-7842","em":"conventorj@franciscanos.org.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":1286.1,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-06-29","ped":null,"inat":"2026-09-27","cl":[]},{"cg":"1071763","g":"HOSPITAL DANIEL LIPP LTDA","s":"A inativar no mês","seg":"PUBLICO INSTITUIÇÃO","uf":"RJ","cid":"Duque De Caxias","tel":"(21) 98125-0607","em":"marionovaesrj@hotmail.com","v":"INSTITUIÇÕES - RCA GABRIEL","t":"INSTITUIÇÕES","vs":[],"fat":1198.0,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-05-31","ped":null,"inat":"2026-11-27","cl":[]},{"cg":"1075948","g":"E.TAMUSSINO & CIA LTDA","s":"A inativar no mês","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 98124-5354","em":"nilton.araujo@tamussino.com.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":1099.0,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-08-03","ped":null,"inat":"2026-11-01","cl":[]},{"cg":"1076106","g":"GUANABARA HOME CARE SERVICOS MEDICOS DOM","s":"A inativar no mês","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Rio De Janeiro","tel":"(11) 3897-2300","em":"igor.lima@homedoctor.com.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":1098.75,"inad":"Sim","venc":1098.75,"pend":0.0,"ult":"2026-08-06","ped":null,"inat":"2026-11-04","cl":[]},{"cg":"1068806","g":"TAVARES OFFSHORE ENERGIA LTDA","s":"Inativo","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Macaé","tel":"(99) 9999-9999","em":"48992151000108@mail.mercadolivre.com","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":729.0,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-04-07","ped":null,"inat":"2026-07-06","cl":[]},{"cg":"1068438","g":"NEUROPHOTO EQUIPAMENTOS LTDA","s":"Inativo","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 99409-6294","em":"compras@neurophoto.com.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":257.03,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-03-31","ped":null,"inat":"2026-06-29","cl":[]},{"cg":"1072155","g":"INSTITUICAO DE LONGA PERMANENCIA PARA I LTDA","s":"Inativo","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Niterói","tel":"(47) 99787-0557","em":"gerenciaminhacasa@gmail.com","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":166.67,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-05-28","ped":null,"inat":"2026-08-26","cl":[]},{"cg":"1071810","g":"COOPERATIVA DE TRABALHO DOS PROFISSIONA LTDA","s":"Inativo","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Campos Dos Goytacazes","tel":"(22) 99620-1631","em":"casaviva@inovar.coop.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":164.57,"inad":"Não","venc":0.0,"pend":0.0,"ult":"2026-05-26","ped":null,"inat":"2026-08-24","cl":[]},{"cg":"1075287","g":"UNIMED DE MACAE COOPERATIVA DE ASSISTEN SAUDE","s":"A inativar no mês","seg":"VENDA CORPORATIVA CN","uf":"RJ","cid":"Macaé","tel":"(22) 99840-2009","em":"contabilidade@costadosol.unimed.com.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":55.37,"inad":"Sim","venc":28.73,"pend":0.0,"ult":"2026-08-11","ped":null,"inat":"2026-11-09","cl":[]},{"cg":"1006255","g":"IMPERIOMED DISTRIBUIDORA DE MATERIAL MEDICO E HOSPITALAR LTDA","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio De Janeiro","tel":"","em":"distribuidoraimperiomed@gmail.com","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":0.0,"inad":"Sim","venc":26703.39,"pend":0.0,"ult":"2021-09-15","ped":null,"inat":"2021-12-14","cl":[]},{"cg":"1007218","g":"EDIO MARQUES DE OLIVEIRA ARTIGOS MEDICOS","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 99560-8405","em":"emolab02@outlook.com","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":0.0,"inad":"Sim","venc":94001.41,"pend":0.0,"ult":"2021-04-28","ped":null,"inat":"2021-07-27","cl":[]},{"cg":"1008216","g":"ORTOPEDICA 25 DE AGOSTO LTDA","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Duque De Caxias","tel":"(21) 2772-0082","em":"orto.25deagosto@gmail.com","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":0.0,"inad":"Sim","venc":9813.6,"pend":0.0,"ult":"2024-12-23","ped":null,"inat":"2025-03-23","cl":[]},{"cg":"1010299","g":"M.T. MEDICAL LTDA","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Campos Dos Goytacazes","tel":"(22) 3013-7741","em":"almoxarifado@medicalmoura.com.br","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":0.0,"inad":"Sim","venc":27455.03,"pend":0.0,"ult":"2023-01-09","ped":null,"inat":"2023-04-09","cl":[]},{"cg":"1018863","g":"PROENFFORENSE ENFERMAGEM LTDAPROENFFORENSE","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Barra Do Piraí","tel":"(24) 9740-5511","em":"proenf50@gmail.com","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":0.0,"inad":"Não","venc":-112.82,"pend":0.0,"ult":"2025-05-23","ped":null,"inat":"2025-08-21","cl":[]},{"cg":"1021003","g":"PRODUCTMED COMERCIO E SERVICOS LTDAPRODUCTMED","s":"Inativo","seg":"LOJISTA OFF CIRÚRGIC","uf":"RJ","cid":"Nova Iguaçu","tel":"(21) 7021-5404","em":"compras.productmed@gmail.com","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":0.0,"inad":"Sim","venc":9249.52,"pend":0.0,"ult":"2024-01-19","ped":null,"inat":"2024-04-18","cl":[]},{"cg":"1042445","g":"ARAUJO ABREU ENGENHARIA LTDA","s":"Inativo","seg":"ECOMMERCE PF","uf":"RJ","cid":"Rio De Janeiro","tel":"(21) 2637-3706","em":"daniel.zanchetta@inca.gov.br","v":"INSTITUIÇÕES - RCA GABRIEL","t":"INSTITUIÇÕES","vs":[],"fat":0.0,"inad":"Não","venc":0.0,"pend":1263.8,"ult":"2025-05-26","ped":"2026-09-30","inat":"2025-11-22","cl":[]},{"cg":"1060337","g":"ALKMYA DE SAO GONCALO INDUSTRIA E COMERCIO LIMITADAALKMIA","s":"Inativo","seg":"LOJISTA ON","uf":"RJ","cid":"São Gonçalo","tel":"(21) 99213-0082","em":"allkmiaecommerce@gmail.com","v":"Sem vendedor","t":"Sem vendedor","vs":[],"fat":0.0,"inad":"Não","venc":-12.91,"pend":0.0,"ult":"2025-10-24","ped":null,"inat":"2026-01-22","cl":[]}];const META={"ref": "2026-11-04", "titulo": "Clientes inativos · BOINAS - RCA ANA", "sub": "UF de atuação: RJ · base de 04/11/2026", "individual": {"v": "BOINAS - RCA ANA", "ufs": ["RJ"]}};
+(function(){
+const $=s=>document.querySelector(s);
+const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+const brl2=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const int=v=>v.toLocaleString('pt-BR');
+const fd=s=>s?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):'—';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const REF=new Date(META.ref+'T00:00:00');
+const dias=s=>s?Math.round((REF-new Date(s+'T00:00:00'))/864e5):null;
+DATA.forEach(g=>{g.d=dias(g.ult);g.macro=g.v==='Sem vendedor'?'Sem vendedor':g.t.split(' - ')[0];});
+const IND=META.individual;
+const uniq=(f)=>[...new Set(DATA.map(f))].filter(x=>x!=null&&x!=='').sort((a,b)=>String(a).localeCompare(String(b),'pt-BR'));
+const F={q:'',s:new Set(),uf:new Set(),v:new Set(),time:new Set(),seg:new Set(),inad:'',minha:false,faixa:''};
+let ord={k:'fat',dir:-1},lim=200,openRows=new Set();
+
+const app=$('#app');
+app.innerHTML=`
+<header><h1>${esc(META.titulo)}</h1>
+<p class="lead">${esc(META.sub)}. Só grupos com situação Inativo ou A inativar no mês. Quando o grupo tem clientes em UFs ou cidades diferentes, contato, UF e cidade são do cliente com maior faturamento histórico; valores são a soma do grupo.</p></header>
+<div class="filters" id="flt">
+<label>Buscar grupo, cliente, cidade ou código<input type="search" id="q" placeholder="Digite para filtrar"></label>
+<div class="lbl">Situação<span id="ms-s"></span></div>
+<div class="lbl">UF<span id="ms-uf"></span></div>
+<div class="lbl">Atendido por<span id="ms-v"></span></div>
+<div class="lbl">Time<span id="ms-time"></span></div>
+<div class="lbl">Segmento<span id="ms-seg"></span></div>
+<label>Inadimplência<select id="inad"><option value="">Todos</option><option>Sim</option><option>Não</option></select></label>
+<label>Tempo sem comprar<select id="faixa"><option value="">Todos</option><option value="0-120">até 120 dias</option><option value="121-180">121 a 180 dias</option><option value="181-365">181 a 365 dias</option><option value="366-99999">mais de 1 ano</option></select></label>
+${IND?`<label style="flex-direction:row;display:flex;gap:6px;align-items:center;color:var(--color-fg)"><input type="checkbox" id="minha"> Só a minha carteira</label>`:''}
+<button id="limpar">Limpar filtros</button>
+<button id="csv">Baixar CSV</button>
+</div>
+<section class="kpis" id="kpis"></section>
+<section class="grid"><div class="card"><h2>Por UF</h2><p class="note">Faturamento histórico dos grupos inativos. Clique para filtrar.</p><div class="bars" id="b-uf"></div></div>
+<div class="card"><h2>Por quem atende hoje</h2><p class="note">Faturamento histórico dos grupos inativos. Clique para filtrar.</p><div class="bars" id="b-v"></div></div></section>
+<section class="card"><h2 id="tt">Grupos de clientes</h2><p class="note">Clique no título da coluna para ordenar. "Último pedido" é a data do último faturamento; "Dias" é o tempo desde ele até ${fd(META.ref)}. ${IND?'Grupos da sua carteira têm uma marca azul à esquerda.':''}</p>
+<div class="scroll"><table><thead><tr id="hd"></tr></thead><tbody id="tb"></tbody></table></div><div id="mais"></div></section>
+<p class="note">Fonte: relatório de clientes do sistema de ${fd(META.ref)} e equipe BOPED (vendedores_time.csv). Atendido por = Representante (Z1), Key Account (Z3) ou Vendedor Interno (VE), nessa ordem, só vendedores do time BOPED; clientes de vendedores de outros times ficam fora. "Sem vendedor" = cliente sem nenhum vendedor no cadastro. Endereço resumido = cidade e UF (o relatório não traz rua).</p>`;
+
+function ms(id,key,vals,lbl){
+  const el=$('#ms-'+id);
+  el.innerHTML=`<details class="ms"><summary>Todos</summary><div class="ms-pop">${vals.map(v=>`<label><input type="checkbox" value="${esc(v)}">${esc(v)}</label>`).join('')}</div></details>`;
+  const sum=el.querySelector('summary');
+  el.update=()=>{el.querySelectorAll('input').forEach(i=>i.checked=F[key].has(i.value));sum.textContent=F[key].size?[...F[key]].join(', '):'Todos';};
+  el.addEventListener('change',e=>{const v=e.target.value;e.target.checked?F[key].add(v):F[key].delete(v);el.update();lim=200;draw();});
+  return el;
+}
+const MS=[ms('s','s',uniq(g=>g.s)),ms('uf','uf',uniq(g=>g.uf)),ms('v','v',uniq(g=>g.v)),ms('time','time',uniq(g=>g.macro)),ms('seg','seg',uniq(g=>g.seg))];
+document.addEventListener('click',e=>{document.querySelectorAll('details.ms[open]').forEach(d=>{if(!d.contains(e.target))d.open=false})});
+$('#q').addEventListener('input',e=>{F.q=e.target.value.trim().toLowerCase();lim=200;draw()});
+$('#inad').addEventListener('change',e=>{F.inad=e.target.value;draw()});
+$('#faixa').addEventListener('change',e=>{F.faixa=e.target.value;draw()});
+if(IND)$('#minha').addEventListener('change',e=>{F.minha=e.target.checked;draw()});
+$('#limpar').addEventListener('click',()=>{F.q='';['s','uf','v','time','seg'].forEach(k=>F[k].clear());F.inad='';F.faixa='';F.minha=false;
+  $('#q').value='';$('#inad').value='';$('#faixa').value='';if(IND)$('#minha').checked=false;MS.forEach(m=>m.update());draw()});
+
+const COLS=[
+ ['g','Grupo de cliente'],['s','Situação'],['loc','Cidade / UF'],['tel','Telefone'],['seg','Segmento'],
+ ['inad','Inadimplente'],['venc','Valor vencido',1],['ult','Último pedido'],['d','Dias',1],['fat','Faturado (histórico)',1],['pend','Pedidos pendentes',1],['v','Atendido por']];
+$('#hd').innerHTML=COLS.map(([k,l,n])=>`<th data-k="${k}" class="${n?'n':''}">${l}</th>`).join('');
+$('#hd').addEventListener('click',e=>{const k=e.target.dataset.k;if(!k)return;ord=ord.k===k?{k,dir:-ord.dir}:{k,dir:['fat','venc','d','pend'].includes(k)?-1:1};draw()});
+
+function filt(skip){
+  return DATA.filter(g=>{
+    if(F.q){const t=(g.g+' '+g.cg+' '+g.cid+' '+g.v+' '+g.cl.map(c=>c.n+' '+c.c+' '+c.cid).join(' ')).toLowerCase();if(!t.includes(F.q))return false}
+    if(F.s.size&&!F.s.has(g.s))return false;
+    if(skip!=='uf'&&F.uf.size&&!F.uf.has(g.uf))return false;
+    if(skip!=='v'&&F.v.size&&!F.v.has(g.v))return false;
+    if(F.time.size&&!F.time.has(g.macro))return false;
+    if(F.seg.size&&!F.seg.has(g.seg))return false;
+    if(F.inad&&g.inad!==F.inad)return false;
+    if(F.faixa){const [a,b]=F.faixa.split('-').map(Number);if(g.d==null||g.d<a||g.d>b)return false}
+    if(F.minha&&g.v!==IND.v&&!g.vs.includes(IND.v))return false;
+    return true;});
+}
+function bars(id,rows,key,max=12){
+  const m=new Map();rows.forEach(g=>{const k=g[key];const o=m.get(k)||{n:0,f:0};o.n++;o.f+=g.fat;m.set(k,o)});
+  const a=[...m].sort((x,y)=>y[1].f-x[1].f);const top=a.slice(0,max);const mx=Math.max(1,...top.map(x=>x[1].f));
+  $('#'+id).innerHTML=top.length?top.map(([k,o])=>`<div class="bar ${F[key].has(k)?'on':''}" data-k="${esc(k)}" title="${esc(k)}: ${int(o.n)} grupos, ${brl(o.f)}"><span class="l">${esc(k)}</span><span class="tr"><span class="f" style="width:${(o.f/mx*100).toFixed(1)}%"></span></span><span class="val">${brl(o.f)} · ${int(o.n)}</span></div>`).join('')+(a.length>max?`<p class="note">+${a.length-max} outros</p>`:''):'<p class="note">Nada no filtro.</p>';
+  $('#'+id).onclick=e=>{const b=e.target.closest('.bar');if(!b)return;const k=b.dataset.k;F[key].has(k)?F[key].delete(k):F[key].add(k);MS.forEach(m=>m.update());lim=200;draw()};
+}
+function draw(){
+  const rows=filt();
+  const inad=rows.filter(g=>g.inad==='Sim'),ai=rows.filter(g=>g.s!=='Inativo');
+  const tot=rows.reduce((s,g)=>s+g.fat,0);
+  const kp=[['Grupos no filtro',int(rows.length),`${int(rows.reduce((s,g)=>s+Math.max(1,g.cl.length),0))} clientes`],
+   ['Inativos',int(rows.length-ai.length),'mais de 90 dias sem comprar'],
+   ['A inativar no mês',int(ai.length),'completam 90 dias sem comprar neste mês'],
+   ['Faturado (histórico)',brl(tot),'soma dos grupos no filtro'],
+   ['Inadimplentes',int(inad.length),`devem ${brl(inad.reduce((s,g)=>s+g.venc,0))} vencidos`],
+   ['Com pedido pendente',int(rows.filter(g=>g.pend>0).length),brl(rows.reduce((s,g)=>s+g.pend,0))]];
+  if(IND)kp.splice(1,0,['Da minha carteira',int(rows.filter(g=>g.v===IND.v||g.vs.includes(IND.v)).length),'grupos que eu atendo hoje']);
+  $('#kpis').innerHTML=kp.map(([l,v,s])=>`<div class="kpi"><span class="note">${l}</span><span class="v">${v}</span><span class="s">${s}</span></div>`).join('');
+  bars('b-uf',filt('uf'),'uf',15);bars('b-v',filt('v'),'v',15);
+  const k=ord.k,dir=ord.dir;
+  const val=g=>k==='loc'?g.cid+g.uf:g[k];
+  rows.sort((a,b)=>{const x=val(a),y=val(b);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return -1;return (typeof x==='number'?x-y:String(x).localeCompare(String(y),'pt-BR'))*dir});
+  document.querySelectorAll('#hd th').forEach(th=>th.className=(th.className.includes('n')?'n ':'')+(th.dataset.k===k?(dir<0?'desc':'asc'):''));
+  $('#tt').textContent=`Grupos de clientes (${int(rows.length)})`;
+  const pill=(t,c)=>`<span class="pill ${c}">${t}</span>`;
+  $('#tb').innerHTML=rows.slice(0,lim).map(g=>{
+    const mine=IND&&(g.v===IND.v||g.vs.includes(IND.v));
+    let h=`<tr class="g ${mine?'mine':''}"><td><b>${esc(g.g)}</b><br><span class="m">Cód. grupo ${esc(g.cg)}${g.cl.length?` · ${g.cl.length} clientes <button class="tog" data-cg="${esc(g.cg)}">${openRows.has(g.cg)?'ocultar':'ver'}</button>`:''}</span></td>
+<td>${g.s==='Inativo'?pill('Inativo','bad'):pill('A inativar','warn')}${g.inat?`<br><span class="m">desde ${fd(g.inat)}</span>`:''}</td>
+<td>${esc(g.cid)} / ${esc(g.uf)}</td>
+<td>${g.tel?`<a href="tel:+55${g.tel.replace(/\D/g,'')}">${esc(g.tel)}</a>`:'—'}${g.em?`<br><span class="m em">${esc(g.em)}</span>`:''}</td>
+<td>${esc(g.seg)}</td>
+<td>${g.inad==='Sim'?pill('Sim','bad'):pill('Não','ok')}</td>
+<td class="n">${g.venc?brl2(g.venc):'—'}</td>
+<td>${fd(g.ult)}${g.ped?`<br><span class="m">pedido aberto ${fd(g.ped)}</span>`:''}</td>
+<td class="n">${g.d==null?'—':int(g.d)}</td>
+<td class="n">${brl2(g.fat)}</td>
+<td class="n">${g.pend?brl2(g.pend):'—'}</td>
+<td>${esc(g.v)}${g.vs.length?`<br><span class="m">também: ${esc(g.vs.join(', '))}</span>`:''}</td></tr>`;
+    if(openRows.has(g.cg))h+=g.cl.map(c=>`<tr class="sub"><td>${esc(c.n)}<br><span class="m">Cód. ${esc(c.c)}</span></td><td></td><td>${esc(c.cid)} / ${esc(c.uf)}</td><td>${esc(c.tel)||'—'}</td><td></td><td></td><td class="n">${c.venc?brl2(c.venc):'—'}</td><td>${fd(c.ult)}</td><td></td><td class="n">${brl2(c.fat)}</td><td></td><td>${esc(c.v)}</td></tr>`).join('');
+    return h}).join('')||`<tr><td colspan="12" class="note">Nenhum grupo no filtro.</td></tr>`;
+  $('#mais').innerHTML=rows.length>lim?`<button id="vm">Mostrar mais (${int(rows.length-lim)} restantes)</button>`:'';
+  if(rows.length>lim)$('#vm').onclick=()=>{lim+=300;draw()};
+  window._rows=rows;
+}
+$('#tb').addEventListener('click',e=>{const b=e.target.closest('.tog');if(!b)return;const c=b.dataset.cg;openRows.has(c)?openRows.delete(c):openRows.add(c);draw()});
+$('#csv').addEventListener('click',()=>{
+  const h=['Cód Grupo','Grupo de Cliente','Situação','Data Inativação','Cidade','UF','Telefone','E-mail','Segmento','Inadimplente','Valor Vencido','Último Pedido','Dias sem comprar','Faturado','Pedidos Pendentes','Atendido por','Time','Outros vendedores no grupo','Clientes no grupo'];
+  const q=v=>{v=v==null?'':String(v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const nb=v=>v.toFixed(2).replace('.',',');
+  const lines=[h.join(';')].concat(window._rows.map(g=>[g.cg,g.g,g.s,fd(g.inat),g.cid,g.uf,g.tel,g.em,g.seg,g.inad,nb(g.venc),fd(g.ult),g.d??'',nb(g.fat),nb(g.pend),g.v,g.t,g.vs.join(', '),Math.max(1,g.cl.length)].map(q).join(';')));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+lines.join('\n')],{type:'text/csv'}));
+  a.download=(document.title.replace(/[^\w]+/g,'_'))+'_'+META.ref+'.csv';a.click();
+});
+draw();
+})();
+</script></body></html>
