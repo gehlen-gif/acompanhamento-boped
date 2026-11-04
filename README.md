@@ -18,7 +18,7 @@
 ## Promoções do mês
 - `python3 ler_promocoes_pdf.py <promocoes.pdf> <Histórico de Pedidos.xlsx> dados/promocoes_<mes>.json` lê o PDF (precisa do pdftotext) e liga cada item ao nome do histórico.
 - dados/promocoes_<mes>.json: itens do PDF de promoções, com o nome de cada item no histórico (`itens_historico`).
-- `python3 atualizar_promocoes.py <Histórico de Pedidos.xlsx> dados/promocoes_outubro_2026.json`
+- `python3 atualizar_promocoes.py <Histórico de Pedidos.xlsx> dados/promocoes_novembro_2026.json` (promoções de 04 a 15/11/2026, lidas do PDF com `ler_promocoes_pdf.py`, que entende o layout de outubro e o de novembro)
   Gera dados/promocoes.json e dados/promo_potencial.json e refaz o index.html.
 - Situação por grupo de clientes e item: "Comprou recentemente" (último pedido até 30 dias), "Já paga o preço da promo" (último valor até 0,5% acima da promo ou abaixo), "Potencial" (demais).
 
@@ -48,7 +48,7 @@ Nas abas Pedidos do mês, Comparativo YoY e OrthoCare há os campos De e Até. V
 
 ## Novembro de 2026: promoções, YoY e ordenação
 
-- Mês sem promoções: `python3 atualizar_tudo.py <Histórico.xlsx> sem` zera `promocoes.json` e `promo_potencial.json`, e a aba Promoções mostra só o aviso "Busque oportunidades no painel Comparativo YoY até que tenhamos as promoções do mês".
+- Mês sem promoções: `python3 atualizar_tudo.py <Histórico.xlsx> sem` zera `promocoes.json` e `promo_potencial.json`. O aviso que aparecia na aba Promoções foi removido em 04/11.
 - Comparativo YoY: com um grupo de clientes filtrado, o quadro "Subgrupos nunca comprados" lista, por linha, os subgrupos de Home, Health, Beauty e Orthocare (peças não entram) que o grupo nunca comprou em todo o histórico. O catálogo são os subgrupos dessas linhas vendidos para as carteiras nos últimos 12 meses (`catalogo` e `compras` na primeira linha de `dados/yoy.json`).
 - Pedidos do mês: em Meta do mês por time e líder e em Cobertura por vendedor, clicar no título de uma coluna ordena do maior para o menor; clicar de novo inverte.
 

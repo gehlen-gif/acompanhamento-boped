@@ -17,7 +17,14 @@ NOMES = {
     'BALANCA DIGITAL SMART CINZA - PRETA': ['BALANCA DIGITAL SMART CINZA', 'BALANCA DIGITAL SMART PRETA'],
     'ESTETOSCOPIO RAPPAPORT - AZUL / ROSA / ROXO / VERDE / VINHO': [f'ESTETOSCOPIO RAPPAPORT - {c}' for c in ('AZUL', 'ROSA', 'ROXO', 'VERDE', 'VINHO')],
     'FITA KINESIOLÓGICA KO VERMELHA': ['FITA KINESIOLÓGICA KO FIRE RED VERMELHA'],
+    'FITA KINESIOLÓGICA KO VERMELHA, AZUL, ROSA, BLACK, BEGE': ['FITA KINESIOLÓGICA KO ' + c for c in ('FIRE RED VERMELHA', 'OCEAN BLUE AZUL', 'COTTON PINK ROSA', 'MIDNIGHT BLACK', 'CLASSIC SAND BEGE')],
+    'CADEIRA DE RODAS D400 - T40/T44/T46': ['CADEIRA DE RODAS D400 T40', 'CADEIRA DE RODAS D400 T44', 'CADEIRA DE RODAS D400 T46'],
+    'CADEIRA DE RODAS D600 - T40/T46/T48': ['CADEIRA DE RODAS D600 T40', 'CADEIRA DE RODAS D600 T46', 'CADEIRA DE RODAS D600 T48'],
+    'COLCHAO AIR TUBE ANTI ESCARAS 220V / 127V': ['COLCHAO AIR TUBE ANTI ESCARAS 220V', 'COLCHAO AIR TUBE ANTI ESCARAS 127V'],
 }
+# Layout de novembro/2026: condição e segmento ficam nas linhas de cima e de baixo do item
+# ("45x210 de 15 em 15 / ou / 90 x 180 de 15 em 15", "FARMA / ou / OFF")
+LINHA2 = re.compile(r'^\s*(WELLNESS|HEALTH|HOME|ORTHO|BEAUTY)\s+(.*?)\s{2,}(\S.*?)\s+ou\s+(Black \w+)\s+(\d+)\s+(\d+)%\s+([\d,]+)%\s+R\$\s+([\d.,]+)')
 LINHA = re.compile(r'^\s*(WELLNESS|HEALTH|HOME|ORTHO)\s+(.*?)\s{2,}(\S.*?)\s+((?:de\s+)?(?:\d+(?:dd)?\s+)?até\s+\d+dd)\s+(?:TODOS\s+)?(Natal Azul \w+)\s+(\d+)\s+(\d+)%\s+([\d,]+)%\s+R\$\s+([\d.,]+)')
 
 
@@ -31,11 +38,24 @@ def main(pdf, hist, saida):
     sub = h.drop_duplicates('Item').set_index('Item')['Sub Grupo'].to_dict()
     por_norm = {norm(i): i for i in sub}
     promos, vistos, faltam = [], set(), []
-    for l in txt.splitlines():
+    ls = txt.splitlines()
+    for i, l in enumerate(ls):
         m = LINHA.match(l)
-        if not m:
-            continue
-        linha, item, cod, cond, promo, cx, icms, ipi, preco = m.groups()
+        seg = None
+        if m:
+            linha, item, cod, cond, promo, cx, icms, ipi, preco = m.groups()
+        else:
+            m = LINHA2.match(l)
+            if not m:
+                continue
+            linha, item, cod, promo, cx, icms, ipi, preco = m.groups()
+            viz = ' '.join(ls[max(0, i - 2):i + 3])
+            conds = [re.sub(r'\s*x\s*', 'x', c) for c in re.findall(r'\d+\s*x\s*\d+ de \d+ em \d+', viz)]
+            cond = ' ou '.join(dict.fromkeys(conds)) or '-'
+            segs = [s for s in ('FARMA', 'OFF') if re.search(r'\b%s\b' % s, viz)]
+            seg = ' ou '.join(segs) or 'TODOS'
+            if cod.strip() == '-':
+                cod = '-'
         item = re.sub(r'\s+', ' ', item).strip()
         if linha == 'WELLNESS' and 'MASSAGEADOR' in item:
             item = 'MASSAGEADOR' + item.split('MASSAGEADOR', 1)[1]
@@ -49,7 +69,7 @@ def main(pdf, hist, saida):
         promos.append(dict(id='P%02d' % (len(promos) + 1), linha=linha, item=item, codigo=cod.strip(), cond_pagamento=cond.strip(),
                            promocao=promo, cx_master=int(cx), icms=icms + '%', ipi=ipi + '%',
                            preco_promo=float(preco.replace('.', '').replace(',', '.')),
-                           segmento='TODOS' if linha == 'WELLNESS' else 'FARMA OFF',
+                           segmento=seg or ('TODOS' if linha == 'WELLNESS' else 'FARMA OFF'),
                            itens_historico=nomes, subgrupo=sub.get(nomes[0], '') if nomes else ''))
     with open(saida, 'w', encoding='utf-8') as f:
         json.dump(promos, f, ensure_ascii=False, indent=1)

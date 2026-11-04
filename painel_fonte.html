@@ -391,12 +391,8 @@
   </div>
 
   <div class="pane" id="promocoes">
-    <section class="card aviso" id="promo-aviso" hidden>
-      <p>Busque oportunidades no painel Comparativo YoY até que tenhamos as promoções do mês.</p>
-      <div><button type="button" id="promo-ir-yoy">Abrir Comparativo YoY</button></div>
-    </section>
     <section class="kpis" id="ind-promo" data-source="promo_potencial">
-      <div class="kpi"><span class="note">Itens em promoção</span><span class="v dash-skeleton" id="pr-itens" data-source="promocoes">—</span><span class="sub">Preços válidos de 01 a 31/10/2026</span></div>
+      <div class="kpi"><span class="note">Itens em promoção</span><span class="v dash-skeleton" id="pr-itens" data-source="promocoes">—</span><span class="sub">Preços válidos de 04 a 15/11/2026</span></div>
       <div class="kpi"><span class="note">Grupos de clientes que já compraram os itens</span><span class="v dash-skeleton" id="pr-grupos">—</span><span class="sub" id="pr-grupos-s"></span></div>
       <div class="kpi"><span class="note">Com potencial</span><span class="v dash-skeleton" id="pr-pot">—</span><span class="sub">Último preço acima da promo e sem compra há mais de 30 dias</span></div>
       <div class="kpi"><span class="note">Compraram nos últimos 30 dias</span><span class="v dash-skeleton" id="pr-rec">—</span><span class="sub">Não oferecer mais barato</span></div>
@@ -429,7 +425,7 @@
 
     <section class="card" id="itens-promo">
       <h2>Promoções ativas no mês</h2>
-      <p class="note">Frete CIF. Preços válidos de 01 a 31/10/2026. Linha ORTHO: todos os itens com o melhor preço de tabela, em todos os segmentos menos Farma, exceto pagamento iniciando em 90 dias.</p>
+      <p class="note">Promoções Novembro (Black). Frete CIF. Preços válidos de 04 a 15/11/2026, segmentos Farma ou Off, pagamento em 45x210 ou 90x180 de 15 em 15 dias. Linha ORTHO (Black Ortho): todos os itens com o melhor preço de tabela.</p>
       <div class="scroll">
         <table id="tab-promos" data-source="promocoes" data-row-key="id">
           <thead><tr>
@@ -442,7 +438,7 @@
       </div>
     </section>
 
-    <p class="note" id="regra-promo">Histórico de pedidos de 05/01 a 22/10/2026, ligado à carteira pelo código do cliente. Qtd. histórica soma as compras menos as devoluções do período. Último pedido é a data mais recente com compra do item, e o último valor pago é a média do valor unitário nessa data. Cor da data do último pedido: vermelho até 30 dias, amarelo de 31 a 45 dias, verde acima de 45 dias. Situação: "Comprou recentemente" se o último pedido tem até 30 dias; "Já paga o preço da promo" se o último valor pago está até 0,5% acima do preço da promoção ou abaixo dele; "Potencial" nos demais casos.</p>
+    <p class="note" id="regra-promo">Histórico de pedidos de 2026 até a data da última atualização, ligado à carteira pelo código do cliente. Qtd. histórica soma as compras menos as devoluções do período. Último pedido é a data mais recente com compra do item, e o último valor pago é a média do valor unitário nessa data. Cor da data do último pedido: vermelho até 30 dias, amarelo de 31 a 45 dias, verde acima de 45 dias. Situação: "Comprou recentemente" se o último pedido tem até 30 dias; "Já paga o preço da promo" se o último valor pago está até 0,5% acima do preço da promoção ou abaixo dele; "Potencial" nos demais casos.</p>
   </div>
 
   <div class="pane" id="yoy">
@@ -1047,7 +1043,6 @@ $('#tab-ysubs tbody').addEventListener('click', (e) => {
 });
 document.querySelectorAll('#tema button').forEach((b) => b.addEventListener('click', () => set({ tema: b.dataset.tema || null })));
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { set({ aba: b.dataset.aba }); dash.setLink(b.dataset.aba); }));
-$('#promo-ir-yoy').addEventListener('click', () => set({ aba: 'yoy' }));
 // Ordenação pelos títulos de Meta do mês por time e líder e de Cobertura por vendedor:
 // o 1º clique ordena do maior para o menor (texto: A a Z), o 2º inverte; vale uma coluna por vez
 const ORD = { meta: { k: null, dir: -1 }, cob: { k: null, dir: -1 }, ysub: { k: null, dir: -1 } };
@@ -2541,15 +2536,6 @@ function drawPromo(scope) {
   const prOk = pr.status === 'ok', ok = pp.status === 'ok';
   document.querySelectorAll('#ind-promo .dash-skeleton').forEach((e) => { if ((ok && prOk) || pp.status === 'error') e.classList.remove('dash-skeleton'); });
   const promos = prOk ? pr.data : [];
-  // sem promoções no mês: só o aviso
-  const semPromo = prOk && !promos.length;
-  $('#promo-aviso').hidden = !semPromo;
-  ['#ind-promo', '#potencial', '#itens-promo', '#regra-promo'].forEach((x) => { $(x).hidden = semPromo; });
-  if (semPromo) {
-    $('#foco').hidden = true;
-    if ((p.aba || 'pedidos') === 'promocoes') $('#takeaway').textContent = 'Não há promoções ativas no momento. Busque oportunidades no painel Comparativo YoY até que tenhamos as promoções do mês.';
-    return;
-  }
   const linhas = Array.from(new Set(promos.map((r) => r.linha)));
   fillSelect($('#f-plinha'), 'Todas', linhas, p.plinha);
   const sel = $('#f-pitem');
