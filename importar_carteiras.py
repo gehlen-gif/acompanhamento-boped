@@ -57,7 +57,7 @@ def limpa(rows):
 def main(xlsx, data=None):
     df = pd.read_excel(xlsx)
     m = pd.read_csv(BASE / 'vendedores_time.csv', sep=';', encoding='utf-8-sig')
-    mp = {n(a): (a, b, c) for a, b, c in m.itertuples(index=False)}
+    mp = {n(a): (a, b, c) for a, b, c in m.iloc[:, :3].itertuples(index=False)}
 
     def pick(r):
         for c, papel in PAPEIS:
