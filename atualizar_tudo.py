@@ -100,6 +100,9 @@ def main(hist_xlsx, promos_json=None):
     import atualizar_inativos
     atualizar_inativos.subgrupos(hist)
     atualizar_pedidos.build_html(data_ref)
+    # Ranking da Alta Atividade (pedido diário do usuário, junto com as demais atualizações)
+    import gerar_ranking_atividade
+    gerar_ranking_atividade.main()
 
 
 if __name__ == '__main__':
