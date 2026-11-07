@@ -242,7 +242,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
   </header>
 
   <nav class="tabs" role="tablist" aria-label="Partes do painel">
-    <button type="button" role="tab" id="tab-btn-pedidos" data-aba="pedidos">Pedidos do mês</button>
+    <button type="button" role="tab" id="tab-btn-pedidos" data-aba="pedidos">Posição atual e Projeção do mês</button>
     <button type="button" role="tab" id="tab-btn-promocoes" data-aba="promocoes">Promoções do mês</button>
     <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Status Clientes</button>
     <button type="button" role="tab" id="tab-btn-yoy" data-aba="yoy">Comparativo YoY</button>
@@ -459,6 +459,8 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
         </table>
       </div>
     </section>
+
+    <section class="card" id="pj-card"></section>
 
     <p class="note" id="regra-pedidos">Pedidos do mês tirados do Histórico de Pedidos e ligados ao grupo de clientes de cada carteira pelo código do cliente. Valor total de pedidos líquido de cancelamentos e devoluções; valor negativo indica cancelamento no mês. A coluna Pendente só é preenchida quando o arquivo é o relatório "com pedido".</p>
   </div>
@@ -926,12 +928,12 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
 .cg #hdet .up { color: var(--color-ok); } .cg #hdet .down { color: var(--color-bad); }
 .cg #hdet .hd-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .cg #hdet .hd-chips button { border-radius: 999px; font-size: 12px; }
-.cg #hdet .hd-row { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: end; }
-.cg #hdet .hd-row label { display: grid; gap: 2px; font-size: 12px; color: var(--color-fg-muted); }
-.cg #hdet input, .cg #hdet select, .cg #hdet textarea { font: inherit; color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 4px 8px; }
+.cg #pj-card .hd-row, .cg #hdet .hd-row { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: end; }
+.cg #pj-card .hd-row label, .cg #hdet .hd-row label { display: grid; gap: 2px; font-size: 12px; color: var(--color-fg-muted); }
+.cg #pj-card input, .cg #pj-card select, .cg #hdet input, .cg #hdet select, .cg #hdet textarea { font: inherit; color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 4px 8px; }
 .cg #hdet input, .cg #hdet select { max-width: 100%; box-sizing: border-box; }
 .cg #hdet .grid > * { min-width: 0; }
-.cg #hdet input.hd-proj { width: 7.5rem; text-align: right; }
+.cg #pj-card input.hd-proj { width: 7.5rem; text-align: right; }
 .cg #hdet textarea { width: 100%; min-height: 6rem; box-sizing: border-box; font-size: 12px; }
 .cg #hdet tr.sub td:first-child { padding-left: 1.6rem; }
 .cg #hdet tr.sub { color: var(--color-fg-muted); }
@@ -989,13 +991,15 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
     <div><h3 id="hd-m2-t"><\/h3><div class="scroll"><table><thead><tr><th class="n">#<\/th><th>Subgrupo<\/th><th class="n hd-mq"><\/th><th class="n">% acum.<\/th><th>Curva<\/th><th>No time<\/th><\/tr><\/thead><tbody id="hd-m2"><\/tbody><\/table><\/div><\/div>
   <\/div>
 <\/section>
-<section class="card">
-  <h2 id="hd-p-t">Projeção do mês por grupo de cliente<\/h2>
+`;
+
+  const PJHTML = `  <h2 id="hd-p-t">Projeção do mês por grupo de cliente<\/h2>
   <p class="note" id="hd-pj-s"><\/p>
   <section class="kpis" id="hd-pj-k"><\/section>
-  <div class="hd-row"><button type="button" id="hd-pj-sug">Preencher os vazios com a sugestão<\/button><span class="note" id="hd-pj-st"><\/span><\/div>
+  <div class="hd-row"><label>Mostrar<select id="hd-pj-top"><option value="50">50 grupos<\/option><option value="200">200 grupos<\/option><option value="100000">Todos<\/option><\/select><\/label><button type="button" id="hd-pj-sug">Preencher os vazios com a sugestão<\/button><span class="note" id="hd-pj-st"><\/span><\/div>
   <div class="scroll tall"><table><thead id="hd-pj-h"><\/thead><tbody id="hd-pj"><\/tbody><\/table><\/div>
-<\/section>`;
+`;
+  let pjTop = 50, pjBuilt = false;
 
   // ---------- dados ----------
   function base() {
@@ -1115,8 +1119,35 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
     return f.join(' · ');
   }
 
+  let cssOk = false;
+  function css() { if (cssOk) return; cssOk = true; const st = document.createElement('style'); st.textContent = CSS; document.querySelector('.cg').append(st); }
+  function buildPj(card) {
+    css();
+    card.innerHTML = PJHTML;
+    $('#hd-pj').addEventListener('change', (e) => { const i = e.target.closest('input.hd-proj'); if (i) salvarProj(i.dataset.k, i.value); });
+    $('#hd-pj-sug').addEventListener('click', async () => {
+      const ins = Array.from(document.querySelectorAll('#hd-pj input.hd-proj')).filter((i) => !i.value && +i.dataset.sug > 0);
+      if (!ins.length) return;
+      if (!confirm(`Preencher ${ins.length} grupos sem projeção com a sugestão?`)) return;
+      for (const i of ins) await salvarProj(i.dataset.k, i.dataset.sug, true);
+      C.redraw();
+    });
+    $('#hd-pj-top').addEventListener('change', (e) => { pjTop = +e.target.value; C.redraw(); });
+  }
+  // Projeção do mês: fica na aba Posição atual e Projeção do mês (pedido do Yghor em 07/11), com os filtros da aba
+  window.drawProjecao = function (ctx) {
+    C = ctx;
+    const card = document.getElementById('pj-card');
+    if (!card) return;
+    if (!pjBuilt) { buildPj(card); pjBuilt = true; }
+    const B = base();
+    if (!B) { $('#hd-pj-s').textContent = 'Sem a base diária de vendas.'; return; }
+    const idx = []; C.rows.forEach((r) => { const i = B.gi.get(r.cod_grupo + '|' + r.vendedor); if (i != null) idx.push(i); });
+    drawProj(B, idx, C.linCod(P()), P(), new Map(C.all.map((r) => [String(r.cod_grupo), r.grupo])));
+  };
+
   function build(root) {
-    const st = document.createElement('style'); st.textContent = CSS; root.append(st);
+    css();
     const w = document.createElement('div'); w.innerHTML = HTML; root.append(...w.children);
     const addG = () => {
       const v = C.normNome($('#hd-g-in').value); if (!v) return;
@@ -1142,14 +1173,6 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
     $('#hd-p-ok').addEventListener('click', () => { usarPrecos($('#hd-p-txt').value, 'colado em ' + new Date().toLocaleDateString('pt-BR')); $('#hd-p-box').hidden = true; });
     $('#hd-p-file').addEventListener('change', (e) => { const f = e.target.files && e.target.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => usarPrecos(String(rd.result || ''), f.name); rd.readAsText(f, 'utf-8'); e.target.value = ''; });
     $('#hd-p-limpar').addEventListener('click', () => { precos = null; try { localStorage.removeItem(LS_PRECO); } catch (e) { /* sem armazenamento */ } C.redraw(); });
-    $('#hd-pj').addEventListener('change', (e) => { const i = e.target.closest('input.hd-proj'); if (i) salvarProj(i.dataset.k, i.value); });
-    $('#hd-pj-sug').addEventListener('click', async () => {
-      const ins = Array.from(document.querySelectorAll('#hd-pj input.hd-proj')).filter((i) => !i.value && +i.dataset.sug > 0);
-      if (!ins.length) return;
-      if (!confirm(`Preencher ${ins.length} grupos sem projeção com a sugestão?`)) return;
-      for (const i of ins) await salvarProj(i.dataset.k, i.dataset.sug, true);
-      C.redraw();
-    });
   }
   const $ = (s) => document.querySelector(s);
   const el = (t, c, x) => C.el(t, c, x);
@@ -1263,8 +1286,6 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
     drawDetalhe(B, idxF, nomeF, hg.length > 0, lin, p);
     // 5. mix e curva ABC
     drawMix(B, idxF, nomeF, lin, p);
-    // 6. projeção
-    drawProj(B, hg.length ? idxG : idxE, lin, p, nomeG);
   };
 
   function drawDetalhe(B, idx, nome, temG, lin, p) {
@@ -1386,7 +1407,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       const k = pkey(ym, cg, v), pj = proj[k];
       return { cg, v, a12, a3, ly, sug, k, pj: pj == null ? null : +pj, w: Array.from(s.w), real: s.m[rm] };
     }).filter((r) => r.a12 > 0 || r.real !== 0 || r.pj != null).sort((a, b) => (b.pj != null) - (a.pj != null) || b.sug - a.sug || b.real - a.real);
-    const lim = p.top || 50, frac = B.rd / B.diasMes;
+    const lim = pjTop, frac = B.rd / B.diasMes;
     const situ = (r) => {
       if (r.pj == null) return ['—', null];
       if (r.real >= r.pj) return ['Atingido', 'ok'];
@@ -1867,6 +1888,7 @@ function draw() {
   drawContas();
   drawInativos();
   // Histórico Detalhado (hdet_fonte.js): só desenha com a aba aberta
+  if (aba === 'pedidos' && window.drawProjecao) window.drawProjecao({ p, rows, all, set, redraw: draw, BRL, BRLc, BRL2, INT, PCT, el, normNome, msVal, linhasSub, linCod, LINHAS_F, MACROS, dataBR });
   if (aba === 'hdet' && window.drawHistDet) window.drawHistDet({ p, rows, all, set, redraw: draw, BRL, BRLc, BRL2, INT, PCT, el, normNome, msVal, linhasSub, linCod, LINHAS_F, MACROS, dataBR });
 }
 
