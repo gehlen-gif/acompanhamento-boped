@@ -244,13 +244,13 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
   <nav class="tabs" role="tablist" aria-label="Partes do painel">
     <button type="button" role="tab" id="tab-btn-pedidos" data-aba="pedidos">Posição atual e Projeção do mês</button>
     <button type="button" role="tab" id="tab-btn-promocoes" data-aba="promocoes">Promoções do mês</button>
-    <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Status Clientes</button>
     <button type="button" role="tab" id="tab-btn-yoy" data-aba="yoy">Comparativo YoY</button>
     <button type="button" role="tab" id="tab-btn-hdet" data-aba="hdet">Histórico Detalhado</button>
-    <button type="button" role="tab" id="tab-btn-ortho" data-aba="ortho">OrthoCare</button>
-    <button type="button" role="tab" id="tab-btn-saojoao" data-aba="saojoao">SÃO JOÃO</button>
-    <button type="button" role="tab" id="tab-btn-contas" data-aba="contas">Principais Contas</button>
+    <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Status Clientes</button>
     <button type="button" role="tab" id="tab-btn-inativos" data-aba="inativos">Clientes inativos</button>
+    <button type="button" role="tab" id="tab-btn-ortho" data-aba="ortho">OrthoCare</button>
+    <button type="button" role="tab" id="tab-btn-contas" data-aba="contas">Principais Contas</button>
+    <button type="button" role="tab" id="tab-btn-saojoao" data-aba="saojoao">SÃO JOÃO</button>
   </nav>
 
   <section class="filters" id="filtros" aria-label="Filtros">
@@ -435,9 +435,9 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       <div class="scroll">
         <table id="tab-com" data-source="pedidos" data-row-key="cod_grupo,vendedor">
           <thead><tr>
-            <th data-field="grupo">Grupo de cliente</th><th data-field="cod_grupo">Cód. grupo</th><th data-field="vendedor">Vendedor</th>
-            <th data-field="situacao_mes">Situação</th><th data-field="qt_itens_pedido" class="n">Qt. itens pedido</th>
-            <th data-field="valor_pedidos" class="n">Valor (- canc.)</th><th data-field="mix_mes" class="n">Mix no mês</th><th data-field="mix_medio_ano" class="n">Mix médio no ano</th><th data-field="pedidos_pendentes" class="n">Pendente</th>
+            <th data-field="grupo" data-ord="grupo" data-tipo="t">Grupo de cliente</th><th data-field="cod_grupo" data-ord="cod_grupo" data-tipo="t">Cód. grupo</th><th data-field="vendedor" data-ord="vendedor" data-tipo="t">Vendedor</th>
+            <th data-field="situacao_mes" data-ord="situacao_mes" data-tipo="t">Situação</th><th data-field="qt_itens_pedido" data-ord="qt_itens_pedido" class="n">Qt. itens pedido</th>
+            <th data-field="valor_pedidos" data-ord="valor_pedidos" class="n">Valor (- canc.)</th><th data-field="mix_mes" data-ord="mix_mes" class="n">Mix no mês</th><th data-field="mix_medio_ano" data-ord="mix_medio_ano" class="n">Mix médio no ano</th><th data-field="pedidos_pendentes" data-ord="pedidos_pendentes" class="n">Pendente</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -450,10 +450,10 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       <div class="scroll">
         <table id="tab-sem" data-source="pedidos" data-row-key="cod_grupo,vendedor">
           <thead><tr>
-            <th data-field="grupo">Grupo de cliente</th><th data-field="cod_grupo">Cód. grupo</th><th data-field="vendedor">Vendedor</th>
-            <th data-field="status_cliente">Status</th><th data-field="ultimo_faturamento">Último pedido</th>
-            <th data-field="faturamento_historico" class="n">Vendas no histórico</th>
-            <th data-field="mix_medio_ano" class="n">Mix médio no ano</th><th data-field="mix_ano" class="n">Subgrupos no ano</th>
+            <th data-field="grupo" data-ord="grupo" data-tipo="t">Grupo de cliente</th><th data-field="cod_grupo" data-ord="cod_grupo" data-tipo="t">Cód. grupo</th><th data-field="vendedor" data-ord="vendedor" data-tipo="t">Vendedor</th>
+            <th data-field="status_cliente" data-ord="status_cliente" data-tipo="t">Status</th><th data-field="ultimo_faturamento" data-ord="ultimo_faturamento" data-tipo="t">Último pedido</th>
+            <th data-field="faturamento_historico" data-ord="faturamento_historico" class="n">Vendas no histórico</th>
+            <th data-field="mix_medio_ano" data-ord="mix_medio_ano" class="n">Mix médio no ano</th><th data-field="mix_ano" data-ord="mix_ano" class="n">Subgrupos no ano</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -940,6 +940,8 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
 .cg #hdet .hd-ins { margin: 0; font-size: var(--cds-font-size-body); line-height: 1.5; }
 .cg #hdet .hd-ins li { margin-bottom: 4px; }
 .cg #hdet td.cl { font-weight: 600; text-align: center; }
+.cg #hdet td.c, .cg #hdet th.c { text-align: center; }
+.cg #hdet td .up, .cg #hdet td .down { font-weight: 600; margin-left: 6px; white-space: nowrap; }
 `;
 
   const HTML = `
@@ -977,7 +979,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
     <span class="note" id="hd-p-st"><\/span>
   <\/div>
   <div id="hd-p-box" hidden><p class="note">Cole duas colunas copiadas do Excel: item (ou subgrupo) e preço atual. A primeira linha pode ser o título.<\/p><textarea id="hd-p-txt"><\/textarea><div class="hd-row"><button type="button" id="hd-p-ok">Usar estes preços<\/button><\/div><\/div>
-  <div class="scroll tall"><table id="hd-d-tab"><thead><tr><th>Subgrupo<\/th><th>Linha<\/th><th class="n">Qt. ano atual<\/th><th class="n">Qt. mesmo período ano anterior<\/th><th class="n">Data último pedido<\/th><th class="n">Valor unit. último pedido<\/th><th class="n">Qt. último pedido<\/th><th class="n hd-pc">Preço atual<\/th><th class="n hd-pc">Diferença<\/th><\/tr><\/thead><tbody><\/tbody><\/table><\/div>
+  <div class="scroll tall"><table id="hd-d-tab"><thead><tr id="hd-d-h"><\/tr><\/thead><tbody><\/tbody><\/table><\/div>
 <\/section>
 <section class="card">
   <h2>Mix e curva ABC: time x cliente<\/h2>
@@ -987,8 +989,8 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
   <\/div>
   <ul class="hd-ins" id="hd-ins"><\/ul>
   <div class="grid">
-    <div><h3 id="hd-m1-t"><\/h3><div class="scroll"><table><thead><tr><th class="n">#<\/th><th>Subgrupo<\/th><th class="n hd-mq"><\/th><th class="n">% acum.<\/th><th>Curva<\/th><th>No cliente<\/th><\/tr><\/thead><tbody id="hd-m1"><\/tbody><\/table><\/div><\/div>
-    <div><h3 id="hd-m2-t"><\/h3><div class="scroll"><table><thead><tr><th class="n">#<\/th><th>Subgrupo<\/th><th class="n hd-mq"><\/th><th class="n">% acum.<\/th><th>Curva<\/th><th>No time<\/th><\/tr><\/thead><tbody id="hd-m2"><\/tbody><\/table><\/div><\/div>
+    <div><h3 id="hd-m1-t"><\/h3><div class="scroll"><table><thead><tr id="hd-m1-h"><\/tr><\/thead><tbody id="hd-m1"><\/tbody><\/table><\/div><\/div>
+    <div><h3 id="hd-m2-t"><\/h3><div class="scroll"><table><thead><tr id="hd-m2-h"><\/tr><\/thead><tbody id="hd-m2"><\/tbody><\/table><\/div><\/div>
   <\/div>
 <\/section>
 `;
@@ -1132,6 +1134,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       for (const i of ins) await salvarProj(i.dataset.k, i.dataset.sug, true);
       C.redraw();
     });
+    card.addEventListener('click', cliqueOrd);
     $('#hd-pj-top').addEventListener('change', (e) => { pjTop = +e.target.value; C.redraw(); });
   }
   // Projeção do mês: fica na aba Posição atual e Projeção do mês (pedido do Yghor em 07/11), com os filtros da aba
@@ -1149,6 +1152,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
   function build(root) {
     css();
     const w = document.createElement('div'); w.innerHTML = HTML; root.append(...w.children);
+    root.addEventListener('click', cliqueOrd);
     const addG = () => {
       const v = C.normNome($('#hd-g-in').value); if (!v) return;
       const g = C.all.find((r) => String(r.cod_grupo) === v || C.normNome(r.grupo) === v || C.normNome(r.grupo + ' · ' + r.cod_grupo) === v);
@@ -1177,6 +1181,26 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
   const $ = (s) => document.querySelector(s);
   const el = (t, c, x) => C.el(t, c, x);
   const P = () => dash.params();
+  // Ordenação pelos títulos (pedido do Yghor em 07/11): 1º clique do maior para o menor (texto A a Z; posição do 1º ao último), 2º inverte
+  const ORDH = {};
+  function cabec(tr, q, cols) {
+    const o = ORDH[q] || (ORDH[q] = { k: null, dir: -1 });
+    tr.replaceChildren(...cols.map(([t, k, tipo, cls]) => {
+      const th = el('th', cls || null, t);
+      if (k) { th.dataset.ord = k; th.dataset.q = q; if (tipo) th.dataset.tipo = tipo; if (o.k === k) th.classList.add(o.dir < 0 ? 'ord-desc' : 'ord-asc'); }
+      return th;
+    }));
+  }
+  function ordena(L, q) {
+    const o = ORDH[q]; if (!o || !o.k) return L;
+    return L.slice().sort((a, b) => { const x = a[o.k], y = b[o.k]; if (x == null || y == null) return (x == null) - (y == null); return (typeof x === 'string' ? x.localeCompare(y, 'pt-BR') : x - y) * o.dir; });
+  }
+  function cliqueOrd(e) {
+    const th = e.target.closest('thead th[data-ord][data-q]'); if (!th) return;
+    const o = ORDH[th.dataset.q], k = th.dataset.ord;
+    if (o.k === k) o.dir = -o.dir; else { o.k = k; o.dir = th.dataset.tipo ? 1 : -1; }
+    C.redraw();
+  }
 
   // ---------- preço atual (arquivo ou colado) ----------
   const numBR = (t) => { let s = String(t || '').replace(/[R$\s]/g, ''); if (!s) return NaN; if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); return Number(s); };
@@ -1270,10 +1294,10 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       idx.forEach((i) => { const k = B.K.get(i); if (!k) return; for (const l in k.L) { const x = t[l] || (t[l] = { y1: 0, y0: 0 }); x.y1 += k.L[l].y1; x.y0 += k.L[l].y0; T1 += k.L[l].y1; T0 += k.L[l].y0; } });
       const box = el('div'); box.append(el('h3', null, titulo));
       const tab = el('table'), th = el('thead'), tb = el('tbody');
-      const hr = el('tr'); ['Linha', String(B.y1), '% do total', `${B.y0} mesmo período`, '% do total', 'Variação'].forEach((x, j) => hr.append(el('th', j ? 'n' : null, x))); th.append(hr);
-      LORD.filter((l) => t[l]).forEach((l) => {
+      const hr = el('tr'); cabec(hr, 'l', [['Linha', 'nome', 't'], [String(B.y1), 'y1', null, 'n'], ['% do total', 's1', null, 'n'], [`${B.y0} mesmo período`, 'y0', null, 'n'], ['% do total', 's0', null, 'n'], ['Variação', 'vv', null, 'n']]); th.append(hr);
+      const LL = LORD.filter((l) => t[l]).map((l) => ({ l, nome: LNOME[l], y1: t[l].y1, y0: t[l].y0, s1: T1 ? t[l].y1 / T1 : null, s0: T0 ? t[l].y0 / T0 : null, vv: fmtVar(t[l].y0, t[l].y1) }));
+      ordena(LL, 'l').forEach(({ l, vv }) => {
         const x = t[l], tr = el('tr'); tr.dataset.l = l; if (C.linCod(p) === l) tr.classList.add('on');
-        const vv = fmtVar(x.y0, x.y1);
         tr.append(el('td', null, LNOME[l]), el('td', 'n', C.BRL.format(x.y1)), el('td', 'n', T1 ? C.PCT.format(x.y1 / T1) : '—'), el('td', 'n', C.BRL.format(x.y0)), el('td', 'n', T0 ? C.PCT.format(x.y0 / T0) : '—'), el('td', 'n ' + (vv == null ? '' : vv >= 0 ? 'up' : 'down'), pctTxt(vv)));
         tb.append(tr);
       });
@@ -1307,35 +1331,44 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       });
     });
     const iso = (d) => new Date(X.t0 + d * 864e5).toISOString().slice(0, 10);
-    const lst = Array.from(subs.values()).sort((a, b) => b.q1 - a.q1 || b.q0 - a.q0 || b.d - a.d);
+    const pAt0 = (n) => (comP ? precos.map[C.normNome(n)] : undefined);
+    subs.forEach((s) => { s.ln = LNOME[s.l] || s.l; s.atual = pAt0(s.itn) ?? pAt0(s.sn); s.dif = s.atual != null && s.pr > 0 ? s.atual / (s.pr / 100) - 1 : null; });
+    const lst = ordena(Array.from(subs.values()).sort((a, b) => b.q1 - a.q1 || b.q0 - a.q0 || b.d - a.d), 'd');
+    cabec($('#hd-d-h'), 'd', [['Subgrupo', 'sn', 't'], ['Linha', 'ln', 't', 'c'], [`Qt total ${B.y0 % 100}x${B.y1 % 100}`, 'q1', null, 'c'], ['Último pedido', 'd', null, 'c'], ['Valor unit. último pedido', 'pr', null, 'c'], ['Qt. último pedido', 'ql', null, 'c'],
+      ...(comP ? [['Preço atual', 'atual', null, 'c'], ['Diferença', 'dif', null, 'c']] : [])]);
+    const qtd = (q1, q0) => {
+      const td = el('td', 'c', C.INT.format(q1)); td.title = `${B.y0} até ${C.dataBR(B.ref).slice(0, 5)}: ${C.INT.format(q0)} · ${B.y1}: ${C.INT.format(q1)}`;
+      if (q1 > q0) td.append(el('span', 'up', '▲ +' + C.INT.format(q1 - q0)));
+      else if (q1 < q0) td.append(el('span', 'down', '▼ -' + C.INT.format(q0 - q1)));
+      return td;
+    };
     const lim = p.top || 50;
     let ach = 0;
     const pAt = (n) => (comP ? precos.map[C.normNome(n)] : undefined);
     const celP = (atual, ult) => {
       if (!comP) return [];
-      if (atual == null) return [el('td', 'n', '—'), el('td', 'n', '—')];
+      if (atual == null) return [el('td', 'c', '—'), el('td', 'c', '—')];
       ach++;
       const v = ult > 0 ? atual / (ult / 100) - 1 : null;
-      return [el('td', 'n', C.BRL2.format(atual)), el('td', 'n ' + (v == null ? '' : v > 0.0005 ? 'down' : v < -0.0005 ? 'up' : ''), pctTxt(v))];
+      return [el('td', 'c', C.BRL2.format(atual)), el('td', 'c ' + (v == null ? '' : v > 0.0005 ? 'down' : v < -0.0005 ? 'up' : ''), pctTxt(v))];
     };
     const rows = [];
     lst.slice(0, lim).forEach((s) => {
       const tr = el('tr'); tr.dataset.s = s.sn; tr.title = 'Clique para ver os itens';
       const n = el('td'); n.append(el('b', null, s.sn), el('small', 'note', ` · ${s.it.size} ${s.it.size === 1 ? 'item' : 'itens'} ${abertos.has(s.sn) ? '▴' : '▾'}`));
-      const atual = pAt(s.itn) ?? pAt(s.sn);
-      tr.append(n, el('td', null, LNOME[s.l] || s.l), el('td', 'n', C.INT.format(s.q1)), el('td', 'n', C.INT.format(s.q0)), el('td', 'n', s.d >= 0 ? C.dataBR(iso(s.d)) : '—'),
-        el('td', 'n', C.BRL2.format(s.pr / 100)), el('td', 'n', C.INT.format(s.ql)), ...celP(atual, s.pr));
-      if (s.itn) tr.cells[4].title = 'Item do último pedido: ' + s.itn;
+      tr.append(n, el('td', 'c', s.ln), qtd(s.q1, s.q0), el('td', 'c', s.d >= 0 ? C.dataBR(iso(s.d)) : '—'),
+        el('td', 'c', C.BRL2.format(s.pr / 100)), el('td', 'c', C.INT.format(s.ql)), ...celP(s.atual, s.pr));
+      if (s.itn) tr.cells[3].title = 'Item do último pedido: ' + s.itn;
       rows.push(tr);
       if (abertos.has(s.sn)) Array.from(s.it.values()).sort((a, b) => b.q1 - a.q1 || b.d - a.d).forEach((x) => {
         const t = el('tr', 'sub');
-        t.append(el('td', null, x.n), el('td', null, ''), el('td', 'n', C.INT.format(x.q1)), el('td', 'n', C.INT.format(x.q0)), el('td', 'n', C.dataBR(iso(x.d))), el('td', 'n', C.BRL2.format(x.pr / 100)), el('td', 'n', C.INT.format(x.ql)), ...celP(pAt(x.n), x.pr));
+        t.append(el('td', null, x.n), el('td', 'c', ''), qtd(x.q1, x.q0), el('td', 'c', C.dataBR(iso(x.d))), el('td', 'c', C.BRL2.format(x.pr / 100)), el('td', 'c', C.INT.format(x.ql)), ...celP(pAt(x.n), x.pr));
         rows.push(t);
       });
     });
     tb.replaceChildren(...rows);
     $('#hd-d-t').textContent = `Subgrupos comprados: ${nome}`;
-    $('#hd-d-s').textContent = `${C.INT.format(lst.length)} subgrupos${lst.length > lim ? `, mostrando ${C.INT.format(lim)} (use Mostrar para ver mais)` : ''}. Qt. ano atual = 1º/jan a ${C.dataBR(B.ref)}; ano anterior no mesmo período. Último pedido = último dia com quantidade positiva; o valor unitário é o do item comprado nesse dia (veja os itens clicando no subgrupo).` +
+    $('#hd-d-s').textContent = `${C.INT.format(lst.length)} subgrupos${lst.length > lim ? `, mostrando ${C.INT.format(lim)} (use Mostrar para ver mais)` : ''}. Qt total = quantidade de 1º/jan a ${C.dataBR(B.ref)}; ▲ verde (crescimento ou novo) e ▼ vermelho (queda) comparam com o mesmo período de ${B.y0}, com a diferença em unidades. Clique no título de uma coluna para ordenar. Último pedido = último dia com quantidade positiva; o valor unitário é o do item comprado nesse dia (veja os itens clicando no subgrupo).` +
       (temG ? '' : ' Sem grupo escolhido, junta todos os grupos dos filtros: o último pedido é o mais recente entre eles.');
     $('#hd-p-st').textContent = comP ? `Preços de ${precos.nome}: ${C.INT.format(precos.n)} itens no arquivo, ${C.INT.format(ach)} linhas desta tabela com preço. Diferença = preço atual ÷ último preço − 1 (vermelho: mais caro hoje).` : 'Envie ou cole a lista de preços atual para comparar com o último preço pago.';
   }
@@ -1362,7 +1395,9 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
     const G = abc(Array.from(cm.values()), med);
     const gMap = new Map(G.map((x) => [x.s, x])), tMap = new Map(T.map((x) => [x.s, x]));
     const fmt = (x) => (med === 'q' ? C.INT.format(x.q) : C.BRL.format(x.v));
-    document.querySelectorAll('#hdet .hd-mq').forEach((e) => { e.textContent = med === 'q' ? 'Quantidade' : 'Valor'; });
+    const hcol = (no) => [['#', 'rk', 'a', 'n'], ['Subgrupo', 's', 't'], [med === 'q' ? 'Quantidade' : 'Valor', 'val', null, 'n'], ['% acum.', 'cum', 'a', 'n'], ['Curva', 'cl', 't'], [no, 'ork', 'a']];
+    cabec($('#hd-m1-h'), 'm1', hcol('No cliente')); cabec($('#hd-m2-h'), 'm2', hcol('No time'));
+    const prep = (L, outro) => L.map((x) => ({ ...x, val: x[med], ork: outro.has(x.s) ? outro.get(x.s).rk : 1e9 }));
     const mixLbl = mixN === 'BOPED' ? 'BOPED' : mixN;
     $('#hd-m1-t').textContent = `Mix do time ${mixLbl} em ${B.y1}`;
     $('#hd-m2-t').textContent = `Mix de ${nome} em ${B.y1}`;
@@ -1372,8 +1407,8 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       const c = el('td'); if (o) c.append(el('span', 'pill ok', `${o.cl} · ${o.rk}º`)); else c.append(el('span', 'pill ' + (x.cl === 'A' ? 'bad' : 'warn'), falta)); tr.append(c);
       return tr;
     };
-    $('#hd-m1').replaceChildren(...T.slice(0, 60).map((x) => linha(x, gMap, 'não compra')));
-    $('#hd-m2').replaceChildren(...G.slice(0, 60).map((x) => linha(x, tMap, 'fora do mix')));
+    $('#hd-m1').replaceChildren(...ordena(prep(T, gMap), 'm1').slice(0, 60).map((x) => linha(x, gMap, 'não compra')));
+    $('#hd-m2').replaceChildren(...ordena(prep(G, tMap), 'm2').slice(0, 60).map((x) => linha(x, tMap, 'fora do mix')));
     const top3 = (L) => L.slice(0, 3).map((x) => x.s).join('; ');
     const medTxt = med === 'q' ? 'em quantidade' : 'em valor faturado';
     const ins = [];
@@ -1395,9 +1430,16 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
     const ym = B.ref.slice(0, 7), rm = 12 + B.rm;
     const sem = [[1, 7], [8, 14], [15, 21], [22, 28], [29, B.diasMes]];
     const hr = el('tr');
-    ['Grupo de cliente', 'Vendedor', 'Média 12 meses', `${MES[B.rm]}/${B.y0}`, 'Média 3 meses', 'Sugestão', 'Projetado', ...sem.map((s, i) => `S${i + 1} (${s[0]}–${s[1]})`), 'Realizado', '% do projetado', 'Situação']
-      .forEach((x, j) => hr.append(el('th', j > 1 && j < 14 ? 'n' : null, x)));
+    cabec(hr, 'pj', [['Grupo de cliente', 'g', 't'], ['Vendedor', 'v', 't'], ['Média 12 meses', 'a12', null, 'n'], [`${MES[B.rm]}/${B.y0}`, 'ly', null, 'n'], ['Média 3 meses', 'a3', null, 'n'], ['Sugestão', 'sug', null, 'n'], ['Projetado', 'pj', null, 'n'],
+      ...sem.map((s, i) => [`S${i + 1} (${s[0]}–${s[1]})`, 'w' + i, null, 'n']), ['Realizado', 'real', null, 'n'], ['% do projetado', 'pct', null, 'n'], ['Situação', 'sit', 't']]);
     $('#hd-pj-h').replaceChildren(hr);
+    const frac = B.rd / B.diasMes;
+    const situ = (r) => {
+      if (r.pj == null) return ['—', null];
+      if (r.real >= r.pj) return ['Atingido', 'ok'];
+      const esp = r.pj * frac;
+      return r.real >= esp * 0.9 ? ['No ritmo', 'ok'] : r.real >= esp * 0.6 ? ['Atenção', 'warn'] : ['Abaixo do ritmo', 'bad'];
+    };
     const L = idx.map((i) => {
       const s = serie(B, [i], lin), [cg, v] = B.D.gs[i].split('|');
       const m12 = Array.from(s.m.slice(rm - 12, rm)), m3 = Array.from(s.m.slice(rm - 3, rm));
@@ -1405,17 +1447,14 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       const base = [a3, ly].filter((x) => x > 0);
       const sug = base.length ? Math.round(base.reduce((a, b) => a + b, 0) / base.length / 100) * 100 : 0;
       const k = pkey(ym, cg, v), pj = proj[k];
-      return { cg, v, a12, a3, ly, sug, k, pj: pj == null ? null : +pj, w: Array.from(s.w), real: s.m[rm] };
+      const r = { cg, g: nomeG.get(cg) || cg, v, a12, a3, ly, sug, k, pj: pj == null ? null : +pj, w: Array.from(s.w), real: s.m[rm] };
+      r.w.forEach((x, j) => { r['w' + j] = x; }); r.pct = r.pj ? r.real / r.pj : null; r.sit = r.pj == null ? null : situ(r)[0];
+      return r;
     }).filter((r) => r.a12 > 0 || r.real !== 0 || r.pj != null).sort((a, b) => (b.pj != null) - (a.pj != null) || b.sug - a.sug || b.real - a.real);
-    const lim = pjTop, frac = B.rd / B.diasMes;
-    const situ = (r) => {
-      if (r.pj == null) return ['—', null];
-      if (r.real >= r.pj) return ['Atingido', 'ok'];
-      const esp = r.pj * frac;
-      return r.real >= esp * 0.9 ? ['No ritmo', 'ok'] : r.real >= esp * 0.6 ? ['Atenção', 'warn'] : ['Abaixo do ritmo', 'bad'];
-    };
+    const LS = ordena(L, 'pj');
+    const lim = pjTop;
     const wAt = Math.min(4, Math.floor((B.rd - 1) / 7));
-    $('#hd-pj').replaceChildren(...L.slice(0, lim).map((r) => {
+    $('#hd-pj').replaceChildren(...LS.slice(0, lim).map((r) => {
       const tr = el('tr'), n = el('td'); n.append(el('b', null, nomeG.get(r.cg) || r.cg), el('br'), el('small', 'note', 'Cód. ' + r.cg));
       const inp = el('input', 'hd-proj'); inp.type = 'text'; inp.inputMode = 'decimal'; inp.placeholder = r.sug ? C.INT.format(r.sug) : '0'; inp.value = r.pj != null ? String(r.pj).replace('.', ',') : ''; inp.dataset.k = r.k; inp.dataset.sug = r.sug; inp.title = 'Projeção do mês em R$ (vale para todos quando salva no painel do Claude)';
       const ci = el('td', 'n'); ci.append(inp);
@@ -1435,7 +1474,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
       k('Abaixo do ritmo', C.INT.format(ab), 'grupos com menos de 60% do esperado'));
     $('#hd-p-t').textContent = `Projeção de ${MESL[B.rm]} por grupo de cliente`;
     $('#hd-pj-s').textContent = `Digite o valor projetado do mês para cada grupo e acompanhe semana a semana. Realizado = pedidos − cancelamentos até ${C.dataBR(B.ref)}. Sugestão = média entre os últimos 3 meses fechados e o mesmo mês de ${B.y0}. ` +
-      `Situação: Atingido; No ritmo (90% ou mais do esperado pelos dias corridos); Atenção (60% a 90%); Abaixo do ritmo. ${projDb ? 'As projeções ficam salvas para todos que abrem o painel do Claude.' : 'Neste arquivo, as projeções ficam salvas só neste navegador.'} ` +
+      `Situação: Atingido; No ritmo (90% ou mais do esperado pelos dias corridos); Atenção (60% a 90%); Abaixo do ritmo. Clique no título de uma coluna para ordenar. ${projDb ? 'As projeções ficam salvas para todos que abrem o painel do Claude.' : 'Neste arquivo, as projeções ficam salvas só neste navegador.'} ` +
       (L.length > lim ? `Mostrando ${C.INT.format(lim)} de ${C.INT.format(L.length)} grupos (use Mostrar para ver mais).` : '');
     $('#hd-pj-st').textContent = '';
   }
@@ -1517,9 +1556,11 @@ const defaults = () => set({ top: 50, aba: 'pedidos' });
 const PSITS = ['Potencial', 'Comprou recentemente', 'Já paga o preço da promo'];
 defaults();
 $('#f-reset').addEventListener('click', () => {
+  // Limpar filtros não troca de aba (pedido do Yghor em 07/11)
+  const abaAtual = P().aba, temaAtual = P().tema;
   dash.resetParams();
   set({ icid: null, hg: null, hmix: null, hmed: null, macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, osit: null, sjuf: null, sts: null, de: null, ate: null, linha: null });
-  defaults();
+  set({ top: 50, aba: abaAtual || 'pedidos', tema: temaAtual || null });
 });
 $('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
 $('#f-linha').addEventListener('change', (e) => set({ linha: e.target.value || null }));
@@ -1624,7 +1665,7 @@ document.querySelectorAll('#tema button').forEach((b) => b.addEventListener('cli
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { set({ aba: b.dataset.aba }); dash.setLink(b.dataset.aba); }));
 // Ordenação pelos títulos de Meta do mês por time e líder e de Cobertura por vendedor:
 // o 1º clique ordena do maior para o menor (texto: A a Z), o 2º inverte; vale uma coluna por vez
-const ORD = { meta: { k: null, dir: -1 }, cob: { k: null, dir: -1 }, ysub: { k: null, dir: -1 }, inat: { k: 'fat', dir: -1 } };
+const ORD = { meta: { k: null, dir: -1 }, cob: { k: null, dir: -1 }, com: { k: null, dir: -1 }, sem: { k: null, dir: -1 }, ysub: { k: null, dir: -1 }, inat: { k: 'fat', dir: -1 } };
 function ordenar(qual, th) {
   const o = ORD[qual], k = th.dataset.ord, texto = th.dataset.tipo === 't';
   if (o.k === k) o.dir = -o.dir; else { o.k = k; o.dir = texto ? 1 : -1; }
@@ -1641,6 +1682,8 @@ const marcaOrd = (tab, o) => document.querySelectorAll(tab + ' th[data-ord]').fo
   th.setAttribute('aria-sort', th.dataset.ord === o.k ? (o.dir < 0 ? 'descending' : 'ascending') : 'none');
 });
 $('#tab-meta thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('meta', th); });
+$('#tab-com thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('com', th); });
+$('#tab-sem thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('sem', th); });
 $('#tab-ysubs thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('ysub', th); });
 $('#tab-cob thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('cob', th); });
 // Clientes inativos: filtros próprios, ordenação pelos títulos e clique no grupo abre os clientes
@@ -2728,7 +2771,9 @@ function drawPedidos(scope) {
   }));
 
   const pill = (r) => { const s = el('span', 'pill ' + (r.situacao_mes === 'Cancelamento' ? 'bad' : 'ok'), r.situacao_mes); return s; };
-  const comRows = shown.filter((r) => r.situacao_mes !== 'Sem pedido').sort((a, b) => b.valor_pedidos - a.valor_pedidos);
+  const comRows = shown.filter((r) => r.situacao_mes !== 'Sem pedido')
+    .sort(ORD.com.k ? cmpOrd(ORD.com) : ((a, b) => b.valor_pedidos - a.valor_pedidos));
+  marcaOrd('#tab-com', ORD.com);
   $('#com-note').textContent = `${INT.format(comRows.length)} grupos de clientes. Valor negativo é cancelamento do grupo no mês. Mix médio no mês: ${mixTxt(avg(comRows.filter((r) => r.situacao_mes === 'Com pedido').map((r) => r.mix_mes)))} subgrupos; média no ano dos mesmos grupos: ${mixTxt(avg(comRows.filter((r) => r.mix_medio_ano != null).map((r) => r.mix_medio_ano)))}/mês.`;
   $('#tab-com tbody').replaceChildren(...comRows.map((r) => {
     const tr = el('tr'); tr.dataset.key = keyOf(r.cod_grupo, r.vendedor);
@@ -2738,8 +2783,10 @@ function drawPedidos(scope) {
     tr.append(nm, el('td', null, r.cod_grupo), el('td', null, r.vendedor), st, el('td', 'n', INT.format(r.qt_itens_pedido)), el('td', 'n', BRL.format(r.valor_pedidos)), el('td', 'n', INT.format(r.mix_mes || 0)), el('td', 'n', mixTxt(r.mix_medio_ano)), el('td', 'n', r.pedidos_pendentes == null ? '—' : BRL.format(r.pedidos_pendentes)));
     return tr;
   }));
-  const semRows = shown.filter((r) => r.situacao_mes === 'Sem pedido').sort((a, b) => b.faturamento_historico - a.faturamento_historico);
-  $('#sem-note').textContent = `${INT.format(semRows.length)} grupos de clientes, dos que mais compraram no histórico para os que menos compraram. Mix médio no ano desses grupos: ${mixTxt(avg(semRows.filter((r) => r.mix_medio_ano != null).map((r) => r.mix_medio_ano)))} subgrupos por mês.`;
+  const semRows = shown.filter((r) => r.situacao_mes === 'Sem pedido')
+    .sort(ORD.sem.k ? cmpOrd(ORD.sem) : ((a, b) => b.faturamento_historico - a.faturamento_historico));
+  marcaOrd('#tab-sem', ORD.sem);
+  $('#sem-note').textContent = `${INT.format(semRows.length)} grupos de clientes (sem ordenação escolhida, dos que mais compraram no histórico para os que menos compraram; clique no título de uma coluna para ordenar). Mix médio no ano desses grupos: ${mixTxt(avg(semRows.filter((r) => r.mix_medio_ano != null).map((r) => r.mix_medio_ano)))} subgrupos por mês.`;
   $('#tab-sem tbody').replaceChildren(...semRows.map((r) => {
     const tr = el('tr'); tr.dataset.key = keyOf(r.cod_grupo, r.vendedor);
     const st = el('td'); st.append(statusPill(r.status_cliente));
