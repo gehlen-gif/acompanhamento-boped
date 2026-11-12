@@ -172,6 +172,8 @@
 .cg #tab-in .in-nome b { text-decoration: underline; text-decoration-color: var(--color-border-line); text-underline-offset: 3px; }
 .cg #tab-in .in-sg { font-size: 11px; line-height: 1.35; min-width: 15rem; }
 .cg #tab-in td.tel { white-space: nowrap; }
+.cg #tab-in td.in-cnpj { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cg #tab-in td.in-end { font-size: 12px; min-width: 11rem; max-width: 16rem; }
 </style>
 
 <div class="cg">
@@ -189,20 +191,21 @@
   </header>
 
   <nav class="tabs" role="tablist" aria-label="Partes do painel">
-    <button type="button" role="tab" id="tab-btn-pedidos" data-aba="pedidos">Pedidos do mês</button>
+    <button type="button" role="tab" id="tab-btn-pedidos" data-aba="pedidos">Posição atual e Projeção do mês</button>
     <button type="button" role="tab" id="tab-btn-promocoes" data-aba="promocoes">Promoções do mês</button>
-    <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Status Clientes</button>
     <button type="button" role="tab" id="tab-btn-yoy" data-aba="yoy">Comparativo YoY</button>
-    <button type="button" role="tab" id="tab-btn-ortho" data-aba="ortho">OrthoCare</button>
-    <button type="button" role="tab" id="tab-btn-saojoao" data-aba="saojoao">SÃO JOÃO</button>
-    <button type="button" role="tab" id="tab-btn-contas" data-aba="contas">Principais Contas</button>
+    <button type="button" role="tab" id="tab-btn-hdet" data-aba="hdet">Histórico Detalhado</button>
+    <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Status Clientes</button>
     <button type="button" role="tab" id="tab-btn-inativos" data-aba="inativos">Clientes inativos</button>
+    <button type="button" role="tab" id="tab-btn-ortho" data-aba="ortho">OrthoCare</button>
+    <button type="button" role="tab" id="tab-btn-contas" data-aba="contas">Principais Contas</button>
+    <button type="button" role="tab" id="tab-btn-saojoao" data-aba="saojoao">SÃO JOÃO</button>
   </nav>
 
   <section class="filters" id="filtros" aria-label="Filtros">
     <label>Time<select id="f-macro"></select></label>
-    <label>Subtime<select id="f-time"></select></label>
-    <label>Vendedor<select id="f-vend"></select></label>
+    <div class="lbl">Subtime<details class="ms" id="f-time"><summary></summary><div class="ms-pop"></div></details></div>
+    <div class="lbl">Vendedor<details class="ms" id="f-vend"><summary></summary><div class="ms-pop"></div></details></div>
     <div class="lbl">UF<details class="ms" id="f-uf"><summary></summary><div class="ms-pop"></div></details></div>
     <div class="lbl">Status no cadastro<details class="ms" id="f-status"><summary></summary><div class="ms-pop"></div></details></div>
     <label>Linha<select id="f-linha"></select></label>
@@ -229,6 +232,7 @@
     <label>Atendido por<select id="f-iv"></select></label>
     <label>Segmento<select id="f-iseg"></select></label>
     <label>Inadimplente<select id="f-iinad"></select></label>
+    <label>Buscar cidade<input id="f-icid" type="search" placeholder="Nome da cidade"></label>
     <label>Responsável<select id="f-iresp"></select></label>
     <label>Mostrar<select id="f-top"></select></label>
     <button id="f-reset" type="button">Limpar filtros</button>
@@ -380,9 +384,9 @@
       <div class="scroll">
         <table id="tab-com" data-source="pedidos" data-row-key="cod_grupo,vendedor">
           <thead><tr>
-            <th data-field="grupo">Grupo de cliente</th><th data-field="cod_grupo">Cód. grupo</th><th data-field="vendedor">Vendedor</th>
-            <th data-field="situacao_mes">Situação</th><th data-field="qt_itens_pedido" class="n">Qt. itens pedido</th>
-            <th data-field="valor_pedidos" class="n">Valor (- canc.)</th><th data-field="mix_mes" class="n">Mix no mês</th><th data-field="mix_medio_ano" class="n">Mix médio no ano</th><th data-field="pedidos_pendentes" class="n">Pendente</th>
+            <th data-field="grupo" data-ord="grupo" data-tipo="t">Grupo de cliente</th><th data-field="cod_grupo" data-ord="cod_grupo" data-tipo="t">Cód. grupo</th><th data-field="vendedor" data-ord="vendedor" data-tipo="t">Vendedor</th>
+            <th data-field="situacao_mes" data-ord="situacao_mes" data-tipo="t">Situação</th><th data-field="qt_itens_pedido" data-ord="qt_itens_pedido" class="n">Qt. itens pedido</th>
+            <th data-field="valor_pedidos" data-ord="valor_pedidos" class="n">Valor (- canc.)</th><th data-field="mix_mes" data-ord="mix_mes" class="n">Mix no mês</th><th data-field="mix_medio_ano" data-ord="mix_medio_ano" class="n">Mix médio no ano</th><th data-field="pedidos_pendentes" data-ord="pedidos_pendentes" class="n">Pendente</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -395,15 +399,17 @@
       <div class="scroll">
         <table id="tab-sem" data-source="pedidos" data-row-key="cod_grupo,vendedor">
           <thead><tr>
-            <th data-field="grupo">Grupo de cliente</th><th data-field="cod_grupo">Cód. grupo</th><th data-field="vendedor">Vendedor</th>
-            <th data-field="status_cliente">Status</th><th data-field="ultimo_faturamento">Último pedido</th>
-            <th data-field="faturamento_historico" class="n">Vendas no histórico</th>
-            <th data-field="mix_medio_ano" class="n">Mix médio no ano</th><th data-field="mix_ano" class="n">Subgrupos no ano</th>
+            <th data-field="grupo" data-ord="grupo" data-tipo="t">Grupo de cliente</th><th data-field="cod_grupo" data-ord="cod_grupo" data-tipo="t">Cód. grupo</th><th data-field="vendedor" data-ord="vendedor" data-tipo="t">Vendedor</th>
+            <th data-field="status_cliente" data-ord="status_cliente" data-tipo="t">Status</th><th data-field="ultimo_faturamento" data-ord="ultimo_faturamento" data-tipo="t">Último pedido</th>
+            <th data-field="faturamento_historico" data-ord="faturamento_historico" class="n">Vendas no histórico</th>
+            <th data-field="mix_medio_ano" data-ord="mix_medio_ano" class="n">Mix médio no ano</th><th data-field="mix_ano" data-ord="mix_ano" class="n">Subgrupos no ano</th>
           </tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </section>
+
+    <section class="card" id="pj-card"></section>
 
     <p class="note" id="regra-pedidos">Pedidos do mês tirados do Histórico de Pedidos e ligados ao grupo de clientes de cada carteira pelo código do cliente. Valor total de pedidos líquido de cancelamentos e devoluções; valor negativo indica cancelamento no mês. A coluna Pendente só é preenchida quando o arquivo é o relatório "com pedido".</p>
   </div>
@@ -740,6 +746,8 @@
     <p class="note" id="regra-sj"></p>
   </div>
 
+  <div class="pane" id="hdet" hidden></div>
+
   <div class="pane" id="inativos">
   <section class="kpis" id="in-k"></section>
   <div class="grid">
@@ -752,7 +760,7 @@
     <div class="filters" id="in-exp"><span class="note" id="in-exp-n"></span><label>Atribuir a<select id="in-exp-v"></select></label><button type="button" id="in-exp-b">Exportar e atribuir</button><button type="button" id="in-exp-c">Limpar seleção</button></div>
     <div class="scroll tall">
       <table id="tab-in" data-source="inativos">
-        <thead><tr><th data-ord="g" data-tipo="t">Grupo de cliente</th><th data-ord="sit" data-tipo="t">Situação</th><th data-ord="cid" data-tipo="t">Cidade / UF</th><th>Telefone</th><th data-ord="seg" data-tipo="t">Segmento</th><th data-ord="inadT" data-tipo="t">Inadimplente</th><th class="n" data-ord="venc">Valor vencido</th><th class="n" data-ord="ult" data-tipo="t">Último pedido</th><th class="n" data-ord="d">Dias</th><th class="n" data-ord="fat">Faturado (histórico)</th><th data-ord="v" data-tipo="t">Atendido por</th><th>5 principais subgrupos (qtd · valor)</th></tr></thead>
+        <thead><tr><th data-ord="g" data-tipo="t">Grupo de cliente</th><th>CNPJ</th><th data-ord="sit" data-tipo="t">Situação</th><th data-ord="cid" data-tipo="t">Cidade / UF</th><th>Endereço</th><th>Telefone</th><th data-ord="seg" data-tipo="t">Segmento</th><th class="n" data-ord="ult" data-tipo="t">Último pedido</th><th class="n" data-ord="d">Dias</th><th class="n" data-ord="fat">Faturado (histórico)</th><th data-ord="v" data-tipo="t">Atendido por</th><th>5 principais subgrupos (qtd · valor)</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -828,6 +836,7 @@
   <p class="note" id="regra">Vendas: soma do Valor Total do Histórico de Pedidos no período (pedidos líquidos de cancelamentos e devoluções), ligada a cada grupo de clientes pelo código do cliente. Carteiras, vendedores e status dos clientes vêm da base TIME BOPED 2026 validada em 20/10/2026.</p>
 </div>
 
+<script src="hdet.js"></script>
 <script>
 const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
 const BRLc = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 1 });
@@ -842,10 +851,8 @@ const keyOf = (a, b) => enc(a) + ',' + enc(b);
 
 const FILTERS = [
   ['f-macro', 'macro', 'Todos os times'],
-  ['f-time', 'time', 'Todos os subtimes'],
-  ['f-vend', 'vendedor', 'Todos os vendedores'],
 ];
-// Filtros de múltipla escolha (UF, Status no cadastro, Linha/Item/Subgrupo da promoção, Subgrupo do YoY):
+// Filtros de múltipla escolha (Subtime, Vendedor, UF, Status no cadastro, Linha/Item/Subgrupo da promoção, Subgrupo do YoY):
 // o parâmetro guarda os valores separados por ";"; vazio = todos
 const msVal = (v) => (v ? String(v).split(';').filter(Boolean) : []);
 const msHas = (v, x) => { const a = msVal(v); return !a.length || a.includes(x); };
@@ -868,8 +875,8 @@ function fillMulti(box, all, values, current) {
   }
   pop.querySelectorAll('.ms-list input').forEach((c) => { c.checked = sel.includes(c.value); });
 }
-const MS_PARAM = { 'f-uf': 'uf', 'f-status': 'status', 'f-plinha': 'plinha', 'f-pitem': 'pitem', 'f-psub': 'psub', 'f-ysub': 'ysub' };
-const msSet = (box, vs) => { const k = MS_PARAM[box.id], o = { [k]: vs.length ? vs.join(';') : null }; if (k === 'plinha') o.pitem = null; if (k === 'psub') o.psit = null; set(o); };
+const MS_PARAM = { 'f-time': 'time', 'f-vend': 'vendedor', 'f-uf': 'uf', 'f-status': 'status', 'f-plinha': 'plinha', 'f-pitem': 'pitem', 'f-psub': 'psub', 'f-ysub': 'ysub' };
+const msSet = (box, vs) => { const k = MS_PARAM[box.id], o = { [k]: vs.length ? vs.join(';') : null }; if (k === 'time') o.vendedor = null; if (k === 'plinha') o.pitem = null; if (k === 'psub') o.psit = null; set(o); };
 $('#filtros').addEventListener('change', (e) => {
   const box = e.target.closest('.ms');
   if (!box || !e.target.matches('.ms-list input')) return;
@@ -898,13 +905,16 @@ for (const [id, name] of FILTERS) {
 }
 $('#f-top').addEventListener('change', (e) => set({ top: Number(e.target.value) }));
 $('#f-q').addEventListener('input', (e) => set({ q: e.target.value || null }));
+$('#f-icid').addEventListener('input', (e) => set({ icid: e.target.value || null }));
 const defaults = () => set({ top: 50, aba: 'pedidos' });
 const PSITS = ['Potencial', 'Comprou recentemente', 'Já paga o preço da promo'];
 defaults();
 $('#f-reset').addEventListener('click', () => {
+  // Limpar filtros não troca de aba (pedido do Yghor em 07/11)
+  const abaAtual = P().aba, temaAtual = P().tema;
   dash.resetParams();
-  set({ macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, osit: null, sjuf: null, sts: null, de: null, ate: null, linha: null });
-  defaults();
+  set({ icid: null, hg: null, hmix: null, hmed: null, macro: null, time: null, vendedor: null, situacao: null, uf: null, segmento: null, status: null, mes: null, q: null, plinha: null, pitem: null, psit: null, pgrupo: null, psub: null, ygrupo: null, ysub: null, yper: null, cregiao: null, cuf: null, ctime: null, cvend: null, csit: null, osit: null, sjuf: null, sts: null, de: null, ate: null, linha: null });
+  set({ top: 50, aba: abaAtual || 'pedidos', tema: temaAtual || null });
 });
 $('#f-mes').addEventListener('change', (e) => set({ mes: e.target.value || null }));
 $('#f-linha').addEventListener('change', (e) => set({ linha: e.target.value || null }));
@@ -984,7 +994,7 @@ $('#sj-uf-btn').addEventListener('click', (e) => { const b = e.target.closest('b
 document.querySelectorAll('#o-sit-btn button').forEach((b) => b.addEventListener('click', () => set({ osit: b.dataset.sit === 'compram' ? null : b.dataset.sit })));
 $('#tab-ovend tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
-  if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
+  if (tr) set({ vendedor: msTroca(P().vendedor, tr.dataset.v) });
 });
 document.querySelectorAll('#y-per-btn button').forEach((b) => b.addEventListener('click', () => set({ yper: b.dataset.per === 'ytd' ? null : b.dataset.per, de: null, ate: null })));
 $('#f-ygrupo').addEventListener('change', (e) => {
@@ -995,7 +1005,7 @@ $('#f-ygrupo').addEventListener('change', (e) => {
 $('#y-sel-close').addEventListener('click', () => set({ ygrupo: null, ysub: null }));
 $('#tab-yvend tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
-  if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
+  if (tr) set({ vendedor: msTroca(P().vendedor, tr.dataset.v) });
 });
 $('#tab-ygrupos tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-g]');
@@ -1009,7 +1019,7 @@ document.querySelectorAll('#tema button').forEach((b) => b.addEventListener('cli
 document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { set({ aba: b.dataset.aba }); dash.setLink(b.dataset.aba); }));
 // Ordenação pelos títulos de Meta do mês por time e líder e de Cobertura por vendedor:
 // o 1º clique ordena do maior para o menor (texto: A a Z), o 2º inverte; vale uma coluna por vez
-const ORD = { meta: { k: null, dir: -1 }, cob: { k: null, dir: -1 }, ysub: { k: null, dir: -1 }, inat: { k: 'fat', dir: -1 } };
+const ORD = { meta: { k: null, dir: -1 }, cob: { k: null, dir: -1 }, com: { k: null, dir: -1 }, sem: { k: null, dir: -1 }, ysub: { k: null, dir: -1 }, inat: { k: 'fat', dir: -1 } };
 function ordenar(qual, th) {
   const o = ORD[qual], k = th.dataset.ord, texto = th.dataset.tipo === 't';
   if (o.k === k) o.dir = -o.dir; else { o.k = k; o.dir = texto ? 1 : -1; }
@@ -1026,6 +1036,8 @@ const marcaOrd = (tab, o) => document.querySelectorAll(tab + ' th[data-ord]').fo
   th.setAttribute('aria-sort', th.dataset.ord === o.k ? (o.dir < 0 ? 'descending' : 'ascending') : 'none');
 });
 $('#tab-meta thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('meta', th); });
+$('#tab-com thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('com', th); });
+$('#tab-sem thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('sem', th); });
 $('#tab-ysubs thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('ysub', th); });
 $('#tab-cob thead').addEventListener('click', (e) => { const th = e.target.closest('th[data-ord]'); if (th) ordenar('cob', th); });
 // Clientes inativos: filtros próprios, ordenação pelos títulos e clique no grupo abre os clientes
@@ -1043,7 +1055,7 @@ $('#in-a-k').addEventListener('click', (e) => { const b = e.target.closest('[dat
 $('#tab-in tbody').addEventListener('change', (e) => { if (e.target.matches('select[data-cg]')) { inEdit = null; salvarResp(e.target.dataset.cg, e.target.value); } });
 $('#tab-cob tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
-  if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
+  if (tr) set({ vendedor: msTroca(P().vendedor, tr.dataset.v) });
 });
 const named = location.hash.slice(1);
 if (['pedidos', 'historico', 'promocoes', 'yoy', 'ortho', 'escala', 'saojoao', 'contas', 'inativos'].includes(named)) set({ aba: named });
@@ -1106,7 +1118,8 @@ function draw() {
   $('#yoy').hidden = aba !== 'yoy';
   $('#contas').hidden = aba !== 'contas';
   $('#inativos').hidden = aba !== 'inativos';
-  ['#f-is', '#f-iv', '#f-iseg', '#f-iinad', '#f-iresp'].forEach((x) => { $(x).closest('label').hidden = aba !== 'inativos'; });
+  $('#hdet').hidden = aba !== 'hdet';
+  ['#f-is', '#f-iv', '#f-iseg', '#f-iinad', '#f-icid', '#f-iresp'].forEach((x) => { $(x).closest('label').hidden = aba !== 'inativos'; });
   $('#saojoao').hidden = aba !== 'saojoao';
   $('#filtros').style.display = aba === 'saojoao' ? 'none' : '';
   $('#ortho').hidden = aba !== 'ortho';
@@ -1119,7 +1132,7 @@ function draw() {
   ['#f-ygrupo', '#f-ysub'].forEach((x) => { $(x).closest('label, .lbl').hidden = aba !== 'yoy'; });
   $('#f-mes').closest('label, .lbl').hidden = aba !== 'pedidos';
   // filtro de linha: Pedidos do mês, Promoções e Comparativo YoY
-  $('#f-linha').closest('label, .lbl').hidden = !['pedidos', 'promocoes', 'yoy'].includes(aba);
+  $('#f-linha').closest('label, .lbl').hidden = !['pedidos', 'promocoes', 'yoy', 'hdet'].includes(aba);
   fillSelect($('#f-linha'), 'Todas', Object.keys(LINHAS_F), p0.linha);
   // período De / Até: Pedidos do mês, Comparativo YoY e OrthoCare
   const comPer = ['pedidos', 'yoy', 'ortho'].includes(aba) && !!diario();
@@ -1142,23 +1155,24 @@ function draw() {
 
   // options cascade
   const byMacro = all.filter((r) => !p.macro || r.time_macro === p.macro);
-  const byTime = byMacro.filter((r) => !p.time || r.time === p.time);
+  const byTime = byMacro.filter((r) => msHas(p.time, r.time));
   fillSelect($('#f-macro'), 'Todos os times', MACROS.filter((m) => all.some((r) => r.time_macro === m)), p.macro);
-  fillSelect($('#f-time'), 'Todos os subtimes', uniq(byMacro, 'time'), p.time);
-  fillSelect($('#f-vend'), 'Todos os vendedores', uniq(byTime, 'vendedor'), p.vendedor);
+  fillMulti($('#f-time'), 'Todos os subtimes', uniq(byMacro, 'time'), p.time);
+  fillMulti($('#f-vend'), 'Todos os vendedores', uniq(byTime, 'vendedor'), p.vendedor);
   fillMulti($('#f-uf'), 'Todas', uniq(all, 'uf'), p.uf);
   fillMulti($('#f-status'), 'Todos', uniq(all, 'status'), p.status);
   const top = $('#f-top');
   if (!top.options.length) top.replaceChildren(...[10, 20, 50, 100, 500, 2000, 20000].map((n) => new Option(n >= 20000 ? 'Todos' : 'Top ' + n, n)));
   top.value = String(p.top || 50);
   if (document.activeElement !== $('#f-q')) $('#f-q').value = p.q || '';
+  if (document.activeElement !== $('#f-icid')) $('#f-icid').value = p.icid || '';
 
   // Situação do vendedor e Segmento saíram dos filtros (04/11); Buscar grupo não vale no YoY
   const q = (aba === 'yoy' ? '' : p.q || '').toLowerCase();
   const base = all.filter((r) =>
     msHas(p.uf, r.uf) && msHas(p.status, r.status) &&
     (!q || r.grupo.toLowerCase().includes(q) || r.cod_grupo.includes(q)));
-  const rows = base.filter((r) => (!p.macro || r.time_macro === p.macro) && (!p.time || r.time === p.time) && (!p.vendedor || r.vendedor === p.vendedor));
+  const rows = base.filter((r) => (!p.macro || r.time_macro === p.macro) && msHas(p.time, r.time) && msHas(p.vendedor, r.vendedor));
 
   // KPIs
   const total = d3.sum(rows, (r) => r.faturamento);
@@ -1188,12 +1202,12 @@ function draw() {
   const teamRows = base.filter((r) => !p.macro || r.time_macro === p.macro);
   const teams = d3.rollups(teamRows, (v) => ({ v: d3.sum(v, (r) => r.faturamento), n: v.length }), (r) => r[teamField])
     .map(([k, o]) => ({ k, ...o })).sort((a, b) => b.v - a.v);
-  barList($('#bars-time'), teams, dash.colors[0], (k) => set(p.macro ? { time: p.time === k ? null : k, vendedor: null } : { macro: k, time: null, vendedor: null }), p.macro ? p.time : p.macro);
+  barList($('#bars-time'), teams, dash.colors[0], (k) => set(p.macro ? { time: msTroca(p.time, k), vendedor: null } : { macro: k, time: null, vendedor: null }), p.macro ? msVal(p.time) : p.macro);
 
-  const vendRows = base.filter((r) => (!p.macro || r.time_macro === p.macro) && (!p.time || r.time === p.time));
+  const vendRows = base.filter((r) => (!p.macro || r.time_macro === p.macro) && msHas(p.time, r.time));
   const vends = d3.rollups(vendRows, (v) => ({ v: d3.sum(v, (r) => r.faturamento), n: v.length }), (r) => r.vendedor)
     .map(([k, o]) => ({ k, ...o })).sort((a, b) => b.v - a.v);
-  barList($('#bars-vend'), vends, dash.colors[1], (k) => set({ vendedor: p.vendedor === k ? null : k }), p.vendedor);
+  barList($('#bars-vend'), vends, dash.colors[1], (k) => set({ vendedor: msTroca(p.vendedor, k) }), msVal(p.vendedor));
 
   // main table
   const n = Number(p.top || 50);
@@ -1270,6 +1284,9 @@ function draw() {
   drawStatus(rows);
   drawContas();
   drawInativos();
+  // Histórico Detalhado (hdet_fonte.js): só desenha com a aba aberta
+  if (aba === 'pedidos' && window.drawProjecao) window.drawProjecao({ p, rows, all, set, redraw: draw, BRL, BRLc, BRL2, INT, PCT, el, normNome, msVal, linhasSub, linCod, LINHAS_F, MACROS, dataBR });
+  if (aba === 'hdet' && window.drawHistDet) window.drawHistDet({ p, rows, all, set, redraw: draw, BRL, BRLc, BRL2, INT, PCT, el, normNome, msVal, linhasSub, linCod, LINHAS_F, MACROS, dataBR });
 }
 
 // Clientes inativos e a inativar no mês (dados/inativos.json, de atualizar_inativos.py)
@@ -1296,8 +1313,8 @@ $('#in-exp-b').addEventListener('click', async () => {
   if (!v) return alert('Escolha para quem os contatos serão atribuídos.');
   const hj = new Date(), ate = new Date(hj.getTime() + 10 * 864e5), f = (x) => x.toLocaleDateString('pt-BR');
   const q = (x) => '"' + String(x ?? '').replace(/"/g, '""') + '"', n2 = (x) => (x || 0).toFixed(2).replace('.', ',');
-  const lin = [['Cód. grupo', 'Grupo de cliente', 'Situação', 'Cidade', 'UF', 'Telefone', 'Segmento', 'Inadimplente', 'Valor vencido', 'Último pedido', 'Dias sem comprar', 'Faturado', 'Atendido por', '5 principais subgrupos', 'Responsável', 'Atribuído em', 'Fechar até']]
-    .concat(rs.map((r) => [r.cg, r.g, r.sit, r.cid, r.uf, r.tel, r.seg, r.inadT, n2(Math.max(0, r.venc)), dataBR(r.ult), r.d ?? '', n2(r.fat), r.v,
+  const lin = [['Cód. grupo', 'Grupo de cliente', 'CNPJ', 'Situação', 'Cidade', 'UF', 'Endereço', 'Telefone', 'Segmento', 'Último pedido', 'Dias sem comprar', 'Faturado', 'Atendido por', '5 principais subgrupos', 'Responsável', 'Atribuído em', 'Fechar até']]
+    .concat(rs.map((r) => [r.cg, r.g, r.cnpj || '', r.sit, r.cid, r.uf, r.end || '', r.tel, r.seg, dataBR(r.ult), r.d ?? '', n2(r.fat), r.v,
       (r.sg || []).map((x) => `${x[0]} (${x[1]} un, ${BRL.format(x[2])})`).join('; '), v, f(hj), f(ate)]));
   const csv = new Blob(['\ufeff' + lin.map((l) => l.map(q).join(';')).join('\r\n')], { type: 'text/csv' }), nome = `inativos_${v.replace(/[^\w]+/g, '_')}_${hj.toISOString().slice(0, 10)}.csv`;
   let dl = null; try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
@@ -1333,9 +1350,9 @@ function drawInativos() {
   fillSelect($('#in-exp-v'), 'Escolha o responsável', REPS, $('#in-exp-v').value);
   $('#in-exp-n').textContent = `${inSel.size} de 15 selecionados`;
   fillSelect($('#f-iresp'), 'Todos', ['Sem responsável', ...uniq(all.filter((r) => r.resp), 'resp')], p.iresp);
-  const q = normNome(p.q || '');
-  const base = all.filter((r) => (!p.is || r.sit === p.is) && (!p.iseg || r.seg === p.iseg) && (!p.iinad || r.inadT === p.iinad) && (!p.iresp || (p.iresp === 'Sem responsável' ? !r.resp : r.resp === p.iresp))
-    && (!q || normNome([r.g, r.cg, r.cid, r.v, ...(r.cl || []).map((c) => c[0] + ' ' + c[1])].join(' ')).includes(q)));
+  const q = normNome(p.q || ''), qc = normNome(p.icid || '');
+  const base = all.filter((r) => (!qc || normNome([r.cid, ...(r.cl || []).map((c) => c[2])].join(' ')).includes(qc)) && (!p.is || r.sit === p.is) && (!p.iseg || r.seg === p.iseg) && (!p.iinad || r.inadT === p.iinad) && (!p.iresp || (p.iresp === 'Sem responsável' ? !r.resp : r.resp === p.iresp))
+    && (!q || normNome([r.g, r.cg, r.cnpj, r.cid, r.v, ...(r.cl || []).map((c) => c[0] + ' ' + c[1] + ' ' + (c[9] || ''))].join(' ')).includes(q)));
   const sel = base.filter((r) => msHas(p.uf, r.uf) && (!p.iv || r.v === p.iv));
   const agg = (rs, f) => d3.groups(rs, f).map(([k, x]) => ({ k, v: d3.sum(x, (r) => r.fat), n: x.length })).sort((a, b) => b.v - a.v);
   barList($('#in-uf'), agg(base.filter((r) => !p.iv || r.v === p.iv), (r) => r.uf), 'var(--c1)', (k) => set({ uf: msTroca(p.uf, k) }), msVal(p.uf));
@@ -1354,7 +1371,7 @@ function drawInativos() {
   sel.sort(cmpOrd(o)); marcaOrd('#tab-in', o);
   const lim = p.top || 50;
   $('#in-t').textContent = `Grupos de clientes (${INT.format(sel.length)})`;
-  $('#in-n').textContent = `Base de ${dataBR(ref)}. ${sel.length > lim ? `Mostrando ${INT.format(lim)}; use Mostrar para ver mais. ` : ''}Clique no nome do grupo para escolher o representante responsável pela reativação; em "clientes ▾", veja os clientes do grupo. Subgrupos: histórico de pedidos de ${d.data[0].hist || '—'}. Contato e cidade são do cliente com maior faturamento; valores são a soma do grupo. Dias = desde o último pedido. Vendedor fora do time BOPED aparece como INTERNO.`;
+  $('#in-n').textContent = `Base de ${dataBR(ref)}. ${sel.length > lim ? `Mostrando ${INT.format(lim)}; use Mostrar para ver mais. ` : ''}Clique no nome do grupo para escolher o representante responsável pela reativação; em "clientes ▾", veja os clientes do grupo. Subgrupos: histórico de pedidos de ${d.data[0].hist || '—'}. Só pessoa jurídica. CNPJ, endereço, contato e cidade são do cliente com maior faturamento; valores são a soma do grupo. Dias = desde o último pedido. Vendedor fora do time BOPED aparece como INTERNO.`;
   const td = (t, c) => el('td', c, t);
   const trs = [];
   sel.slice(0, lim).forEach((r) => {
@@ -1372,17 +1389,16 @@ function drawInativos() {
     if (r.inat) s.append(el('br'), el('small', 'note', (r.s === 'I' ? 'desde ' : 'em ') + dataBR(r.inat)));
     const tel = el('td', 'tel');
     if (r.tel) { const a = el('a', null, r.tel); a.href = 'tel:+55' + r.tel.replace(/\D/g, ''); tel.append(a); } else tel.append('—');
-    const inadC = el('td'); inadC.append(el('span', 'pill ' + (r.inad ? 'bad' : 'ok'), r.inadT));
     const ped = td(dataBR(r.ult), 'n'); if (r.ped) ped.append(el('br'), el('small', 'note', 'aberto ' + dataBR(r.ped)));
     const sg = el('td', 'in-sg');
     if (r.sg) r.sg.forEach((x, i) => { if (i) sg.append(el('br')); sg.append(`${x[0]} · ${INT.format(x[1])} · ${BRL.format(x[2])}`); }); else sg.append(el('span', 'note', 'sem itens no histórico'));
     const v = td(r.v); if (r.vs.length) v.append(el('br'), el('small', 'note', 'também: ' + r.vs.join(', ')));
-    tr.append(g, s, td(`${r.cid} / ${r.uf}`), tel, td(r.seg), inadC, td(r.venc > 0 ? BRL2.format(r.venc) : '—', 'n'), ped,
+    tr.append(g, td(r.cnpj || '—', 'in-cnpj'), s, td(`${r.cid} / ${r.uf}`), td(r.end || '—', 'in-end'), tel, td(r.seg), ped,
       td(r.d == null ? '—' : INT.format(r.d), 'n'), td(BRL2.format(r.fat), 'n'), v, sg);
     trs.push(tr);
     if (inOpen === r.cg && r.cl) r.cl.forEach((c) => {
       const t = el('tr', 'sub');
-      t.append(td(`${c[1]} · Cód. ${c[0]}`), td(''), td(`${c[2]} / ${c[3]}`), td(c[4] || '—'), td(''), td(''), td(c[6] > 0 ? BRL2.format(c[6]) : '—', 'n'),
+      t.append(td(`${c[1]} · Cód. ${c[0]}`), td(c[9] || '—', 'in-cnpj'), td(''), td(`${c[2]} / ${c[3]}`), td(c[10] || '—', 'in-end'), td(c[4] || '—'), td(''),
         td(dataBR(c[7]), 'n'), td(''), td(BRL2.format(c[5]), 'n'), td(c[8]), td(''));
       trs.push(t);
     });
@@ -1552,7 +1568,7 @@ function drawOrtho(scope, allGrupos) {
       a0: sum(b, 'a0'), a1: sum(b, 'a1'), fat: d3.sum(xs, (x) => x.r.faturamento) };
   }).sort((a, b) => b.a1 - a.a1 || b.c - a.c);
   $('#tab-ovend tbody').replaceChildren(...vend.map((o) => {
-    const tr = el('tr'); tr.dataset.v = o.v; if (p.vendedor === o.v) tr.className = 'on';
+    const tr = el('tr'); tr.dataset.v = o.v; if (msVal(p.vendedor).includes(o.v)) tr.className = 'on';
     tr.append(el('td', 'link', o.v), el('td', null, o.time), el('td', 'n', INT.format(o.n)), el('td', 'n', INT.format(o.c)), el('td', 'n', INT.format(o.pa)), el('td', 'n', INT.format(o.nu)),
       el('td', 'n', PCT.format(o.c / o.n)), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.a1 - o.a0), pctTxt(o.a0, o.a1)), el('td', 'n', o.fat > 0 ? PCT.format(o.a1 / o.fat) : '—'));
     return tr;
@@ -2040,7 +2056,7 @@ function drawPedidos(scope) {
   const md = dash.data('meta');
   const metaOk = md.status === 'ok';
   if (metaOk || md.status === 'error') $('#p-meta').classList.remove('dash-skeleton');
-  const vendOk = (r) => (!p.macro || r.time_macro === p.macro) && (!p.time || r.time === p.time) && (!p.vendedor || r.vendedor === p.vendedor);
+  const vendOk = (r) => (!p.macro || r.time_macro === p.macro) && msHas(p.time, r.time) && msHas(p.vendedor, r.vendedor);
   // a meta é do mês: com um período De / Até, ela só aparece se o período estiver dentro do mês atual
   const metaVale = !pr || (pr.de.slice(0, 7) === ref.slice(0, 7) && pr.ate.slice(0, 7) === ref.slice(0, 7));
   const metas = metaOk && metaVale ? md.data.map((r) => ({ ...r, meta: Number(r.meta) })).filter(vendOk) : [];
@@ -2095,7 +2111,7 @@ function drawPedidos(scope) {
   marcaOrd('#tab-cob', ORD.cob);
   $('#tab-cob tbody').replaceChildren(...byV.map((o) => {
     const tr = el('tr'); tr.dataset.v = o.v;
-    if (p.vendedor === o.v) tr.className = 'on';
+    if (msVal(p.vendedor).includes(o.v)) tr.className = 'on';
     tr.append(el('td', null, o.v), el('td', null, o.time), el('td', 'n', INT.format(o.tot)), el('td', 'n', INT.format(o.c)), el('td', 'n', INT.format(o.s)));
     const cv = el('td'); const box = el('div', 'cov'); box.append(el('span', null, PCT.format(o.c / o.tot)));
     const tk = el('div', 'track'); const fl = el('div', 'fill'); fl.style.width = (o.c / o.tot * 100) + '%'; tk.append(fl); box.append(tk); cv.append(box);
@@ -2109,7 +2125,9 @@ function drawPedidos(scope) {
   }));
 
   const pill = (r) => { const s = el('span', 'pill ' + (r.situacao_mes === 'Cancelamento' ? 'bad' : 'ok'), r.situacao_mes); return s; };
-  const comRows = shown.filter((r) => r.situacao_mes !== 'Sem pedido').sort((a, b) => b.valor_pedidos - a.valor_pedidos);
+  const comRows = shown.filter((r) => r.situacao_mes !== 'Sem pedido')
+    .sort(ORD.com.k ? cmpOrd(ORD.com) : ((a, b) => b.valor_pedidos - a.valor_pedidos));
+  marcaOrd('#tab-com', ORD.com);
   $('#com-note').textContent = `${INT.format(comRows.length)} grupos de clientes. Valor negativo é cancelamento do grupo no mês. Mix médio no mês: ${mixTxt(avg(comRows.filter((r) => r.situacao_mes === 'Com pedido').map((r) => r.mix_mes)))} subgrupos; média no ano dos mesmos grupos: ${mixTxt(avg(comRows.filter((r) => r.mix_medio_ano != null).map((r) => r.mix_medio_ano)))}/mês.`;
   $('#tab-com tbody').replaceChildren(...comRows.map((r) => {
     const tr = el('tr'); tr.dataset.key = keyOf(r.cod_grupo, r.vendedor);
@@ -2119,8 +2137,10 @@ function drawPedidos(scope) {
     tr.append(nm, el('td', null, r.cod_grupo), el('td', null, r.vendedor), st, el('td', 'n', INT.format(r.qt_itens_pedido)), el('td', 'n', BRL.format(r.valor_pedidos)), el('td', 'n', INT.format(r.mix_mes || 0)), el('td', 'n', mixTxt(r.mix_medio_ano)), el('td', 'n', r.pedidos_pendentes == null ? '—' : BRL.format(r.pedidos_pendentes)));
     return tr;
   }));
-  const semRows = shown.filter((r) => r.situacao_mes === 'Sem pedido').sort((a, b) => b.faturamento_historico - a.faturamento_historico);
-  $('#sem-note').textContent = `${INT.format(semRows.length)} grupos de clientes, dos que mais compraram no histórico para os que menos compraram. Mix médio no ano desses grupos: ${mixTxt(avg(semRows.filter((r) => r.mix_medio_ano != null).map((r) => r.mix_medio_ano)))} subgrupos por mês.`;
+  const semRows = shown.filter((r) => r.situacao_mes === 'Sem pedido')
+    .sort(ORD.sem.k ? cmpOrd(ORD.sem) : ((a, b) => b.faturamento_historico - a.faturamento_historico));
+  marcaOrd('#tab-sem', ORD.sem);
+  $('#sem-note').textContent = `${INT.format(semRows.length)} grupos de clientes (sem ordenação escolhida, dos que mais compraram no histórico para os que menos compraram; clique no título de uma coluna para ordenar). Mix médio no ano desses grupos: ${mixTxt(avg(semRows.filter((r) => r.mix_medio_ano != null).map((r) => r.mix_medio_ano)))} subgrupos por mês.`;
   $('#tab-sem tbody').replaceChildren(...semRows.map((r) => {
     const tr = el('tr'); tr.dataset.key = keyOf(r.cod_grupo, r.vendedor);
     const st = el('td'); st.append(statusPill(r.status_cliente));
@@ -2221,7 +2241,7 @@ function drawYoy(scope, allGrupos) {
   const vend = agg(both, (r) => r.v).sort((a, b) => b.d - a.d);
   const vmax = Math.max(1, ...vend.map((o) => Math.abs(o.d)));
   $('#tab-yvend tbody').replaceChildren(...vend.map((o) => {
-    const tr = el('tr'); tr.dataset.v = o.k; if (p.vendedor === o.k) tr.className = 'on';
+    const tr = el('tr'); tr.dataset.v = o.k; if (msVal(p.vendedor).includes(o.k)) tr.className = 'on';
     const gs = agg(o.xs, gk);
     const time = (nome.get(o.xs[0].g + '|' + o.k) || {}).time || '';
     tr.append(el('td', null, o.k), el('td', null, time), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.d), SBRL(o.d)), el('td', 'n ' + sinal(o.d), pctTxt(o.a0, o.a1)),

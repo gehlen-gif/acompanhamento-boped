@@ -255,8 +255,8 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
 
   <section class="filters" id="filtros" aria-label="Filtros">
     <label>Time<select id="f-macro"></select></label>
-    <label>Subtime<select id="f-time"></select></label>
-    <label>Vendedor<select id="f-vend"></select></label>
+    <div class="lbl">Subtime<details class="ms" id="f-time"><summary></summary><div class="ms-pop"></div></details></div>
+    <div class="lbl">Vendedor<details class="ms" id="f-vend"><summary></summary><div class="ms-pop"></div></details></div>
     <div class="lbl">UF<details class="ms" id="f-uf"><summary></summary><div class="ms-pop"></div></details></div>
     <div class="lbl">Status no cadastro<details class="ms" id="f-status"><summary></summary><div class="ms-pop"></div></details></div>
     <label>Linha<select id="f-linha"></select></label>
@@ -1113,7 +1113,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
   }
 
   function nomeEscopo(p) {
-    const f = [p.vendedor ? 'vendedor ' + p.vendedor : p.time ? 'subtime ' + p.time : p.macro ? 'time ' + p.macro : 'BOPED (todo o time)'];
+    const f = [p.vendedor ? (p.vendedor.includes(';') ? 'vendedores ' : 'vendedor ') + p.vendedor.split(';').join(', ') : p.time ? (p.time.includes(';') ? 'subtimes ' : 'subtime ') + p.time.split(';').join(', ') : p.macro ? 'time ' + p.macro : 'BOPED (todo o time)'];
     if (p.uf) f.push('UF ' + String(p.uf).split(';').join(', '));
     if (p.status) f.push('status ' + String(p.status).split(';').join(', '));
     if (p.q) f.push(`busca "${p.q}"`);
@@ -1382,7 +1382,7 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
     const X = hdet(), sel = $('#hd-mix');
     if (!X || !X.H.mix) { $('#hd-ins').replaceChildren(el('li', null, 'Sem a base de mix dos times.')); return; }
     const nomes = Object.keys(X.H.mix), ord = ['BOPED', ...C.MACROS, ...nomes.filter((n) => n !== 'BOPED' && !C.MACROS.includes(n)).sort()].filter((n, i, a) => nomes.includes(n) && a.indexOf(n) === i);
-    const padrao = [p.time, p.macro, 'BOPED'].find((n) => n && nomes.includes(n)) || ord[0];
+    const padrao = [p.time && !p.time.includes(';') ? p.time : null, p.macro, 'BOPED'].find((n) => n && nomes.includes(n)) || ord[0];
     const mixN = p.hmix && nomes.includes(p.hmix) ? p.hmix : padrao;
     if (sel.options.length !== ord.length) sel.replaceChildren(...ord.map((n) => new Option(n === 'BOPED' ? 'BOPED (todo o time)' : n, n)));
     sel.value = mixN;
@@ -1495,10 +1495,8 @@ const keyOf = (a, b) => enc(a) + ',' + enc(b);
 
 const FILTERS = [
   ['f-macro', 'macro', 'Todos os times'],
-  ['f-time', 'time', 'Todos os subtimes'],
-  ['f-vend', 'vendedor', 'Todos os vendedores'],
 ];
-// Filtros de múltipla escolha (UF, Status no cadastro, Linha/Item/Subgrupo da promoção, Subgrupo do YoY):
+// Filtros de múltipla escolha (Subtime, Vendedor, UF, Status no cadastro, Linha/Item/Subgrupo da promoção, Subgrupo do YoY):
 // o parâmetro guarda os valores separados por ";"; vazio = todos
 const msVal = (v) => (v ? String(v).split(';').filter(Boolean) : []);
 const msHas = (v, x) => { const a = msVal(v); return !a.length || a.includes(x); };
@@ -1521,8 +1519,8 @@ function fillMulti(box, all, values, current) {
   }
   pop.querySelectorAll('.ms-list input').forEach((c) => { c.checked = sel.includes(c.value); });
 }
-const MS_PARAM = { 'f-uf': 'uf', 'f-status': 'status', 'f-plinha': 'plinha', 'f-pitem': 'pitem', 'f-psub': 'psub', 'f-ysub': 'ysub' };
-const msSet = (box, vs) => { const k = MS_PARAM[box.id], o = { [k]: vs.length ? vs.join(';') : null }; if (k === 'plinha') o.pitem = null; if (k === 'psub') o.psit = null; set(o); };
+const MS_PARAM = { 'f-time': 'time', 'f-vend': 'vendedor', 'f-uf': 'uf', 'f-status': 'status', 'f-plinha': 'plinha', 'f-pitem': 'pitem', 'f-psub': 'psub', 'f-ysub': 'ysub' };
+const msSet = (box, vs) => { const k = MS_PARAM[box.id], o = { [k]: vs.length ? vs.join(';') : null }; if (k === 'time') o.vendedor = null; if (k === 'plinha') o.pitem = null; if (k === 'psub') o.psit = null; set(o); };
 $('#filtros').addEventListener('change', (e) => {
   const box = e.target.closest('.ms');
   if (!box || !e.target.matches('.ms-list input')) return;
@@ -1640,7 +1638,7 @@ $('#sj-uf-btn').addEventListener('click', (e) => { const b = e.target.closest('b
 document.querySelectorAll('#o-sit-btn button').forEach((b) => b.addEventListener('click', () => set({ osit: b.dataset.sit === 'compram' ? null : b.dataset.sit })));
 $('#tab-ovend tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
-  if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
+  if (tr) set({ vendedor: msTroca(P().vendedor, tr.dataset.v) });
 });
 document.querySelectorAll('#y-per-btn button').forEach((b) => b.addEventListener('click', () => set({ yper: b.dataset.per === 'ytd' ? null : b.dataset.per, de: null, ate: null })));
 $('#f-ygrupo').addEventListener('change', (e) => {
@@ -1651,7 +1649,7 @@ $('#f-ygrupo').addEventListener('change', (e) => {
 $('#y-sel-close').addEventListener('click', () => set({ ygrupo: null, ysub: null }));
 $('#tab-yvend tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
-  if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
+  if (tr) set({ vendedor: msTroca(P().vendedor, tr.dataset.v) });
 });
 $('#tab-ygrupos tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-g]');
@@ -1701,7 +1699,7 @@ $('#in-a-k').addEventListener('click', (e) => { const b = e.target.closest('[dat
 $('#tab-in tbody').addEventListener('change', (e) => { if (e.target.matches('select[data-cg]')) { inEdit = null; salvarResp(e.target.dataset.cg, e.target.value); } });
 $('#tab-cob tbody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-v]');
-  if (tr) set({ vendedor: P().vendedor === tr.dataset.v ? null : tr.dataset.v });
+  if (tr) set({ vendedor: msTroca(P().vendedor, tr.dataset.v) });
 });
 const named = location.hash.slice(1);
 if (['pedidos', 'historico', 'promocoes', 'yoy', 'ortho', 'escala', 'saojoao', 'contas', 'inativos'].includes(named)) set({ aba: named });
@@ -1801,10 +1799,10 @@ function draw() {
 
   // options cascade
   const byMacro = all.filter((r) => !p.macro || r.time_macro === p.macro);
-  const byTime = byMacro.filter((r) => !p.time || r.time === p.time);
+  const byTime = byMacro.filter((r) => msHas(p.time, r.time));
   fillSelect($('#f-macro'), 'Todos os times', MACROS.filter((m) => all.some((r) => r.time_macro === m)), p.macro);
-  fillSelect($('#f-time'), 'Todos os subtimes', uniq(byMacro, 'time'), p.time);
-  fillSelect($('#f-vend'), 'Todos os vendedores', uniq(byTime, 'vendedor'), p.vendedor);
+  fillMulti($('#f-time'), 'Todos os subtimes', uniq(byMacro, 'time'), p.time);
+  fillMulti($('#f-vend'), 'Todos os vendedores', uniq(byTime, 'vendedor'), p.vendedor);
   fillMulti($('#f-uf'), 'Todas', uniq(all, 'uf'), p.uf);
   fillMulti($('#f-status'), 'Todos', uniq(all, 'status'), p.status);
   const top = $('#f-top');
@@ -1818,7 +1816,7 @@ function draw() {
   const base = all.filter((r) =>
     msHas(p.uf, r.uf) && msHas(p.status, r.status) &&
     (!q || r.grupo.toLowerCase().includes(q) || r.cod_grupo.includes(q)));
-  const rows = base.filter((r) => (!p.macro || r.time_macro === p.macro) && (!p.time || r.time === p.time) && (!p.vendedor || r.vendedor === p.vendedor));
+  const rows = base.filter((r) => (!p.macro || r.time_macro === p.macro) && msHas(p.time, r.time) && msHas(p.vendedor, r.vendedor));
 
   // KPIs
   const total = d3.sum(rows, (r) => r.faturamento);
@@ -1848,12 +1846,12 @@ function draw() {
   const teamRows = base.filter((r) => !p.macro || r.time_macro === p.macro);
   const teams = d3.rollups(teamRows, (v) => ({ v: d3.sum(v, (r) => r.faturamento), n: v.length }), (r) => r[teamField])
     .map(([k, o]) => ({ k, ...o })).sort((a, b) => b.v - a.v);
-  barList($('#bars-time'), teams, dash.colors[0], (k) => set(p.macro ? { time: p.time === k ? null : k, vendedor: null } : { macro: k, time: null, vendedor: null }), p.macro ? p.time : p.macro);
+  barList($('#bars-time'), teams, dash.colors[0], (k) => set(p.macro ? { time: msTroca(p.time, k), vendedor: null } : { macro: k, time: null, vendedor: null }), p.macro ? msVal(p.time) : p.macro);
 
-  const vendRows = base.filter((r) => (!p.macro || r.time_macro === p.macro) && (!p.time || r.time === p.time));
+  const vendRows = base.filter((r) => (!p.macro || r.time_macro === p.macro) && msHas(p.time, r.time));
   const vends = d3.rollups(vendRows, (v) => ({ v: d3.sum(v, (r) => r.faturamento), n: v.length }), (r) => r.vendedor)
     .map(([k, o]) => ({ k, ...o })).sort((a, b) => b.v - a.v);
-  barList($('#bars-vend'), vends, dash.colors[1], (k) => set({ vendedor: p.vendedor === k ? null : k }), p.vendedor);
+  barList($('#bars-vend'), vends, dash.colors[1], (k) => set({ vendedor: msTroca(p.vendedor, k) }), msVal(p.vendedor));
 
   // main table
   const n = Number(p.top || 50);
@@ -2214,7 +2212,7 @@ function drawOrtho(scope, allGrupos) {
       a0: sum(b, 'a0'), a1: sum(b, 'a1'), fat: d3.sum(xs, (x) => x.r.faturamento) };
   }).sort((a, b) => b.a1 - a.a1 || b.c - a.c);
   $('#tab-ovend tbody').replaceChildren(...vend.map((o) => {
-    const tr = el('tr'); tr.dataset.v = o.v; if (p.vendedor === o.v) tr.className = 'on';
+    const tr = el('tr'); tr.dataset.v = o.v; if (msVal(p.vendedor).includes(o.v)) tr.className = 'on';
     tr.append(el('td', 'link', o.v), el('td', null, o.time), el('td', 'n', INT.format(o.n)), el('td', 'n', INT.format(o.c)), el('td', 'n', INT.format(o.pa)), el('td', 'n', INT.format(o.nu)),
       el('td', 'n', PCT.format(o.c / o.n)), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.a1 - o.a0), pctTxt(o.a0, o.a1)), el('td', 'n', o.fat > 0 ? PCT.format(o.a1 / o.fat) : '—'));
     return tr;
@@ -2702,7 +2700,7 @@ function drawPedidos(scope) {
   const md = dash.data('meta');
   const metaOk = md.status === 'ok';
   if (metaOk || md.status === 'error') $('#p-meta').classList.remove('dash-skeleton');
-  const vendOk = (r) => (!p.macro || r.time_macro === p.macro) && (!p.time || r.time === p.time) && (!p.vendedor || r.vendedor === p.vendedor);
+  const vendOk = (r) => (!p.macro || r.time_macro === p.macro) && msHas(p.time, r.time) && msHas(p.vendedor, r.vendedor);
   // a meta é do mês: com um período De / Até, ela só aparece se o período estiver dentro do mês atual
   const metaVale = !pr || (pr.de.slice(0, 7) === ref.slice(0, 7) && pr.ate.slice(0, 7) === ref.slice(0, 7));
   const metas = metaOk && metaVale ? md.data.map((r) => ({ ...r, meta: Number(r.meta) })).filter(vendOk) : [];
@@ -2757,7 +2755,7 @@ function drawPedidos(scope) {
   marcaOrd('#tab-cob', ORD.cob);
   $('#tab-cob tbody').replaceChildren(...byV.map((o) => {
     const tr = el('tr'); tr.dataset.v = o.v;
-    if (p.vendedor === o.v) tr.className = 'on';
+    if (msVal(p.vendedor).includes(o.v)) tr.className = 'on';
     tr.append(el('td', null, o.v), el('td', null, o.time), el('td', 'n', INT.format(o.tot)), el('td', 'n', INT.format(o.c)), el('td', 'n', INT.format(o.s)));
     const cv = el('td'); const box = el('div', 'cov'); box.append(el('span', null, PCT.format(o.c / o.tot)));
     const tk = el('div', 'track'); const fl = el('div', 'fill'); fl.style.width = (o.c / o.tot * 100) + '%'; tk.append(fl); box.append(tk); cv.append(box);
@@ -2887,7 +2885,7 @@ function drawYoy(scope, allGrupos) {
   const vend = agg(both, (r) => r.v).sort((a, b) => b.d - a.d);
   const vmax = Math.max(1, ...vend.map((o) => Math.abs(o.d)));
   $('#tab-yvend tbody').replaceChildren(...vend.map((o) => {
-    const tr = el('tr'); tr.dataset.v = o.k; if (p.vendedor === o.k) tr.className = 'on';
+    const tr = el('tr'); tr.dataset.v = o.k; if (msVal(p.vendedor).includes(o.k)) tr.className = 'on';
     const gs = agg(o.xs, gk);
     const time = (nome.get(o.xs[0].g + '|' + o.k) || {}).time || '';
     tr.append(el('td', null, o.k), el('td', null, time), el('td', 'n', BRL.format(o.a0)), el('td', 'n', BRL.format(o.a1)), el('td', 'n ' + sinal(o.d), SBRL(o.d)), el('td', 'n ' + sinal(o.d), pctTxt(o.a0, o.a1)),
