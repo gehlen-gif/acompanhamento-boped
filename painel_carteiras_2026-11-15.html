@@ -1514,7 +1514,7 @@ const keyOf = (a, b) => enc(a) + ',' + enc(b);
 const FILTERS = [
   ['f-macro', 'macro', 'Todos os times'],
 ];
-// Filtros de múltipla escolha (Subtime, Vendedor, UF, Status no cadastro, Linha/Item/Subgrupo da promoção, Subgrupo do YoY):
+// Filtros de múltipla escolha:
 // o parâmetro guarda os valores separados por ";"; vazio = todos
 const msVal = (v) => (v ? String(v).split(';').filter(Boolean) : []);
 const msHas = (v, x) => { const a = msVal(v); return !a.length || a.includes(x); };
@@ -2149,7 +2149,7 @@ function drawOrtho(scope, allGrupos) {
 
   const gk = (r) => r.cod_grupo + '|' + r.vendedor;
   const ortho = new Map(O.grupos.map((r, i) => [r.g + '|' + r.v, { ...r, i }]));
-  // período De / Até: "OrthoCare no ano" e o comparativo passam a ser o intervalo contra o mesmo intervalo do ano anterior
+  // De / Até: intervalo contra o mesmo intervalo do ano anterior
   const pr = periodo(p);
   const yL = ((dash.data('yoy').data || []).find((r) => r.linhas) || {}).linhas || {};
   if (pr) {
@@ -2714,7 +2714,7 @@ function drawPedidos(scope) {
       : 'Nenhum grupo de clientes com esses filtros.';
   }
 
-  // META: realizado = pedidos do mês de toda a carteira do vendedor (filtros de UF, segmento etc. não reduzem a meta)
+  // META: realizado = pedidos do mês da carteira toda (filtros não reduzem)
   const md = dash.data('meta');
   const metaOk = md.status === 'ok';
   if (metaOk || md.status === 'error') $('#p-meta').classList.remove('dash-skeleton');
@@ -2923,6 +2923,8 @@ function drawYoy(scope, allGrupos) {
   yList($('#y-gdn'), gDn.slice(0, 12), pickG, actG);
   yList($('#y-sup'), sUp.slice(0, 12), pickS, msVal(p.ysub));
   yList($('#y-sdn'), sDn.slice(0, 12), pickS, msVal(p.ysub));
+  // grupo escolhido: sem dados de outros grupos (Yghor, 16/11)
+  for (const e of ['#y-gup', '#y-gdn', '#tab-ygrupos']) $(e).closest('.card').hidden = !!p.ygrupo;
   const shareTxt = (xs, tot) => (xs.length ? `Os ${Math.min(12, xs.length)} maiores somam ${SBRL(d3.sum(xs.slice(0, 12), (o) => o.d))} de ${SBRL(tot)} no total de ${INT.format(xs.length)}.` : '');
   const gTxt = p.ysub ? ` em ${msTxt(p.ysub)}` : '';
   const sTxt = p.ygrupo ? ` em ${gName(p.ygrupo)}` : '';
