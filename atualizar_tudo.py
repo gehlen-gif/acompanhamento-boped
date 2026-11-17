@@ -2,7 +2,10 @@
 
 Se o arquivo tiver anos anteriores, gera também o comparativo YoY (atualizar_yoy.py).
 
-Uso: python3 atualizar_tudo.py <Histórico de Pedidos.xlsx> [promocoes.json | sem]
+Uso: python3 atualizar_tudo.py <Histórico de Pedidos.xlsx> [promocoes.json | sem] [extração de inativos do Qlik]
+
+O 3º argumento (resultado do conector Qlik com a expressão de qlik_inativos.expr(), desde 17/11/2026) refaz a
+lista de clientes inativos do dia antes dos subgrupos; sem ele, a lista fica a da última extração.
 
 As carteiras (que grupo de clientes e que cliente pertence a cada vendedor, nome,
 time, UF, segmento e status) vêm da base validada em dados/base/. O histórico
@@ -43,7 +46,7 @@ def com_ano_anterior(hist):
     return pd.concat([a, hist], ignore_index=True)
 
 
-def main(hist_xlsx, promos_json=None):
+def main(hist_xlsx, promos_json=None, inativos_qlik=None):
     import atualizar_pedidos, atualizar_promocoes
     grupos = json.loads((DADOS / 'base' / 'carteiras_grupos_base.json').read_text(encoding='utf-8'))
     clientes = json.loads((DADOS / 'base' / 'carteiras_clientes_base.json').read_text(encoding='utf-8'))
@@ -84,6 +87,8 @@ def main(hist_xlsx, promos_json=None):
     atualizar_ortho.main(hist, data_ref)
     import atualizar_diario
     atualizar_diario.main(hist, data_ref)
+    import atualizar_hist_detalhado
+    atualizar_hist_detalhado.main(hist, data_ref)
     import atualizar_contas
     atualizar_contas.main(hist)
     import atualizar_saojoao
@@ -98,6 +103,11 @@ def main(hist_xlsx, promos_json=None):
         atualizar_promocoes.main(h, promos_json)
     # Clientes inativos: 5 principais subgrupos de cada grupo com o histórico do dia (todos os anos)
     import atualizar_inativos
+    if inativos_qlik:
+        import qlik_inativos
+        from datetime import date
+        hoje = date.today().isoformat()
+        atualizar_inativos.main(str(qlik_inativos.main(inativos_qlik, hoje)), hoje)
     atualizar_inativos.subgrupos(hist)
     atualizar_pedidos.build_html(data_ref)
     # Ranking da Alta Atividade (pedido diário do usuário, junto com as demais atualizações)
@@ -106,4 +116,4 @@ def main(hist_xlsx, promos_json=None):
 
 
 if __name__ == '__main__':
-    main(*sys.argv[1:3])
+    main(*sys.argv[1:4])
