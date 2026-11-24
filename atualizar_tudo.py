@@ -97,7 +97,7 @@ def main(hist_xlsx, promos_json=None, inativos_qlik=None):
     atualizar_status.main(hist, data_ref)
     if promos_json == 'sem':
         # mês sem promoções: a aba mostra só o aviso para buscar oportunidades no Comparativo YoY
-        for f in ('promocoes.json', 'promo_potencial.json'):
+        for f in ('promocoes.json', 'promo_potencial.json', 'promo_oportunidades.json'):
             (DADOS / f).write_text('[]', encoding='utf-8')
     elif promos_json:
         atualizar_promocoes.main(h, promos_json)
@@ -113,6 +113,12 @@ def main(hist_xlsx, promos_json=None, inativos_qlik=None):
     # Ranking da Alta Atividade (pedido diário do usuário, junto com as demais atualizações)
     import gerar_ranking_atividade
     gerar_ranking_atividade.main()
+    # E-mail executivo diário (Gerente Nacional e Diretor de Vendas); só gera o HTML, não envia
+    try:
+        import gerar_email_executivo
+        gerar_email_executivo.main()
+    except Exception as e:  # não derruba a rotina
+        print('e-mail executivo: falhou:', e)
 
 
 if __name__ == '__main__':

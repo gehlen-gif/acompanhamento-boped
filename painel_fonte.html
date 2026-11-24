@@ -416,11 +416,13 @@
 
   <div class="pane" id="promocoes">
     <section class="kpis" id="ind-promo" data-source="promo_potencial">
-      <div class="kpi"><span class="note">Itens em promoção</span><span class="v dash-skeleton" id="pr-itens" data-source="promocoes">—</span><span class="sub">Preços válidos de 04 a 15/11/2026</span></div>
+      <div class="kpi"><span class="note">Itens em promoção</span><span class="v dash-skeleton" id="pr-itens" data-source="promocoes">—</span><span class="sub" id="pr-valid"></span></div>
       <div class="kpi"><span class="note">Grupos de clientes que já compraram os itens</span><span class="v dash-skeleton" id="pr-grupos">—</span><span class="sub" id="pr-grupos-s"></span></div>
       <div class="kpi"><span class="note">Com potencial</span><span class="v dash-skeleton" id="pr-pot">—</span><span class="sub">Último preço acima da promo e sem compra há mais de 30 dias</span></div>
       <div class="kpi"><span class="note">Compraram nos últimos 30 dias</span><span class="v dash-skeleton" id="pr-rec">—</span><span class="sub">Não oferecer mais barato</span></div>
     </section>
+
+    <section class="card" id="po-card" hidden></section>
 
     <section class="card" id="foco" hidden>
       <header class="picked"><h2 id="foco-title"></h2><button id="foco-close" type="button">Limpar seleção</button></header>
@@ -449,7 +451,7 @@
 
     <section class="card" id="itens-promo">
       <h2>Promoções ativas no mês</h2>
-      <p class="note">Promoções Novembro (Black). Frete CIF. Preços válidos de 04 a 15/11/2026, segmentos Farma ou Off, pagamento em 45x210 ou 90x180 de 15 em 15 dias. Linha ORTHO (Black Ortho): todos os itens com o melhor preço de tabela.</p>
+      <p class="note" id="pr-obs"></p>
       <div class="scroll">
         <table id="tab-promos" data-source="promocoes" data-row-key="id">
           <thead><tr>
@@ -837,6 +839,7 @@
 </div>
 
 <script src="hdet.js"></script>
+<script src="promo.js"></script>
 <script>
 const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
 const BRLc = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 1 });
@@ -852,7 +855,7 @@ const keyOf = (a, b) => enc(a) + ',' + enc(b);
 const FILTERS = [
   ['f-macro', 'macro', 'Todos os times'],
 ];
-// Filtros de múltipla escolha (Subtime, Vendedor, UF, Status no cadastro, Linha/Item/Subgrupo da promoção, Subgrupo do YoY):
+// Filtros de múltipla escolha:
 // o parâmetro guarda os valores separados por ";"; vazio = todos
 const msVal = (v) => (v ? String(v).split(';').filter(Boolean) : []);
 const msHas = (v, x) => { const a = msVal(v); return !a.length || a.includes(x); };
@@ -1487,7 +1490,7 @@ function drawOrtho(scope, allGrupos) {
 
   const gk = (r) => r.cod_grupo + '|' + r.vendedor;
   const ortho = new Map(O.grupos.map((r, i) => [r.g + '|' + r.v, { ...r, i }]));
-  // período De / Até: "OrthoCare no ano" e o comparativo passam a ser o intervalo contra o mesmo intervalo do ano anterior
+  // De / Até: intervalo contra o mesmo intervalo do ano anterior
   const pr = periodo(p);
   const yL = ((dash.data('yoy').data || []).find((r) => r.linhas) || {}).linhas || {};
   if (pr) {
@@ -2052,7 +2055,7 @@ function drawPedidos(scope) {
       : 'Nenhum grupo de clientes com esses filtros.';
   }
 
-  // META: realizado = pedidos do mês de toda a carteira do vendedor (filtros de UF, segmento etc. não reduzem a meta)
+  // META: realizado = pedidos do mês da carteira toda (filtros não reduzem)
   const md = dash.data('meta');
   const metaOk = md.status === 'ok';
   if (metaOk || md.status === 'error') $('#p-meta').classList.remove('dash-skeleton');
@@ -2261,6 +2264,8 @@ function drawYoy(scope, allGrupos) {
   yList($('#y-gdn'), gDn.slice(0, 12), pickG, actG);
   yList($('#y-sup'), sUp.slice(0, 12), pickS, msVal(p.ysub));
   yList($('#y-sdn'), sDn.slice(0, 12), pickS, msVal(p.ysub));
+  // grupo escolhido: sem dados de outros grupos (Yghor, 16/11)
+  for (const e of ['#y-gup', '#y-gdn', '#tab-ygrupos']) $(e).closest('.card').hidden = !!p.ygrupo;
   const shareTxt = (xs, tot) => (xs.length ? `Os ${Math.min(12, xs.length)} maiores somam ${SBRL(d3.sum(xs.slice(0, 12), (o) => o.d))} de ${SBRL(tot)} no total de ${INT.format(xs.length)}.` : '');
   const gTxt = p.ysub ? ` em ${msTxt(p.ysub)}` : '';
   const sTxt = p.ygrupo ? ` em ${gName(p.ygrupo)}` : '';
@@ -2526,6 +2531,9 @@ function drawPromo(scope) {
     return tr;
   }));
   $('#pr-itens').textContent = prOk ? INT.format(new Set(promos.map((r) => r.item)).size) : '—';
+  const pr0 = prOk && pr.data[0];
+  $('#pr-valid').textContent = pr0 && pr0.validade ? 'Preços válidos de ' + pr0.validade : '';
+  $('#pr-obs').textContent = pr0 ? `${pr0.titulo || 'Promoções do mês'}. Frete CIF.${pr0.validade ? ' Preços válidos de ' + pr0.validade + '.' : ''} Condição e segmento de cada item na tabela.` : 'Nenhuma promoção ativa.';
   if (!ok) return;
 
   const inScope = new Set(scope.map((r) => r.cod_grupo + '|' + r.vendedor));
@@ -2573,6 +2581,8 @@ function drawPromo(scope) {
       el('td', 'n', r.ultimo_valor_unit == null ? '—' : BRL2.format(r.ultimo_valor_unit)), prc, dif);
     return tr;
   }));
+  // Oportunidades por carteira (promo_fonte.js)
+  if (window.drawPromoOport) window.drawPromoOport({ p, scope, promos: prOk ? pr.data : [], shownPromos, set, el, BRL, BRL2, INT, PCT, msVal, msTroca, dataBR });
 }
 function dateBadge(iso, dias) {
   const wrap = el('div');

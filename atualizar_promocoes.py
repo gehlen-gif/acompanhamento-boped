@@ -34,6 +34,7 @@ def main(hist_xlsx, promos_json):
     h['vu'] = pd.to_numeric(h['Valor Unitário'], errors='coerce')
     h['vt'] = pd.to_numeric(h['Valor Total'], errors='coerce').fillna(0)
     ref = h['Data'].max()
+    h_todo = h
 
     item2promo = {}
     for p in promos:
@@ -82,11 +83,14 @@ def main(hist_xlsx, promos_json):
                 'dif_vs_promo': round(dif, 4) if dif is not None else None, 'situacao_promo': sit,
             })
     (DADOS / 'promo_potencial.json').write_text(json.dumps(rows, ensure_ascii=False, separators=(',', ':'), allow_nan=False), encoding='utf-8')
-    itens = [{k: p.get(k, '') for k in ('id', 'linha', 'subgrupo', 'item', 'codigo', 'cond_pagamento', 'segmento', 'promocao', 'cx_master', 'icms', 'ipi', 'preco_promo')} for p in promos]
+    itens = [{k: p.get(k, '') for k in ('id', 'linha', 'subgrupo', 'item', 'codigo', 'cond_pagamento', 'segmento', 'promocao', 'cx_master', 'icms', 'ipi', 'preco_promo', 'validade', 'titulo')} for p in promos]
     (DADOS / 'promocoes.json').write_text(json.dumps(itens, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     print(json.dumps({'historico_ate': ref.strftime('%Y-%m-%d'), 'linhas_potencial': len(rows),
                       'por_situacao': pd.Series([r['situacao_promo'] for r in rows]).value_counts().to_dict()}, ensure_ascii=False))
     sys.path.insert(0, str(HERE))
+    # oportunidades por carteira (recompra, subgrupo e linha), quadro do topo da aba
+    import atualizar_oportunidades
+    atualizar_oportunidades.main(h_todo, promos)
     from atualizar_pedidos import build_html
     build_html(json.loads((DADOS / 'pedidos_resumo.json').read_text(encoding='utf-8'))['data_ref'])
 
