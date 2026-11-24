@@ -18,7 +18,7 @@ DADOS = HERE / 'dados'
 # id do bloco de dados -> (arquivo, campo do vendedor; None = catálogo mantido inteiro)
 FONTES = [('grupos', 'carteiras_grupos.json', 'vendedor'), ('clientes', 'carteiras_clientes.json', 'vendedor'),
           ('pedidos', 'pedidos.json', 'vendedor'), ('promocoes', 'promocoes.json', None),
-          ('promo_potencial', 'promo_potencial.json', 'vendedor'), ('meta', 'meta.json', 'vendedor'),
+          ('promo_potencial', 'promo_potencial.json', 'vendedor'), ('promo_oport', 'promo_oportunidades.json', 'vendedor'), ('meta', 'meta.json', 'vendedor'),
           ('yoy', 'yoy.json', 'v')]
 # Abas que não entram no painel individual
 OCULTAR = """<style>#tab-btn-escala,#tab-btn-contas,#tab-btn-saojoao,#escala,#contas,#saojoao{display:none!important}</style>"""
@@ -56,8 +56,21 @@ def diario(vendedor):
     return [{**d, 'gs': [k for k in d['gs'] if k.endswith('|' + vendedor)], 'r': [[idx[r[0]]] + r[1:] for r in d['r'] if r[0] in idx]}]
 
 
+def hdet(vendedor):
+    """Histórico Detalhado só com os grupos do vendedor; o mix fica só do time e subtime dele e do BOPED."""
+    f = DADOS / 'hdet.json'
+    if not f.exists():
+        return []
+    d = json.loads(f.read_text(encoding='utf-8'))[0]
+    g = [r for r in json.loads((DADOS / 'carteiras_grupos.json').read_text(encoding='utf-8')) if r['vendedor'] == vendedor]
+    times = {'BOPED'} | {r['time'] for r in g} | {r['time_macro'] for r in g}
+    idx = {i: n for n, i in enumerate(i for i, k in enumerate(d['gs']) if k.endswith('|' + vendedor))}
+    return [{**d, 'gs': [k for k in d['gs'] if k.endswith('|' + vendedor)], 'r': [[idx[r[0]]] + r[1:] for r in d['r'] if r[0] in idx],
+             'mix': {k: v for k, v in d['mix'].items() if k in times}}]
+
+
 def carregar(vendedor):
-    dados = {'contas': [], 'saojoao': [], 'status': status(vendedor), 'ortho': ortho(vendedor), 'diario': diario(vendedor)}
+    dados = {'contas': [], 'saojoao': [], 'status': status(vendedor), 'ortho': ortho(vendedor), 'diario': diario(vendedor), 'hdet': hdet(vendedor)}
     # Clientes inativos: os do vendedor e, nas UFs de atuação dele, os de fora do BOPED (nunca de outro vendedor do time)
     import atualizar_inativos
     dados['inativos'] = atualizar_inativos.do_vendedor(vendedor)
@@ -78,7 +91,8 @@ def main(vendedor, destino=None):
     dados = carregar(vendedor)
     if not dados['grupos']:
         sys.exit(f'vendedor não encontrado: {vendedor}')
-    page = (HERE / 'painel_fonte.html').read_text(encoding='utf-8')
+    import atualizar_pedidos
+    page = atualizar_pedidos.com_scripts((HERE / 'painel_fonte.html').read_text(encoding='utf-8'))
     shell = (HERE / 'painel_shell.html').read_text(encoding='utf-8')
     titulo = f'Carteira {vendedor}'
     page = page.replace('<h1>Carteiras por grupo de cliente</h1>', f'<h1>{titulo}</h1>', 1)

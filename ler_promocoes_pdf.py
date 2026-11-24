@@ -21,10 +21,18 @@ NOMES = {
     'CADEIRA DE RODAS D400 - T40/T44/T46': ['CADEIRA DE RODAS D400 T40', 'CADEIRA DE RODAS D400 T44', 'CADEIRA DE RODAS D400 T46'],
     'CADEIRA DE RODAS D600 - T40/T46/T48': ['CADEIRA DE RODAS D600 T40', 'CADEIRA DE RODAS D600 T46', 'CADEIRA DE RODAS D600 T48'],
     'COLCHAO AIR TUBE ANTI ESCARAS 220V / 127V': ['COLCHAO AIR TUBE ANTI ESCARAS 220V', 'COLCHAO AIR TUBE ANTI ESCARAS 127V'],
+    # reta final de novembro/2026 (Prazão do Noel)
+    'CADEIRA DE RODAS D400 T40 - T44 - T46 - T48': ['CADEIRA DE RODAS D400 T40', 'CADEIRA DE RODAS D400 T44', 'CADEIRA DE RODAS D400 T46', 'CADEIRA DE RODAS D400 T48'],
+    'CADEIRA DE RODAS D600 T40 - T46 - T48': ['CADEIRA DE RODAS D600 T40', 'CADEIRA DE RODAS D600 T46', 'CADEIRA DE RODAS D600 T48'],
+    'CADEIRA DE RODAS MONOBLOCO T38 MAXMOVING': ['CADEIRA DE RODAS MOBLC T38 M2 MAX MOVING'],
+    'CADEIRA DE HIGIENIZACAO D50': ['CADEIRA DE HIGIENIZACAO D50 ACO'],
+    'CADEIRA MOTORIZADA RECLINÁVEL OPTIMUS': ['CADEIRA MOTORIZADA RECLINAVEL OPTIMUS', 'CADEIRA MOTORIZADA OPTIMUS RECLINAVEL'],
 }
 # Layout de novembro/2026: condição e segmento ficam nas linhas de cima e de baixo do item
 # ("45x210 de 15 em 15 / ou / 90 x 180 de 15 em 15", "FARMA / ou / OFF")
 LINHA2 = re.compile(r'^\s*(WELLNESS|HEALTH|HOME|ORTHO|BEAUTY)\s+(.*?)\s{2,}(\S.*?)\s+ou\s+(Black \w+)\s+(\d+)\s+(\d+)%\s+([\d,]+)%\s+R\$\s+([\d.,]+)')
+# Layout da reta final de novembro/2026: "45 a 210dd (12x)   FARMA | OFF   Prazão do Noel   1   0,00%   0,00%   R$ 79,00"
+LINHA3 = re.compile(r'^\s*(WELLNESS|HEALTH|HOME|ORTHO|BEAUTY)\s+(.*?)\s{2,}(\S.*?)\s{2,}(\d+\s*a\s*\d+dd(?:\s*\(\d+x\))?)\s+([A-Z]+(?:\s*\|\s*[A-Z]+)*)\s+(\S.*?)\s+(\d+)\s+([\d,]+)%\s+([\d,]+)%\s+R\$\s+([\d.,]+)')
 LINHA = re.compile(r'^\s*(WELLNESS|HEALTH|HOME|ORTHO)\s+(.*?)\s{2,}(\S.*?)\s+((?:de\s+)?(?:\d+(?:dd)?\s+)?até\s+\d+dd)\s+(?:TODOS\s+)?(Natal Azul \w+)\s+(\d+)\s+(\d+)%\s+([\d,]+)%\s+R\$\s+([\d.,]+)')
 
 
@@ -38,11 +46,23 @@ def main(pdf, hist, saida):
     sub = h.drop_duplicates('Item').set_index('Item')['Sub Grupo'].to_dict()
     por_norm = {norm(i): i for i in sub}
     promos, vistos, faltam = [], set(), []
+    # validade e título ("Preços Válidos: 24 a 30/11"), mostrados no painel
+    mv = re.search(r'Pre[cç]os V[aá]lidos:?\s*(.+)', txt)
+    validade = re.sub(r'\s+', ' ', mv.group(1)).strip() if mv else ''
+    if validade and not re.search(r'/\d{4}', validade):
+        validade += '/' + str(pd.Timestamp.today().year)
+    mt = re.search(r'PROMO[ÇC][ÕO]ES[^\n]*', txt)
+    titulo = re.sub(r'\s+', ' ', mt.group(0)).strip().title() if mt else 'Promoções do mês'
     ls = txt.splitlines()
     for i, l in enumerate(ls):
         m = LINHA.match(l)
         seg = None
-        if m:
+        m3 = None if m else LINHA3.match(l)
+        if m3:
+            linha, item, cod, cond, seg, promo, cx, icms, ipi, preco = m3.groups()
+            seg = re.sub(r'\s*\|\s*', ' ou ', seg)
+            cod = re.sub(r'\s*/\s*', ' / ', cod.strip())
+        elif m:
             linha, item, cod, cond, promo, cx, icms, ipi, preco = m.groups()
         else:
             m = LINHA2.match(l)
@@ -57,6 +77,8 @@ def main(pdf, hist, saida):
             if cod.strip() == '-':
                 cod = '-'
         item = re.sub(r'\s+', ' ', item).strip()
+        icms = icms.rstrip('0').rstrip(',') if ',' in icms else icms
+        ipi = ipi.rstrip('0').rstrip(',') if ',' in ipi else ipi
         if linha == 'WELLNESS' and 'MASSAGEADOR' in item:
             item = 'MASSAGEADOR' + item.split('MASSAGEADOR', 1)[1]
         chave = (item, cond)
@@ -70,7 +92,7 @@ def main(pdf, hist, saida):
                            promocao=promo, cx_master=int(cx), icms=icms + '%', ipi=ipi + '%',
                            preco_promo=float(preco.replace('.', '').replace(',', '.')),
                            segmento=seg or ('TODOS' if linha == 'WELLNESS' else 'FARMA OFF'),
-                           itens_historico=nomes, subgrupo=sub.get(nomes[0], '') if nomes else ''))
+                           itens_historico=nomes, subgrupo=sub.get(nomes[0], '') if nomes else '', validade=validade, titulo=titulo))
     with open(saida, 'w', encoding='utf-8') as f:
         json.dump(promos, f, ensure_ascii=False, indent=1)
     print(len(promos), 'itens;', 'sem nome no histórico:', faltam or 'nenhum')
