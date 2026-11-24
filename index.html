@@ -1483,24 +1483,6 @@ body{margin:0;background:var(--color-bg);color:var(--color-fg);font:14px var(--f
   }
 })();
 
-// Promoções encerradas (pedido do Yghor em 16/11/2026): aviso no topo da aba Promoções do mês,
-// com atalhos para o Comparativo YoY e o Histórico Detalhado. Para uma promoção nova, apagar este bloco.
-(() => {
-  const pane = document.getElementById('promocoes');
-  if (!pane || document.getElementById('promo-fim')) return;
-  const s = document.createElement('section');
-  s.className = 'card';
-  s.id = 'promo-fim';
-  s.style.cssText = 'border:2px solid var(--color-bad);text-align:center';
-  s.innerHTML = '<h2>As promoções estão encerradas<\/h2><p>Busque oportunidades nos painéis '
-    + '<button type="button" data-ir="yoy">Comparativo YoY<\/button> e '
-    + '<button type="button" data-ir="hdet">Histórico Detalhado<\/button>.<\/p>';
-  pane.prepend(s);
-  s.querySelectorAll('[data-ir]').forEach((b) => b.addEventListener('click', () => document.getElementById('tab-btn-' + b.dataset.ir)?.click()));
-  const h = document.querySelector('#itens-promo h2');
-  if (h) h.textContent = 'Promoções do mês (encerradas em 15/11/2026)';
-})();
-
 </script>
 <script>
 // Oportunidades das promoções por carteira (pedido do Yghor em 24/11/2026). Arquivo próprio: no painel do Claude vira
