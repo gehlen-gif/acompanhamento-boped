@@ -109,6 +109,12 @@ def main(hist_xlsx, promos_json=None, inativos_qlik=None):
         hoje = date.today().isoformat()
         atualizar_inativos.main(str(qlik_inativos.main(inativos_qlik, hoje)), hoje)
     atualizar_inativos.subgrupos(hist)
+    # aba temporária Estoque alto (25/11/2026); some quando dados/base/estoque_alto_itens.json for apagado
+    try:
+        import atualizar_estoque_alto
+        atualizar_estoque_alto.main(hist)
+    except Exception as e:  # não derruba a rotina
+        print('estoque alto: falhou:', e)
     atualizar_pedidos.build_html(data_ref)
     # Ranking da Alta Atividade (pedido diário do usuário, junto com as demais atualizações)
     import gerar_ranking_atividade

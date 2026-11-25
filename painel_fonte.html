@@ -193,6 +193,7 @@
   <nav class="tabs" role="tablist" aria-label="Partes do painel">
     <button type="button" role="tab" id="tab-btn-pedidos" data-aba="pedidos">Posição atual e Projeção do mês</button>
     <button type="button" role="tab" id="tab-btn-promocoes" data-aba="promocoes">Promoções do mês</button>
+    <button type="button" role="tab" id="tab-btn-estoque" data-aba="estoque">Estoque alto</button>
     <button type="button" role="tab" id="tab-btn-yoy" data-aba="yoy">Comparativo YoY</button>
     <button type="button" role="tab" id="tab-btn-hdet" data-aba="hdet">Histórico Detalhado</button>
     <button type="button" role="tab" id="tab-btn-historico" data-aba="historico">Status Clientes</button>
@@ -749,6 +750,7 @@
   </div>
 
   <div class="pane" id="hdet" hidden></div>
+  <div class="pane" id="estoque" hidden></div>
 
   <div class="pane" id="inativos">
   <section class="kpis" id="in-k"></section>
@@ -839,6 +841,7 @@
 </div>
 
 <script src="hdet.js"></script>
+<script src="estoque.js"></script>
 <script src="promo.js"></script>
 <script>
 const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
@@ -1122,6 +1125,8 @@ function draw() {
   $('#contas').hidden = aba !== 'contas';
   $('#inativos').hidden = aba !== 'inativos';
   $('#hdet').hidden = aba !== 'hdet';
+  $('#estoque').hidden = aba !== 'estoque';
+  $('#tab-btn-estoque').hidden = !(window.temEstoque && window.temEstoque());
   ['#f-is', '#f-iv', '#f-iseg', '#f-iinad', '#f-icid', '#f-iresp'].forEach((x) => { $(x).closest('label').hidden = aba !== 'inativos'; });
   $('#saojoao').hidden = aba !== 'saojoao';
   $('#filtros').style.display = aba === 'saojoao' ? 'none' : '';
@@ -1289,6 +1294,7 @@ function draw() {
   drawInativos();
   // Histórico Detalhado (hdet_fonte.js): só desenha com a aba aberta
   if (aba === 'pedidos' && window.drawProjecao) window.drawProjecao({ p, rows, all, set, redraw: draw, BRL, BRLc, BRL2, INT, PCT, el, normNome, msVal, linhasSub, linCod, LINHAS_F, MACROS, dataBR });
+  if (aba === 'estoque' && window.drawEstoque) window.drawEstoque({ p, rows, all, set, redraw: draw, BRL, BRLc, BRL2, INT, PCT, el, dataBR });
   if (aba === 'hdet' && window.drawHistDet) window.drawHistDet({ p, rows, all, set, redraw: draw, BRL, BRLc, BRL2, INT, PCT, el, normNome, msVal, linhasSub, linCod, LINHAS_F, MACROS, dataBR });
 }
 
