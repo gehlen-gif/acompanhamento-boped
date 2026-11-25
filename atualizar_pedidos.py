@@ -150,6 +150,8 @@ def com_scripts(page):
     """No HTML autônomo, os scripts próprios (no painel do Claude, files/<nome>) entram no lugar do <script src>."""
     js = (HERE / 'hdet_fonte.js').read_text(encoding='utf-8').replace('</', '<\\/')
     page = page.replace('<script src="hdet.js"></script>', '<script>\n' + js + '\n</script>', 1)
+    js = (HERE / 'estoque_fonte.js').read_text(encoding='utf-8').replace('</', '<\\/')
+    page = page.replace('<script src="estoque.js"></script>', '<script>\n' + js + '\n</script>', 1)
     js = (HERE / 'promo_fonte.js').read_text(encoding='utf-8').replace('</', '<\\/')
     return page.replace('<script src="promo.js"></script>', '<script>\n' + js + '\n</script>', 1)
 
@@ -159,7 +161,7 @@ def build_html(data_ref):
     shell = (HERE / 'painel_shell.html').read_text(encoding='utf-8')
     data, publico = '', ''
     for id_, f in [('grupos', 'carteiras_grupos.json'), ('clientes', 'carteiras_clientes.json'), ('pedidos', 'pedidos.json'),
-                   ('promocoes', 'promocoes.json'), ('promo_potencial', 'promo_potencial.json'), ('promo_oport', 'promo_oportunidades.json'), ('meta', 'meta.json'), ('yoy', 'yoy.json'), ('contas', 'contas.json'), ('ortho', 'ortho.json'), ('saojoao', 'saojoao.json'), ('status', 'status.json'), ('diario', 'diario.json'), ('inativos', 'inativos.json'), ('hdet', 'hdet.json')]:
+                   ('promocoes', 'promocoes.json'), ('promo_potencial', 'promo_potencial.json'), ('promo_oport', 'promo_oportunidades.json'), ('meta', 'meta.json'), ('yoy', 'yoy.json'), ('contas', 'contas.json'), ('ortho', 'ortho.json'), ('saojoao', 'saojoao.json'), ('status', 'status.json'), ('diario', 'diario.json'), ('inativos', 'inativos.json'), ('hdet', 'hdet.json'), ('estoque', 'estoque_alto.json')]:
         txt = (DADOS / f).read_text(encoding='utf-8').replace('</', '<\\/') if (DADOS / f).exists() else '[]'
         data += f'<script type="application/json" id="data-{id_}">{txt}</script>\n'
         publico += f'<script type="application/json" id="data-{id_}">{"[]" if id_ in PRIVADOS else txt}</script>\n'

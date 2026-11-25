@@ -71,6 +71,8 @@ def hdet(vendedor):
 
 def carregar(vendedor):
     dados = {'contas': [], 'saojoao': [], 'status': status(vendedor), 'ortho': ortho(vendedor), 'diario': diario(vendedor), 'hdet': hdet(vendedor)}
+    import atualizar_estoque_alto
+    dados['estoque'] = atualizar_estoque_alto.do_vendedor(vendedor)
     # Clientes inativos: os do vendedor e, nas UFs de atuação dele, os de fora do BOPED (nunca de outro vendedor do time)
     import atualizar_inativos
     dados['inativos'] = atualizar_inativos.do_vendedor(vendedor)
